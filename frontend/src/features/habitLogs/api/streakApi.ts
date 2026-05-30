@@ -1,7 +1,6 @@
 import { apiClient } from "../../../config/apiClient";
-import type { StreakStats } from "../types/streak.types";
 
+// TODO: Keep streak API wrappers here if the feature needs them.
 export const streakApi = {
-  getStreak: (habitId: string): Promise<StreakStats> =>
-    apiClient.getStreak(habitId),
+  getStreak: apiClient.getStreak,
 };

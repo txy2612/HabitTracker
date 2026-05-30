@@ -1,15 +1,3 @@
-//define shapes of data
-
-export type ApiError = {
-  message: string;
-  statusCode?: number;
-};
-
-export type ApiResponse<T> = {
-  data: T;
-  message?: string;
-};
-
 export type Habit = {
   id: string;
   name: string;
@@ -22,19 +10,21 @@ export type CreateHabitInput = {
 
 export type UpdateHabitInput = Partial<CreateHabitInput>;
 
-export type HabitStatus = "done" | "missed" | "skipped";
+export type HabitLogStatus = "done" | "missed" | "skipped";
 
 export type HabitLog = {
   id: string;
   habitId: string;
   logDate: string;
-  status: HabitStatus;
+  status: HabitLogStatus;
   note: string | null;
   createdAt: string;
   updatedAt: string;
 };
 
-export type CreateHabitLogInput = Pick<HabitLog, "logDate" | "status"> & {
+export type CreateHabitLogInput = {
+  logDate: string;
+  status: HabitLogStatus;
   note?: string | null;
 };
 

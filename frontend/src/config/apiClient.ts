@@ -1,12 +1,14 @@
 // frontend gateway to backend
 
 import type {
+  CreateHabitInput,
   CreateHabitLogInput,
   Habit,
   HabitLog,
-  HabitStatus,
+  HabitLogStatus,
   StreakSummary,
   UpdateHabitInput,
+  UpdateHabitLogInput,
 } from "../shared/types/api.types";// import types used, ONLY type info is imported, no JS code
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
@@ -27,7 +29,7 @@ type HabitLogRow = {
   id: string;
   habit_id: string;
   log_date: string;
-  status: HabitStatus;
+  status: HabitLogStatus;
   note: string | null;
   created_at: string;
   updated_at: string;
@@ -89,48 +91,50 @@ async function request<T>(path: string, options: RequestInit = {}) {
 
 // Centralized collection of all backend API functions
 export const apiClient = {
-  getHabits: async () => {
+  getHabits: async (): Promise<Habit[]> => {
     const habits = await request<HabitRow[]>("/habits");
     return habits.map(mapHabit);
   },
 
-  createHabit: async (name: string) => {
+  createHabit: async (input: CreateHabitInput): Promise<Habit> => {
     const habit = await request<HabitRow>("/habits", {
       method: "POST",
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(input),
     });
 
     return mapHabit(habit);
   },
 
-  updateHabit: async (id: string, payload: UpdateHabitInput) => {
-    const habit = await request<HabitRow>(`/habits/${id}`, {
+  updateHabit: async (habitId: string, input: UpdateHabitInput): Promise<Habit> => {
+    const habit = await request<HabitRow>(`/habits/${habitId}`, {
       method: "PUT",
-      body: JSON.stringify(payload),
+      body: JSON.stringify(input),
     });
 
     return mapHabit(habit);
   },
 
-  getLogs: async (habitId: string, month: string) => {
+  getLogs: async (habitId: string, month: string): Promise<HabitLog[]> => {
     const logs = await request<HabitLogRow[]>(`/habits/${habitId}/logs?month=${month}`);
     return logs.map(mapHabitLog);
   },
 
-  upsertLog: async (habitId: string, payload: CreateHabitLogInput) => {
+  saveLog: async (habitId: string, input: CreateHabitLogInput | UpdateHabitLogInput): Promise<HabitLog> => {
     const log = await request<HabitLogRow>(`/habits/${habitId}/logs`, {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: JSON.stringify(input),
     });
 
     return mapHabitLog(log);
   },
 
-  deleteLog: (habitId: string, date: string) =>
-    request<void>(`/habits/${habitId}/logs?date=${date}`, {
+  deleteLog: async (habitId: string, date: string): Promise<void> => {
+    return request<void>(`/habits/${habitId}/logs?date=${date}`, {
       method: "DELETE",
-    }),
+    });
+  },
 
-  getStreak: (habitId: string) =>
-    request<StreakSummary>(`/habits/${habitId}/streak`),
+  getStreak: async (habitId: string): Promise<StreakSummary> => {
+    return request<StreakSummary>(`/habits/${habitId}/streak`);
+  },
 };

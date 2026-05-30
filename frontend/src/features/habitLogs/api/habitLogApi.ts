@@ -1,19 +1,8 @@
 import { apiClient } from "../../../config/apiClient";
-import type {
-  HabitLog,
-  CreateHabitLogInput,
-} from "../types/habitLog.types";
 
+// TODO: Keep habit-log API wrappers here if the feature needs them.
 export const habitLogApi = {
-  getLogs: (habitId: string, month: string): Promise<HabitLog[]> =>
-    apiClient.getLogs(habitId, month),
-
-  saveLog: (
-    habitId: string,
-    input: CreateHabitLogInput 
-  ): Promise<HabitLog> =>
-    apiClient.upsertLog(habitId, input),
-
-  deleteLog: (habitId: string, date: string): Promise<void> =>
-    apiClient.deleteLog(habitId, date),
+  getLogs: apiClient.getLogs,
+  saveLog: apiClient.saveLog,
+  deleteLog: apiClient.deleteLog,
 };

@@ -1,29 +1,25 @@
-// loop thru habits
+
+//HabitList = Render list + pass navigation callback
 import type { Habit } from "../../../shared/types/api.types";
+import { EmptyState } from "../../../shared/components/EmptyState";// styling 'No habits yet', 'No logs yet', 'No notifications yet', ... in the same way
 import { HabitCard } from "./HabitCard";
 
-type HabitListProps = {
-  habits: Habit[];// recieve list of habits
+export type HabitListProps = {
+  habits: Habit[];
+  onViewHabit: (habitId: string) => void;
 };
 
-export function HabitList({ habits }: HabitListProps) {
-    // if no habits yet, add your first to get started
+export function HabitList({ habits, onViewHabit }: HabitListProps) {
   if (habits.length === 0) {
-    return (
-      <div className="rounded-2xl border border-dashed border-gray-300 p-6 text-center text-gray-500">
-        No habits yet. Add your first habit to get started.
-      </div>
-    );
+    return <EmptyState title="No habits yet" />;
   }
 
   return (
-    // for each 'habit', create one HabitCard
-    // .map = loop 
-    // why not put html code dircetly? might have more elements to habit box later -> too long
-    <div className="space-y-3">
+    <section className="habit-list-placeholder">
+      {/* TODO: Render habit cards with spacing and empty state polish. */}
       {habits.map((habit) => (
-        <HabitCard key={habit.id} habit={habit} />
+        <HabitCard habit={habit} key={habit.id} onViewHabit={onViewHabit} />
       ))}
-    </div>
+    </section>
   );
 }

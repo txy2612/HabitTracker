@@ -1,51 +1,73 @@
-export function toDateString(date: Date) {
+export function toDateString(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
+
   return `${year}-${month}-${day}`;
 }
 
-export function currentMonthString() {
-  return toDateString(new Date()).slice(0, 7);
+export function getTodayIsoDate(): string {
+  return toDateString(new Date());
 }
 
-export function getMonthDays(month: string) {
-  const [year, monthNumber] = month.split("-").map(Number);
-  const totalDays = new Date(year, monthNumber, 0).getDate();
-
-  return Array.from({ length: totalDays }, (_, index) => {
-    const date = new Date(year, monthNumber - 1, index + 1);
-    return {
-      date: toDateString(date),
-      dayNumber: index + 1,
-      weekday: date.toLocaleDateString(undefined, { weekday: "short" }),
-    };
+export function getRecentSevenDays(): string[] {
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (6 - index));
+    return toDateString(date);
   });
 }
 
-export function formatMonth(month: string) {
+export function currentMonthString(): string {
+  return getTodayIsoDate().slice(0, 7);
+}
+
+export function formatMonthLabel(month: string): string {
   const [year, monthNumber] = month.split("-").map(Number);
+
   return new Date(year, monthNumber - 1).toLocaleDateString(undefined, {
     month: "long",
     year: "numeric",
   });
 }
 
-export function shiftMonth(month: string, amount: number) {
+export function getMonthDates(month: string): string[] {
+  const [year, monthNumber] = month.split("-").map(Number);
+  const totalDays = new Date(year, monthNumber, 0).getDate();
+
+  return Array.from({ length: totalDays }, (_, index) => {
+    const date = new Date(year, monthNumber - 1, index + 1);
+    return toDateString(date);
+  });
+}
+
+export function shiftMonth(month: string, amount: number): string {
   const [year, monthNumber] = month.split("-").map(Number);
   const date = new Date(year, monthNumber - 1 + amount);
+
   return toDateString(date).slice(0, 7);
 }
 
-export function formatDateRange(start: string | null, end: string | null) {
+export function formatDateRange(
+  start: string | null,
+  end: string | null
+): string {
   if (!start || !end) {
     return "No dates yet";
   }
 
   const startDate = new Date(`${start}T00:00:00`);
   const endDate = new Date(`${end}T00:00:00`);
-  const startText = startDate.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  const endText = endDate.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+
+  const startText = startDate.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+
+  const endText = endDate.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
 
   return start === end ? startText : `${startText} - ${endText}`;
 }

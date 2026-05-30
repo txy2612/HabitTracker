@@ -1,6 +1,6 @@
 export type {
   CreateHabitLogInput,
   HabitLog,
-  HabitStatus,
+  HabitLogStatus,
   UpdateHabitLogInput,
 } from "../../../shared/types/api.types";

@@ -1,1 +1,1 @@
-export type { StreakSummary as StreakStats } from "../../../shared/types/api.types";
+export type { StreakSummary } from "../../../shared/types/api.types";

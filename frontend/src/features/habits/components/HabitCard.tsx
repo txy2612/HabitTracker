@@ -1,18 +1,26 @@
-//display one habit
 import type { Habit } from "../../../shared/types/api.types";
+import { Button } from "../../../shared/components/Button";// prep for one reusable button style
+import { StreakDotsRow } from "../../habitLogs/components/StreakDotsRow";// uses streak dots components
+import { QuickLogButton } from "./QuickLogButton";// Habit Card = layout; QuickLogButton = mark done/missed
 
-type HabitCardProps = {
-  habit: Habit;// receives habit
+export type HabitCardProps = {
+  habit: Habit;
+  onViewHabit: (habitId: string) => void;
+  // when user clicks view, tell parent which habit was clicked
+  // etc: habit.id="123" -> Click "view" -> onViewHabit("123")
 };
 
-export function HabitCard({ habit }: HabitCardProps) {
+export function HabitCard({ habit, onViewHabit }: HabitCardProps) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900">{habit.name}</h3>
-
-      <p className="mt-1 text-sm text-gray-500">
-        Created on {new Date(habit.createdAt).toLocaleDateString()}
-      </p>
-    </div>
+    <article className="habit-card-placeholder">
+      {/* TODO: Replace placeholder card markup with final habit card UI. */}
+      <h2>{habit.name}</h2>
+      <StreakDotsRow dates={[]} logs={[]} />
+      <QuickLogButton habitId={habit.id} status="done" />
+      <QuickLogButton habitId={habit.id} status="missed" /> 
+      <Button type="button" onClick={() => onViewHabit(habit.id)}>
+        View
+      </Button>
+    </article>
   );
 }
