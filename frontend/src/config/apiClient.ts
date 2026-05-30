@@ -1,0 +1,136 @@
+// frontend gateway to backend
+
+import type {
+  CreateHabitLogInput,
+  Habit,
+  HabitLog,
+  HabitStatus,
+  StreakSummary,
+  UpdateHabitInput,
+} from "../shared/types/api.types";// import types used, ONLY type info is imported, no JS code
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
+
+// Backend can stay database-friendly.
+// Frontend can stay React-friendly.
+// apiClient translates between them.
+
+// desc raw backend habit data (NOT THE SAME AS HABIT front-end)
+type HabitRow = {
+  id: string;
+  name: string;
+  created_at: string;
+};
+
+//NOT THE SAME AS HabitLog(front-end)
+type HabitLogRow = {
+  id: string;
+  habit_id: string;
+  log_date: string;
+  status: HabitStatus;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+// mapper = chopper of the food into baby food
+// converts backend data (adult food) -> frontend data (baby food) to be eaten by baby (React)
+// changes names like created_at -> createdAt
+function mapHabit(row: HabitRow): Habit {
+  return {
+    id: row.id,
+    name: row.name,
+    createdAt: row.created_at,
+  };
+}
+
+// convert backend log records into frontend log recrds
+function mapHabitLog(row: HabitLogRow): HabitLog {
+  return {
+    id: row.id,
+    habitId: row.habit_id,
+    logDate: row.log_date,
+    status: row.status,
+    note: row.note,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+// fetch helper
+// prevents fetching evwhere
+async function request<T>(path: string, options: RequestInit = {}) {
+
+    //sends HTTP request to backend
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: {
+      "Content-Type": "application/json",
+      // merge whatever options : POST, DELETE, PUT etc
+      ...options.headers,
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: "Request failed." }));
+    throw new Error(error.message ?? "Request failed.");
+  }
+
+  // handle delete responses w no body
+  // response.json() can crash bcz delete returns ntg
+  // guard = instead of calling response.json() -> undefined
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  // Converts backend JSON into JavaScript objects
+  return response.json() as Promise<T>;
+}
+
+// Centralized collection of all backend API functions
+export const apiClient = {
+  getHabits: async () => {
+    const habits = await request<HabitRow[]>("/habits");
+    return habits.map(mapHabit);
+  },
+
+  createHabit: async (name: string) => {
+    const habit = await request<HabitRow>("/habits", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    });
+
+    return mapHabit(habit);
+  },
+
+  updateHabit: async (id: string, payload: UpdateHabitInput) => {
+    const habit = await request<HabitRow>(`/habits/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+
+    return mapHabit(habit);
+  },
+
+  getLogs: async (habitId: string, month: string) => {
+    const logs = await request<HabitLogRow[]>(`/habits/${habitId}/logs?month=${month}`);
+    return logs.map(mapHabitLog);
+  },
+
+  upsertLog: async (habitId: string, payload: CreateHabitLogInput) => {
+    const log = await request<HabitLogRow>(`/habits/${habitId}/logs`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    return mapHabitLog(log);
+  },
+
+  deleteLog: (habitId: string, date: string) =>
+    request<void>(`/habits/${habitId}/logs?date=${date}`, {
+      method: "DELETE",
+    }),
+
+  getStreak: (habitId: string) =>
+    request<StreakSummary>(`/habits/${habitId}/streak`),
+};
