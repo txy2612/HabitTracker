@@ -16,6 +16,8 @@ export type HabitLog = {
   updated_at: string;
 };
 
+// calculated result
+// calculateStreak() returns this
 export type StreakSummary = {
   currentStreak: number;
   currentStartDate: string | null;

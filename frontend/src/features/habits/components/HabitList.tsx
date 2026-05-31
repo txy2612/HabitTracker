@@ -32,6 +32,7 @@ export function HabitList({
     );
   }
 
+  // HabitList passes HabitCard to HabitCard
   return (
     <section className="grid gap-3">
       {habits.map((habit, index) => (
