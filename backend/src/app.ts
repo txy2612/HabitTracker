@@ -2,6 +2,9 @@ import cors from "cors";
 import express from "express";
 import habitsRouter from "./routes/habits.js";
 import { env } from "./config/env.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { notFoundHandler } from "./middleware/notFoundHandler.js";
+import { requestId } from "./middleware/requestId.js";
 
 export const app = express();
 
@@ -11,6 +14,7 @@ app.use(
   }),
 );
 app.use(express.json());
+app.use(requestId);
 
 app.get("/api/health", (_request, response) => {
   response.json({ ok: true });
@@ -18,7 +22,5 @@ app.get("/api/health", (_request, response) => {
 
 app.use("/api/habits", habitsRouter);
 
-app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
-  console.error(error);
-  response.status(500).json({ message: "Something went wrong." });
-});
+app.use(notFoundHandler);
+app.use(errorHandler);
