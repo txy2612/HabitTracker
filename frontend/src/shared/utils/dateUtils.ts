@@ -11,11 +11,19 @@ export function getTodayIsoDate(): string {
 }
 
 export function getRecentSevenDays(): string[] {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+
   return Array.from({ length: 7 }, (_, index) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (6 - index));
+    const date = new Date(today);
+    date.setDate(today.getDate() + mondayOffset + index);
     return toDateString(date);
   });
+}
+
+export function getDayNumber(dateString: string): string {
+  return String(new Date(`${dateString}T00:00:00`).getDate());
 }
 
 export function currentMonthString(): string {

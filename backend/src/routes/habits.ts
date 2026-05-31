@@ -1,16 +1,20 @@
+// receives requests from apiClient.ts
 import { Router } from "express";
-import { pool } from "../db/pool.js";
+import { pool } from "../db/pool.js"; // pool = several clinic computers connected to same patient database
 import { calculateStreak } from "../services/streaks.js";
 import type { HabitLog, HabitLogStatus } from "../types.js";
 import { isDateString, isMonthString, monthRange, todayString } from "../utils/dates.js";
 
+// mini reception desk for habit-related patients
 const router = Router();
 const validStatuses = new Set<HabitLogStatus>(["done", "missed", "skipped"]);
 
+// cleans habit name, if name is not a string, return empty string
 function cleanName(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+// POST   /api/habits              create habit
 router.post("/", async (request, response, next) => {
   try {
     const name = cleanName(request.body.name);
@@ -20,19 +24,23 @@ router.post("/", async (request, response, next) => {
       return;
     }
 
+    // INSERT INTO habits
     const result = await pool.query(
       `INSERT INTO habits (name)
        VALUES ($1)
        RETURNING *`,
-      [name],
+      [name],// fills SQL placeholders, instead of directly putting values into SQL string, this prevents SQL injection
     );
 
+    // result.rows = data returned from POstgreSQL
+    // take it as json and pass back to front-end
     response.status(201).json(result.rows[0]);
   } catch (error) {
     next(error);
   }
 });
 
+// GET    /api/habits              get all habits
 router.get("/", async (_request, response, next) => {
   try {
     const result = await pool.query(
@@ -47,6 +55,7 @@ router.get("/", async (_request, response, next) => {
   }
 });
 
+// PUT    /api/habits/:id          update habit name
 router.put("/:id", async (request, response, next) => {
   try {
     const name = cleanName(request.body.name);
@@ -64,6 +73,7 @@ router.put("/:id", async (request, response, next) => {
       [name, request.params.id],
     );
 
+    // if no id with that id exists 
     if (result.rowCount === 0) {
       response.status(404).json({ message: "Habit not found." });
       return;
@@ -75,8 +85,11 @@ router.put("/:id", async (request, response, next) => {
   }
 });
 
+// POST   /api/habits/:id/logs     save/update one daily log
 router.post("/:id/logs", async (request, response, next) => {
   try {
+    // if front-end sends no date, use today
+    // if sends no status, use done
     const logDate = request.body.logDate ?? todayString();
     const status = request.body.status ?? "done";
     const note = typeof request.body.note === "string" ? request.body.note.trim() : null;
@@ -91,10 +104,14 @@ router.post("/:id/logs", async (request, response, next) => {
       return;
     }
 
+    // Upsert logic:
+    // ON_CONFLICT bcz these fields were set as UNIQUE
+    // DO UPDATE SET status = EXCLUDED.status, note = EXCLUDED.note
+    // Try to insert a log, if alr exists, dont crash just replace/update with new
     const result = await pool.query(
       `INSERT INTO habit_logs (habit_id, log_date, status, note)
        VALUES ($1, $2, $3, $4)
-       ON CONFLICT (habit_id, log_date)
+       ON CONFLICT (habit_id, log_date) 
        DO UPDATE SET status = EXCLUDED.status, note = EXCLUDED.note
        RETURNING *`,
       [request.params.id, logDate, status, note || null],
@@ -106,8 +123,11 @@ router.post("/:id/logs", async (request, response, next) => {
   }
 });
 
+// GET    /api/habits/:id/logs     get logs for a month
 router.get("/:id/logs", async (request, response, next) => {
   try {
+    // if no month is provided, todayString().slice(0,7) 
+    // 2026-05-31 → 2026-05
     const month = request.query.month ?? todayString().slice(0, 7);
 
     if (!isMonthString(month)) {
@@ -116,6 +136,11 @@ router.get("/:id/logs", async (request, response, next) => {
     }
 
     const range = monthRange(month);
+    /*
+    Only get logs for this habit (WHERE ...)
+      AND date is from month start
+      AND date is before next month start
+    */
     const result = await pool.query<HabitLog>(
       `SELECT *
        FROM habit_logs
@@ -132,6 +157,7 @@ router.get("/:id/logs", async (request, response, next) => {
   }
 });
 
+// DELETE /api/habits/:id/logs     delete one daily log
 router.delete("/:id/logs", async (request, response, next) => {
   try {
     const date = request.query.date;
@@ -153,6 +179,8 @@ router.delete("/:id/logs", async (request, response, next) => {
   }
 });
 
+
+// GET    /api/habits/:id/streak   calculate streak
 router.get("/:id/streak", async (request, response, next) => {
   try {
     const result = await pool.query<HabitLog>(

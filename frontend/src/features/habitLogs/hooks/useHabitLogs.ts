@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useState } from "react";
+import { apiClient } from "../../../config/apiClient";
 import type {
   CreateHabitLogInput,
   HabitLog,
@@ -13,23 +15,68 @@ export type UseHabitLogsResult = {
   deleteLog: (habitId: string, date: string) => Promise<void>;
 };
 
-export function useHabitLogs(): UseHabitLogsResult {
-  // TODO: Fetch monthly logs and save/delete log entries here.
+export function useHabitLogs(habitId?: string, month?: string): UseHabitLogsResult {
+  const [logs, setLogs] = useState<HabitLog[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLogs = useCallback(async (targetHabitId: string, targetMonth: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const data = await apiClient.getLogs(targetHabitId, targetMonth);
+      setLogs(data);
+    } catch (fetchError) {
+      setError(fetchError instanceof Error ? fetchError.message : "Failed to load logs.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const saveLog = useCallback(async (targetHabitId: string, input: CreateHabitLogInput | UpdateHabitLogInput) => {
+    try {
+      setError(null);
+
+      const savedLog = await apiClient.saveLog(targetHabitId, input);
+      setLogs((currentLogs) => {
+        const existingLog = currentLogs.find((log) => log.logDate === savedLog.logDate);
+
+        if (!existingLog) {
+          return [...currentLogs, savedLog];
+        }
+
+        return currentLogs.map((log) => (log.id === savedLog.id ? savedLog : log));
+      });
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Failed to save log.");
+      throw saveError;
+    }
+  }, []);
+
+  const deleteLog = useCallback(async (targetHabitId: string, date: string) => {
+    try {
+      setError(null);
+
+      await apiClient.deleteLog(targetHabitId, date);
+      setLogs((currentLogs) => currentLogs.filter((log) => log.logDate !== date));
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Failed to delete log.");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (habitId && month) {
+      fetchLogs(habitId, month);
+    }
+  }, [fetchLogs, habitId, month]);
+
   return {
-    logs: [],
-    isLoading: false,
-    error: null,
-    fetchLogs: async (habitId, month) => {
-      void habitId;
-      void month;
-    },
-    saveLog: async (habitId, input) => {
-      void habitId;
-      void input;
-    },
-    deleteLog: async (habitId, date) => {
-      void habitId;
-      void date;
-    },
+    logs,
+    isLoading,
+    error,
+    fetchLogs,
+    saveLog,
+    deleteLog,
   };
 }

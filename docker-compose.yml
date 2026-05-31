@@ -1,3 +1,5 @@
+# starts the database
+# Docker -> Postgres container -> DB name, username, password, posrt, runs backend/db/schema.sql on first creation
 services:
   postgres:
     image: postgres:16-alpine
@@ -9,7 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - habit_tracker_data:/var/lib/postgresql/data
-      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+      - ./backend/database/schema.sql:/ docker-entrypoint-initdb.d/001-schema.sql:ro #run on first creation of PostgreSQL container, it auto uses schema.sql to create tables
 
 volumes:
   habit_tracker_data:

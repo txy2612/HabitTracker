@@ -11,20 +11,21 @@ import type {
   UpdateHabitLogInput,
 } from "../shared/types/api.types";// import types used, ONLY type info is imported, no JS code
 
+// If .env has VITE_API_BASE_URL , use it
+// otherwise use "/api"
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 // Backend can stay database-friendly.
 // Frontend can stay React-friendly.
 // apiClient translates between them.
 
-// desc raw backend habit data (NOT THE SAME AS HABIT front-end)
+// 1. define backend data shapes (diff from frontend)
 type HabitRow = {
   id: string;
   name: string;
   created_at: string;
 };
 
-//NOT THE SAME AS HabitLog(front-end)
 type HabitLogRow = {
   id: string;
   habit_id: string;
@@ -35,8 +36,8 @@ type HabitLogRow = {
   updated_at: string;
 };
 
-// mapper = chopper of the food into baby food
-// converts backend data (adult food) -> frontend data (baby food) to be eaten by baby (React)
+// 2. mapper = chopper of the food into baby food
+// converts backend data (adult food) -> frontend format (baby food) to be eaten by baby (React)
 // changes names like created_at -> createdAt
 function mapHabit(row: HabitRow): Habit {
   return {
@@ -46,7 +47,6 @@ function mapHabit(row: HabitRow): Habit {
   };
 }
 
-// convert backend log records into frontend log recrds
 function mapHabitLog(row: HabitLogRow): HabitLog {
   return {
     id: row.id,
@@ -59,8 +59,9 @@ function mapHabitLog(row: HabitLogRow): HabitLog {
   };
 }
 
-// fetch helper
-// prevents fetching evwhere
+// 3. Send HTTP request
+// so dh to repeat fetch(...), error, parse json in :
+// getHabits(), createHabits(), saveLog(), deleteLog(), ...
 async function request<T>(path: string, options: RequestInit = {}) {
 
     //sends HTTP request to backend
@@ -89,7 +90,7 @@ async function request<T>(path: string, options: RequestInit = {}) {
   return response.json() as Promise<T>;
 }
 
-// Centralized collection of all backend API functions
+// 4. Expose all API functions
 export const apiClient = {
   getHabits: async (): Promise<Habit[]> => {
     const habits = await request<HabitRow[]>("/habits");
