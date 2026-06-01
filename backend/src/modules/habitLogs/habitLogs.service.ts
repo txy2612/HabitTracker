@@ -1,5 +1,6 @@
 import type { HabitLog, HabitLogStatus } from "../../shared/types.js";
-import { monthRange } from "../../shared/utils/dates.js";
+import { monthRange, todayString } from "../../shared/utils/dates.js";
+import { HttpError } from "../../shared/httpError.js";
 import { deleteHabitLogByDate, findHabitLogsForRange, upsertHabitLog } from "./habitLogs.repository.js";
 
 export async function saveHabitLog(input: {
@@ -8,6 +9,13 @@ export async function saveHabitLog(input: {
   status: HabitLogStatus;
   note: string | null;
 }): Promise<HabitLog> {
+  if (input.logDate > todayString()) {
+    throw new HttpError(400, "Cannot log future dates.", {
+      title: "Invalid habit log",
+      type: "https://habit-tracker.local/problems/future-log-date",
+    });
+  }
+
   return upsertHabitLog(input);
 }
 
