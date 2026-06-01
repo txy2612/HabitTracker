@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
-import { Button } from "../../../../shared/components/Button";
-import { Input } from "../../../../shared/components/Input";
-import type { CreateHabitInput } from "../../../../shared/types/api.types";
+import { Button } from "../../../shared/components/Button";
+import { Input } from "../../../shared/components/Input";
+import type { CreateHabitInput } from "../../../shared/types/api.types";
 
 export type AddHabitFormProps = {
   onCreated: () => void;

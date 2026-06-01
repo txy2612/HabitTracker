@@ -1,5 +1,5 @@
-import { Modal } from "../../../../shared/components/Modal";
-import type { CreateHabitInput } from "../../../../shared/types/api.types";
+import { Modal } from "../../../shared/components/Modal";
+import type { CreateHabitInput } from "../../../shared/types/api.types";
 import { AddHabitForm } from "./AddHabitForm";
 
 export type AddHabitModalProps = {

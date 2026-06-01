@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { apiClient } from "../../../config/apiClient";
+import { apiClient } from "../../../api/apiClient";
 import type { StreakSummary } from "../../../shared/types/api.types";
 
 

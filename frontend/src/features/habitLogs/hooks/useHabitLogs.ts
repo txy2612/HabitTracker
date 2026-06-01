@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { apiClient } from "../../../config/apiClient";
+import { apiClient } from "../../../api/apiClient";
 import type {
   CreateHabitLogInput,
   HabitLog,

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { CreateHabitInput } from "../../../shared/types/api.types";
 import { Button } from "../../../shared/components/Button";
-import { AddHabitModal } from "../components/AddHabitModal/AddHabitModal";
+import { AddHabitModal } from "../components/AddHabitModal";
 import { HabitList } from "../components/HabitList";
 import { useHabits } from "../hooks/useHabits";
 import { HabitDetailPage } from "./HabitDetailPage";
