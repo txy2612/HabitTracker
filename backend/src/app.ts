@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import habitsRouter from "./routes/habits.js";
+import habitsRouter from "./routes.js";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFoundHandler } from "./middleware/notFoundHandler.js";

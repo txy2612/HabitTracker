@@ -1,4 +1,4 @@
-import type { Habit } from "../../types.js";
+import type { Habit } from "../../shared/types.js";
 import type { HabitBody } from "./habits.schema.js";
 import { deleteHabitById, findHabits, insertHabit, updateHabitName } from "./habits.repository.js";
 

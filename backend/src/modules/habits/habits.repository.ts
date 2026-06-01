@@ -1,6 +1,6 @@
 //database
-import { pool } from "../../db/pool.js";
-import type { Habit } from "../../types.js";
+import { pool } from "../../config/db/pool.js";
+import type { Habit } from "../../shared/types.js";
 
 // Promise = "I promise I'll give you the result/cook burger LATER"
 // with Promise, JS won't freeze while waiting 
