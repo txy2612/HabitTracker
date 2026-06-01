@@ -172,11 +172,11 @@ export function HabitCard({
         )}
         <div className="flex items-start gap-3">
           <button
-            className="text-[10px] font-semibold text-[#9ca3af] transition hover:text-slate-600"
+            className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-600 transition hover:bg-emerald-100 hover:text-emerald-700"
             onClick={() => onViewHabit(habit.id)}
             type="button"
           >
-            view
+            View
           </button>
           <button
             aria-label={`Open menu for ${habit.name}`}

@@ -49,6 +49,48 @@ export function getMonthDates(month: string): string[] {
   });
 }
 
+export type CalendarDate = {
+  date: string;
+  isCurrentMonth: boolean;
+};
+
+export function getMonthCalendarDates(month: string): CalendarDate[] {
+  const monthDates = getMonthDates(month);
+  const firstDate = new Date(`${monthDates[0]}T00:00:00`);
+  const lastDate = new Date(`${monthDates[monthDates.length - 1]}T00:00:00`);
+  const firstDay = firstDate.getDay();
+  const lastDay = lastDate.getDay();
+  const leadingDays = firstDay === 0 ? 6 : firstDay - 1;
+  const trailingDays = lastDay === 0 ? 0 : 7 - lastDay;
+
+  const previousDates = Array.from({ length: leadingDays }, (_, index) => {
+    const date = new Date(firstDate);
+    date.setDate(firstDate.getDate() - leadingDays + index);
+
+    return {
+      date: toDateString(date),
+      isCurrentMonth: false,
+    };
+  });
+
+  const currentDates = monthDates.map((date) => ({
+    date,
+    isCurrentMonth: true,
+  }));
+
+  const nextDates = Array.from({ length: trailingDays }, (_, index) => {
+    const date = new Date(lastDate);
+    date.setDate(lastDate.getDate() + index + 1);
+
+    return {
+      date: toDateString(date),
+      isCurrentMonth: false,
+    };
+  });
+
+  return [...previousDates, ...currentDates, ...nextDates];
+}
+
 export function shiftMonth(month: string, amount: number): string {
   const [year, monthNumber] = month.split("-").map(Number);
   const date = new Date(year, monthNumber - 1 + amount);

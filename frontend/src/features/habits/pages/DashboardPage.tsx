@@ -4,6 +4,7 @@ import { Button } from "../../../shared/components/Button";
 import { AddHabitModal } from "../components/AddHabitModal/AddHabitModal";
 import { HabitList } from "../components/HabitList";
 import { useHabits } from "../hooks/useHabits";
+import { HabitDetailPage } from "./HabitDetailPage";
 
 export function DashboardPage() {
   
@@ -23,9 +24,12 @@ export function DashboardPage() {
   // Modal state
   // onClick={() => setIsAddHabitOpen(true)} -> click opens the modal
   const [isAddHabitOpen, setIsAddHabitOpen] = useState(false);
+  const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null); // selectedHabitId = null -> no habit is selected
+  // these states will be passed to children component at the code at the bottom (child component receive it as props)
+  const selectedHabit = habits.find((habit) => habit.id === selectedHabitId);
 
   function handleViewHabit(habitId: string) {
-    console.log("View habit:", habitId);
+    setSelectedHabitId(habitId);
   }
 
   // pass from input to useHabits
@@ -36,6 +40,10 @@ export function DashboardPage() {
   async function handleHabitCreated() {
     setIsAddHabitOpen(false);
     await fetchHabits(); // reload habits from backend
+  }
+
+  if (selectedHabit) {
+    return <HabitDetailPage habit={selectedHabit} onClose={() => setSelectedHabitId(null)} />;
   }
 
   return (
