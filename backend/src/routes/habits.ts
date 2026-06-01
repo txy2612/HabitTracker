@@ -1,6 +1,7 @@
 // receives requests from apiClient.ts
 import { Router } from "express";
 import { pool } from "../db/pool.js"; // pool = several clinic computers connected to same patient database
+import habitsRouter from "../modules/habits/habits.controller.js";
 import { calculateStreak } from "../services/streaks.js";
 import type { HabitLog, HabitLogStatus } from "../types.js";
 import { isDateString, isMonthString, monthRange, todayString } from "../utils/dates.js";
@@ -9,81 +10,7 @@ import { isDateString, isMonthString, monthRange, todayString } from "../utils/d
 const router = Router();
 const validStatuses = new Set<HabitLogStatus>(["done", "missed", "skipped"]);
 
-// cleans habit name, if name is not a string, return empty string
-function cleanName(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-// POST   /api/habits              create habit
-router.post("/", async (request, response, next) => {
-  try {
-    const name = cleanName(request.body.name);
-
-    if (!name) {
-      response.status(400).json({ message: "Habit name is required." });
-      return;
-    }
-
-    // INSERT INTO habits
-    const result = await pool.query(
-      `INSERT INTO habits (name)
-       VALUES ($1)
-       RETURNING *`,
-      [name],// fills SQL placeholders, instead of directly putting values into SQL string, this prevents SQL injection
-    );
-
-    // result.rows = data returned from POstgreSQL
-    // take it as json and pass back to front-end
-    response.status(201).json(result.rows[0]);
-  } catch (error) {
-    next(error);
-  }
-});
-
-// GET    /api/habits              get all habits
-router.get("/", async (_request, response, next) => {
-  try {
-    const result = await pool.query(
-      `SELECT *
-       FROM habits
-       ORDER BY created_at DESC`,
-    );
-
-    response.json(result.rows);
-  } catch (error) {
-    next(error);
-  }
-});
-
-// PUT    /api/habits/:id          update habit name
-router.put("/:id", async (request, response, next) => {
-  try {
-    const name = cleanName(request.body.name);
-
-    if (!name) {
-      response.status(400).json({ message: "Habit name is required." });
-      return;
-    }
-
-    const result = await pool.query(
-      `UPDATE habits
-       SET name = $1
-       WHERE id = $2
-       RETURNING *`,
-      [name, request.params.id],
-    );
-
-    // if no id with that id exists 
-    if (result.rowCount === 0) {
-      response.status(404).json({ message: "Habit not found." });
-      return;
-    }
-
-    response.json(result.rows[0]);
-  } catch (error) {
-    next(error);
-  }
-});
+router.use("/", habitsRouter);
 
 // POST   /api/habits/:id/logs     save/update one daily log
 router.post("/:id/logs", async (request, response, next) => {
