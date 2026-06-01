@@ -2,7 +2,7 @@
 // MonthlyCalender = UI child component
     // draws the month calendar circles and connecting lines
 import type { HabitLog } from "../../../shared/types/api.types";
-import { getDayNumber, getMonthCalendarDates } from "../../../shared/utils/dateUtils";
+import { getDayNumber, getMonthCalendarDates, todayString } from "../../../shared/utils/dateUtils";
 
 // passed from HabitDetailPage in JSX 
 /*
@@ -21,6 +21,7 @@ export type MonthlyCalendarProps = {
 export function MonthlyCalendar({ month, logs, onSelectDate }: MonthlyCalendarProps) {
   // creates full calender grid
   const calendarDates = getMonthCalendarDates(month);
+  const today = todayString();
 
   // Fast Look up:
   // Instead of searching thru array evtime using logs.find
@@ -34,6 +35,10 @@ export function MonthlyCalendar({ month, logs, onSelectDate }: MonthlyCalendarPr
 
   // -- Line connection logic
   function canConnect(date: string) {
+    if (date > today) {
+      return false;
+    }
+
     const log = getLog(date);// log = LOg or underfined
 
     // if log exist & not skipped -> true && true
@@ -41,6 +46,10 @@ export function MonthlyCalendar({ month, logs, onSelectDate }: MonthlyCalendarPr
   }
 
   function segmentClass(leftDate: string, rightDate: string) {
+    if (leftDate > today || rightDate > today) {
+      return "";
+    }
+
     const leftLog = getLog(leftDate);
     const rightLog = getLog(rightDate);
 
@@ -54,6 +63,10 @@ export function MonthlyCalendar({ month, logs, onSelectDate }: MonthlyCalendarPr
   // -- Circle color logic --
   function circleClass(date: string, isCurrentMonth: boolean) {
     const log = getLog(date);
+
+    if (date > today) {
+      return "cursor-not-allowed bg-slate-50/40 text-slate-300 opacity-60";
+    }
 
     // blurred pale circle
     if (!isCurrentMonth) {
@@ -81,6 +94,7 @@ export function MonthlyCalendar({ month, logs, onSelectDate }: MonthlyCalendarPr
 
       <div className="grid grid-cols-7 gap-y-4">
         {calendarDates.map(({ date, isCurrentMonth }, index) => {
+          const isFutureDate = date > today;
           const previousDate = calendarDates[index - 1]?.date;
           const nextDate = calendarDates[index + 1]?.date;
           const isWeekStart = index % 7 === 0;
@@ -99,11 +113,18 @@ export function MonthlyCalendar({ month, logs, onSelectDate }: MonthlyCalendarPr
                 <span className={`absolute right-0 top-1/2 h-1 w-1/2 -translate-y-1/2 ${rightSegment}`} />
               ) : null}
               <button
-                className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold transition hover:ring-2 hover:ring-emerald-100 ${circleClass(
+                className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold transition ${
+                  isFutureDate ? "" : "hover:ring-2 hover:ring-emerald-100"
+                } ${circleClass(
                   date,
                   isCurrentMonth,
                 )}`}
-                onClick={() => onSelectDate(date)}
+                disabled={isFutureDate}
+                onClick={() => {
+                  if (!isFutureDate) {
+                    onSelectDate(date);
+                  }
+                }}
                 type="button"
               >
                 {getDayNumber(date)}

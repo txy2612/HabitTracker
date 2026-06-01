@@ -10,6 +10,10 @@ export function getTodayIsoDate(): string {
   return toDateString(new Date());
 }
 
+export function todayString(): string {
+  return getTodayIsoDate();
+}
+
 export function getRecentSevenDays(): string[] {
   const today = new Date();
   const dayOfWeek = today.getDay();
@@ -27,7 +31,7 @@ export function getDayNumber(dateString: string): string {
 }
 
 export function currentMonthString(): string {
-  return getTodayIsoDate().slice(0, 7);
+  return todayString().slice(0, 7);
 }
 
 export function formatMonthLabel(month: string): string {
