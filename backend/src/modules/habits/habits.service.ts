@@ -1,5 +1,6 @@
 import type { Habit } from "../../shared/types.js";
 import type { HabitBody } from "./habits.schema.js";
+import { HttpError } from "../../shared/httpError.js";
 import { deleteHabitById, findHabits, insertHabit, updateHabitName } from "./habits.repository.js";
 
 // Why service return Promise?
@@ -19,14 +20,30 @@ export async function listHabits(): Promise<Habit[]> {
 
 export async function renameHabit(
   id: string, input: HabitBody
-): Promise<Habit | null> {
-  return updateHabitName(id, input.name);
+): Promise<Habit> {
+  const habit = await updateHabitName(id, input.name);
+
+  if (!habit) {
+    throw new HttpError(404, "Habit not found.", {
+      title: "Habit not found",
+      type: "https://habit-tracker.local/problems/habit-not-found",
+    });
+  }
+
+  return habit;
 }
 // Repo later: 
 // UPDATE habits 
 // SET name = "" 
 // WHERE id = ""
 
-export async function deleteHabit(id: string): Promise<boolean> {
-  return deleteHabitById(id);
+export async function deleteHabit(id: string): Promise<void> {
+  const wasDeleted = await deleteHabitById(id);
+
+  if (!wasDeleted) {
+    throw new HttpError(404, "Habit not found.", {
+      title: "Habit not found",
+      type: "https://habit-tracker.local/problems/habit-not-found",
+    });
+  }
 }

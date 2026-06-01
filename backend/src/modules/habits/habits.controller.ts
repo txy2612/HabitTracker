@@ -45,11 +45,6 @@ const updateHabit: RequestHandler = async (request, response, next) => {
     const { body, params } = request.validated as UpdateHabitRequest;
     const habit = await renameHabit(params.id, body);
 
-    if (!habit) {
-      response.status(404).json({ message: "Habit not found." });
-      return;
-    }
-
     response.json(habit);
   } catch (error) {
     next(error);
@@ -62,13 +57,7 @@ const deleteHabit: RequestHandler = async (request, response, next) => {
   try {
     const { params } = request.validated as DeleteHabitRequest;
 
-    //
-    const wasDeleted = await deleteHabitService(params.id);
-
-    if (!wasDeleted) {
-      response.status(404).json({ message: "Habit not found." });
-      return;
-    }
+    await deleteHabitService(params.id);
 
     response.status(204).send();
   } catch (error) {
