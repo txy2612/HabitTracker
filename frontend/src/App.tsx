@@ -1,4 +1,4 @@
-import { DashboardPage } from "./features/habits/pages/DashboardPage";
+import { DashboardPage } from "./features/habits/DashboardPage";
 
 function App() {
   return <DashboardPage />;

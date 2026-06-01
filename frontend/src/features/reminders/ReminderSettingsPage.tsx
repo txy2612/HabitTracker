@@ -1,7 +1,7 @@
-import { NotificationPermissionBanner } from "../components/NotificationPermissionBanner";
-import { QuotePreview } from "../components/QuotePreview";
-import { ReminderToggle } from "../components/ReminderToggle";
-import { useReminders } from "../hooks/useReminders";
+import { NotificationPermissionBanner } from "./components/NotificationPermissionBanner";
+import { QuotePreview } from "./components/QuotePreview";
+import { ReminderToggle } from "./components/ReminderToggle";
+import { useReminders } from "./useReminders";
 
 export function ReminderSettingsPage() {
   const reminders = useReminders();

@@ -8,7 +8,7 @@ import {
 } from "../../../shared/utils/dateUtils";
 import { LogNoteEditor } from "../../habitLogs/components/LogNoteEditor";
 import { StreakDotsRow } from "../../habitLogs/components/StreakDotsRow";
-import { useHabitLogs } from "../../habitLogs/hooks/useHabitLogs";
+import { useHabitLogs } from "../../habitLogs/useHabitLogs";
 
 // props AKA what the card receives 
 // parameters passed into a component

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { apiClient } from "../../../api/apiClient";
+import { apiClient } from "../../api/apiClient";
 import type {
   CreateHabitLogInput,
   HabitLog,
   UpdateHabitLogInput,
-} from "../../../shared/types/api.types";
+} from "../../shared/types/api.types";
 
 export type UseHabitLogsResult = {
   logs: HabitLog[];
