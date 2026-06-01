@@ -1,7 +1,7 @@
 import { Router, type RequestHandler } from "express";
 import { validate } from "../../middleware/validate.js";
-import type { HabitLogStatus } from "../../types.js";
-import { isDateString, isMonthString, todayString } from "../../utils/dates.js";
+import type { HabitLogStatus } from "../../shared/types.js";
+import { isDateString, isMonthString, todayString } from "../../shared/utils/dates.js";
 import type { DeleteHabitLogRequest, GetHabitLogsRequest, SaveHabitLogRequest } from "./habitLogs.schema.js";
 import {
   deleteHabitLogRequestSchema,

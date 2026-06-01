@@ -1,5 +1,5 @@
-import { pool } from "../../db/pool.js";
-import type { HabitLog, HabitLogStatus } from "../../types.js";
+import { pool } from "../../config/db/pool.js";
+import type { HabitLog, HabitLogStatus } from "../../shared/types.js";
 
 export async function upsertHabitLog(input: {
   habitId: string;

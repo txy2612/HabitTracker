@@ -1,5 +1,5 @@
-import type { HabitLog, HabitLogStatus } from "../../types.js";
-import { monthRange } from "../../utils/dates.js";
+import type { HabitLog, HabitLogStatus } from "../../shared/types.js";
+import { monthRange } from "../../shared/utils/dates.js";
 import { deleteHabitLogByDate, findHabitLogsForRange, upsertHabitLog } from "./habitLogs.repository.js";
 
 export async function saveHabitLog(input: {
