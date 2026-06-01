@@ -36,3 +36,13 @@ export async function updateHabitName(id: string, name: string): Promise<Habit |
 
   return result.rowCount === 0 ? null : result.rows[0];
 }
+
+export async function deleteHabitById(id: string): Promise<boolean> {
+  const result = await pool.query(
+    `DELETE FROM habits
+     WHERE id = $1`,
+    [id],
+  );
+
+  return (result.rowCount ?? 0) > 0;
+}

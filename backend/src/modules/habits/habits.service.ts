@@ -1,6 +1,6 @@
 import type { Habit } from "../../types.js";
 import type { HabitBody } from "./habits.schema.js";
-import { findHabits, insertHabit, updateHabitName } from "./habits.repository.js";
+import { deleteHabitById, findHabits, insertHabit, updateHabitName } from "./habits.repository.js";
 
 // Why service return Promise?
 // Repo: returns Promise<Habit[]>
@@ -26,3 +26,7 @@ export async function renameHabit(
 // UPDATE habits 
 // SET name = "" 
 // WHERE id = ""
+
+export async function deleteHabit(id: string): Promise<boolean> {
+  return deleteHabitById(id);
+}

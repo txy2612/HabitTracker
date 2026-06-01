@@ -14,8 +14,9 @@ export function DashboardPage() {
     isLoading, // tell if loading/error
     error,
     createHabit,
+    updateHabit,
+    deleteHabit,
     fetchHabits,
-    removeHabitLocal,
     moveHabitLocal,
   } = useHabits();
 
@@ -64,9 +65,10 @@ export function DashboardPage() {
         {!isLoading ? (
           <HabitList
             habits={habits}
-            onDeleteHabit={removeHabitLocal}
+            onDeleteHabit={deleteHabit}
             onMoveHabitDown={(habitId) => moveHabitLocal(habitId, "down")}
             onMoveHabitUp={(habitId) => moveHabitLocal(habitId, "up")}
+            onUpdateHabit={(habitId, name) => updateHabit(habitId, { name })}
             onViewHabit={handleViewHabit}
           />
         ) : null}

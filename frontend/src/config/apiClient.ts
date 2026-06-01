@@ -115,6 +115,16 @@ export const apiClient = {
     return mapHabit(habit);
   },
 
+  // function deleteHabit
+  // receives habitId, async means return Promise
+  deleteHabit: async (habitId: string): Promise<void> => {
+
+    // URL construction
+    return request<void>(`/habits/${habitId}`, {
+      method: "DELETE",
+    });
+  },
+
   getLogs: async (habitId: string, month: string): Promise<HabitLog[]> => {
     const logs = await request<HabitLogRow[]>(`/habits/${habitId}/logs?month=${month}`);
     return logs.map(mapHabitLog);

@@ -6,14 +6,16 @@ import type {
   UpdateHabitInput,
 } from "../../../shared/types/api.types";
 
+// desc what useHabits() returns
+// if someone call useHabits(), they will receive these
 export type UseHabitsResult = {
-  habits: Habit[];
+  habits: Habit[];// array of habits
   isLoading: boolean;
   error: string | null;
-  fetchHabits: () => Promise<void>;
+  fetchHabits: () => Promise<void>; // () = takes no arguments ; Promise<void> = finishes later & returns ntg
   createHabit: (input: CreateHabitInput) => Promise<void>;
   updateHabit: (habitId: string, input: UpdateHabitInput) => Promise<void>;
-  removeHabitLocal: (habitId: string) => void;
+  deleteHabit: (habitId: string) => Promise<void>;
   moveHabitLocal: (habitId: string, direction: "up" | "down") => void;
 };
 
@@ -74,9 +76,16 @@ export function useHabits(): UseHabitsResult {
     }
   }, []);
 
-  const removeHabitLocal = useCallback((habitId: string) => {
-    // TODO: Replace this local-only prototype with a delete habit API call when the backend supports it.
-    setHabits((currentHabits) => currentHabits.filter((habit) => habit.id !== habitId));
+  const deleteHabit = useCallback(async (habitId: string) => {
+    try {
+      setError(null);
+
+      await apiClient.deleteHabit(habitId);
+      setHabits((currentHabits) => currentHabits.filter((habit) => habit.id !== habitId));
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Failed to delete habit.");
+      throw deleteError;
+    }
   }, []);
 
   // Purpose: reorders habits (move up/down in array)
@@ -116,7 +125,7 @@ export function useHabits(): UseHabitsResult {
     fetchHabits,
     createHabit,
     updateHabit,
-    removeHabitLocal,
+    deleteHabit,
     moveHabitLocal,
   };
 }

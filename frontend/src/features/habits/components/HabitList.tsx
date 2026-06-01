@@ -7,7 +7,8 @@ import { HabitCard } from "./HabitCard";
 export type HabitListProps = {
   habits: Habit[];// array of Habit objects
   onViewHabit: (habitId: string) => void;// function (receives parameter) => returns ntg
-  onDeleteHabit: (habitId: string) => void;
+  onDeleteHabit: (habitId: string) => Promise<void>;
+  onUpdateHabit: (habitId: string, name: string) => Promise<void>;
   onMoveHabitUp: (habitId: string) => void;
   onMoveHabitDown: (habitId: string) => void;
 };
@@ -20,6 +21,7 @@ export function HabitList({
   habits,
   onViewHabit,
   onDeleteHabit,
+  onUpdateHabit,
   onMoveHabitUp,
   onMoveHabitDown,
 }: HabitListProps) {// destructuring
@@ -44,6 +46,7 @@ export function HabitList({
           onDeleteHabit={onDeleteHabit}
           onMoveHabitDown={onMoveHabitDown}
           onMoveHabitUp={onMoveHabitUp}
+          onUpdateHabit={onUpdateHabit}
           onViewHabit={onViewHabit}// 'view'on habit card
         />
       ))}

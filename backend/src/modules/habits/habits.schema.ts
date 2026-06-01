@@ -20,6 +20,13 @@ export const updateHabitRequestSchema = createHabitRequestSchema.extend({
   }),
 });
 
+export const deleteHabitRequestSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, "Habit id is required."),
+  }),
+});
+
 export type HabitBody = z.infer<typeof habitBodySchema>;
 export type CreateHabitRequest = z.infer<typeof createHabitRequestSchema>;
 export type UpdateHabitRequest = z.infer<typeof updateHabitRequestSchema>;
+export type DeleteHabitRequest = z.infer<typeof deleteHabitRequestSchema>;
