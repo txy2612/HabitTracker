@@ -5,6 +5,7 @@ import {
   insertReminderLog,
   type EmailReminderCandidate,
 } from "./reminders.repository.js";
+import { isEmailConfigured, sendHabitReminderEmail } from "./email.service.js";
 
 
 export type ReminderClock = {
@@ -14,6 +15,20 @@ export type ReminderClock = {
 
 export type EmailReminder = EmailReminderCandidate & {
   reminder_time: string;
+};
+
+export type ReminderProcessingFailure = {
+  habitId: string;
+  habitName: string;
+  message: string;
+};
+
+export type ReminderProcessingSummary = {
+  checked: number;
+  sent: number;
+  skippedAlreadySent: number;
+  skippedEmailNotConfigured: boolean;
+  failures: ReminderProcessingFailure[];
 };
 
 
@@ -69,4 +84,61 @@ export async function recordReminderSent(input: {
   channel: ReminderChannel;
 }): Promise<ReminderLog | null> {
   return insertReminderLog(input);
+}
+
+export async function processDueEmailReminders(now = new Date()): Promise<ReminderProcessingSummary> {
+  const summary: ReminderProcessingSummary = {
+    checked: 0,
+    sent: 0,
+    skippedAlreadySent: 0,
+    skippedEmailNotConfigured: false,
+    failures: [],
+  };
+
+  if (!isEmailConfigured()) {
+    summary.skippedEmailNotConfigured = true;
+    return summary;
+  }
+
+  const dueReminders = await getDueEmailReminders(now);
+  summary.checked = dueReminders.length;
+
+  for (const reminder of dueReminders) {
+    const clock = getReminderClock(reminder.timezone, now);
+    const alreadySent = await wasReminderSent({
+      habitId: reminder.habit_id,
+      sentForDate: clock.date,
+      channel: "email",
+    });
+
+    if (alreadySent) {
+      summary.skippedAlreadySent += 1;
+      continue;
+    }
+
+    try {
+      await sendHabitReminderEmail({
+        to: reminder.reminder_email,
+        habitName: reminder.habit_name,
+        reminderTime: reminder.reminder_time.slice(0, 5),
+        timezone: reminder.timezone,
+      });
+
+      await recordReminderSent({
+        habitId: reminder.habit_id,
+        sentForDate: clock.date,
+        channel: "email",
+      });
+
+      summary.sent += 1;
+    } catch (error) {
+      summary.failures.push({
+        habitId: reminder.habit_id,
+        habitName: reminder.habit_name,
+        message: error instanceof Error ? error.message : "Failed to send reminder email.",
+      });
+    }
+  }
+
+  return summary;
 }
