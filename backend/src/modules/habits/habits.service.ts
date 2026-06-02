@@ -61,7 +61,7 @@ export async function saveHabitReminders(
   input: UpdateHabitRemindersRequest["body"],
 ): Promise<Habit[]> {// Promise to return an array of habits
 
-  // Dentist -> Clinic computer : updateReminderSettings
+  // Dentist -> Clinic computer : updateReminderSettings``
   const result = await updateHabitRemindersRepository(input);
 
   if (result.missingHabitIds.length > 0) {

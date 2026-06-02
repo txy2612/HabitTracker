@@ -12,7 +12,14 @@ export async function upsertHabitLog(input: {
      VALUES ($1, $2, $3, $4)
      ON CONFLICT (habit_id, log_date)
      DO UPDATE SET status = EXCLUDED.status, note = EXCLUDED.note
-     RETURNING *`,
+     RETURNING
+       id,
+       habit_id,
+       log_date::text AS log_date,
+       status,
+       note,
+       created_at,
+       updated_at`,
     [input.habitId, input.logDate, input.status, input.note],
   );
 
@@ -25,7 +32,14 @@ export async function findHabitLogsForRange(input: {
   end: string;
 }): Promise<HabitLog[]> {
   const result = await pool.query<HabitLog>(
-    `SELECT *
+    `SELECT
+       id,
+       habit_id,
+       log_date::text AS log_date,
+       status,
+       note,
+       created_at,
+       updated_at
      FROM habit_logs
      WHERE habit_id = $1
        AND log_date >= $2

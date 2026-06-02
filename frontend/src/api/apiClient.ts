@@ -52,6 +52,19 @@ function mapReminderTime(reminderTime: string | null): string | null {
   return reminderTime ? reminderTime.slice(0, 5) : null;
 }
 
+function mapDateOnly(date: string): string {
+  if (!date.includes("T")) {
+    return date;
+  }
+
+  const parsedDate = new Date(date);
+  const year = parsedDate.getFullYear();
+  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const day = String(parsedDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 function mapHabit(row: HabitRow): Habit {
   return {
     id: row.id,
@@ -66,7 +79,7 @@ function mapHabitLog(row: HabitLogRow): HabitLog {
   return {
     id: row.id,
     habitId: row.habit_id,
-    logDate: row.log_date,
+    logDate: mapDateOnly(row.log_date),
     status: row.status,
     note: row.note,
     createdAt: row.created_at,

@@ -5,12 +5,16 @@ const datePattern = /^\d{4}-\d{2}-\d{2}$/;// 2024-01-01 ✅ 31-05-2026 ❌ 2026/
 // $ = end
 const monthPattern = /^\d{4}-\d{2}$/;
 
-// UTC Date =  2026-05-31T12:00:00.000Z
-// -> to String "2026-05-31T12:00:00.000Z"
-// -> get only first 10 char : YYYY-MM-DD
-// works w days -> not timestamps -> easier
+function toDateString(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export function todayString() {
-  return new Date().toISOString().slice(0, 10);
+  return toDateString(new Date());
 }
 
 // type guard for date 
