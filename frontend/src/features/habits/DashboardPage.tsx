@@ -66,7 +66,7 @@ export function DashboardPage() {
             {/* User clicks bell -> setIsReminderOpen(true) -> React rerenders dahsboard  */}
             <Button
               aria-label="Open habit reminders"
-              className="min-h-10 w-10 rounded-full px-0 text-slate-600"
+              className="h-12 min-h-12 w-12 rounded-full p-0 text-slate-700"
               onClick={() => setIsReminderCenterOpen(true)}
               title="Reminders"
               type="button"
@@ -74,7 +74,7 @@ export function DashboardPage() {
             >
               <svg aria-hidden="true" className="h-6 w-6" fill="none" viewBox="0 0 24 24">
                 <path
-                  d="M15 17H9m9-2V11a6 6 0 0 0-12 0v4l-2 2h20l-2-2Zm-6 2a3 3 0 0 1-6 0"
+                  d="M15 17H9M18 8A6 6 0 0 0 6 8c0 7-3 7-3 9h18c0-2-3-2-3-9ZM13.73 21a2 2 0 0 1-3.46 0"
                   stroke="currentColor"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -82,7 +82,7 @@ export function DashboardPage() {
                 />
               </svg>
             </Button>
-            <Button className="min-h-9 rounded-full px-4" onClick={() => setIsAddHabitOpen(true)} type="button">
+            <Button className="h-12 min-h-12 rounded-full px-5" onClick={() => setIsAddHabitOpen(true)} type="button">
               + Add Habit
             </Button>
           </div>
