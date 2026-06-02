@@ -1,12 +1,27 @@
 import { Router, type RequestHandler } from "express";
 import { validate } from "../../middleware/validate.js";
-import type { CreateHabitRequest, DeleteHabitRequest, UpdateHabitRequest } from "./habits.schema.js";// type = exist only for typescipt to check code. after compilation ts remove them 
-import { createHabitRequestSchema, deleteHabitRequestSchema, updateHabitRequestSchema } from "./habits.schema.js";// real values
+import type {
+  CreateHabitRequest,
+  DeleteHabitRequest,
+  UpdateHabitRemindersRequest,
+  UpdateHabitRequest,
+} from "./habits.schema.js";
+// type = exist only for typescipt to check code
+// REMOVED after compilation
+// js do NOT have this (that checks the program)
+import {
+  createHabitRequestSchema,
+  deleteHabitRequestSchema,
+  updateHabitRemindersRequestSchema,
+  updateHabitRequestSchema,
+} from "./habits.schema.js";// real values
+// import for runtime validation
 import {
   createHabit as createHabitService,
   deleteHabit as deleteHabitService,
   listHabits,
   renameHabit,
+  saveHabitReminders,
 } from "./habits.service.js";
 
 const router = Router();
@@ -21,7 +36,7 @@ const router = Router();
 
 const createHabit: RequestHandler = async (request, response, next) => {
   try {
-    const { body } = request.validated as CreateHabitRequest;
+    const { body } = request.validated as CreateHabitRequest;// type is used here
     const habit = await createHabitService(body);
 
     response.status(201).json(habit);
@@ -51,8 +66,23 @@ const updateHabit: RequestHandler = async (request, response, next) => {
   }
 };
 
-// requestHandler = Express Typescript type that helps autocomplete when typing
-// know request = Express request, response = Express response, next = Express NextFunction
+
+//1. : RequestHandler = this function is an Express rute handler
+    // so TS knows request, response, next are Express objects and can autocomplete them
+//2. request = what user sends, response = what we send back, next = pass error to middleware
+const updateHabitReminders: RequestHandler = async (request, response, next) => {
+  try {
+    // request.validated comes from middleware, mdw = door
+    // controller = receptionist
+    const { body } = request.validated as UpdateHabitRemindersRequest;
+    const habits = await saveHabitReminders(body);
+
+    response.json(habits);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const deleteHabit: RequestHandler = async (request, response, next) => {
   try {
     const { params } = request.validated as DeleteHabitRequest;
@@ -67,6 +97,8 @@ const deleteHabit: RequestHandler = async (request, response, next) => {
 
 router.post("/", validate(createHabitRequestSchema), createHabit);
 router.get("/", getHabits);
+router.patch("/reminders", validate(updateHabitRemindersRequestSchema), updateHabitReminders); 
+// patch = update part of existing data (Change reminder time only)
 router.put("/:id", validate(updateHabitRequestSchema), updateHabit);
 router.delete("/:id", validate(deleteHabitRequestSchema), deleteHabit);
 

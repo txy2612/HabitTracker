@@ -1,7 +1,13 @@
 import type { Habit } from "../../shared/types.js";
-import type { HabitBody } from "./habits.schema.js";
+import type { HabitBody, UpdateHabitRemindersRequest } from "./habits.schema.js";
 import { HttpError } from "../../shared/httpError.js";
-import { deleteHabitById, findHabits, insertHabit, updateHabitName } from "./habits.repository.js";
+import {
+  deleteHabitById,
+  findHabits,
+  insertHabit,
+  updateHabitName,
+  updateHabitReminders as updateHabitRemindersRepository,
+} from "./habits.repository.js";
 
 // Why service return Promise?
 // Repo: returns Promise<Habit[]>
@@ -46,4 +52,24 @@ export async function deleteHabit(id: string): Promise<void> {
       type: "https://habit-tracker.local/problems/habit-not-found",
     });
   }
+}
+
+// export to controller
+// async = wait for db
+// take body section (data) of request 
+export async function saveHabitReminders(
+  input: UpdateHabitRemindersRequest["body"],
+): Promise<Habit[]> {// Promise to return an array of habits
+
+  // Dentist -> Clinic computer : updateReminderSettings
+  const result = await updateHabitRemindersRepository(input);
+
+  if (result.missingHabitIds.length > 0) {
+    throw new HttpError(404, "One or more habits were not found.", {
+      title: "Habit not found",
+      type: "https://habit-tracker.local/problems/habit-not-found",
+    });
+  }
+
+  return result.habits;
 }
