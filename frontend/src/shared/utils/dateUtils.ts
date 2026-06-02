@@ -17,11 +17,11 @@ export function todayString(): string {
 export function getRecentSevenDays(): string[] {
   const today = new Date();
   const dayOfWeek = today.getDay();
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const sundayOffset = -dayOfWeek;
 
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);
-    date.setDate(today.getDate() + mondayOffset + index);
+    date.setDate(today.getDate() + sundayOffset + index);
     return toDateString(date);
   });
 }
@@ -64,8 +64,8 @@ export function getMonthCalendarDates(month: string): CalendarDate[] {
   const lastDate = new Date(`${monthDates[monthDates.length - 1]}T00:00:00`);
   const firstDay = firstDate.getDay();
   const lastDay = lastDate.getDay();
-  const leadingDays = firstDay === 0 ? 6 : firstDay - 1;
-  const trailingDays = lastDay === 0 ? 0 : 7 - lastDay;
+  const leadingDays = firstDay;
+  const trailingDays = 6 - lastDay;
 
   const previousDates = Array.from({ length: leadingDays }, (_, index) => {
     const date = new Date(firstDate);

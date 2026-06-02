@@ -87,7 +87,7 @@ export function MonthlyCalendar({ month, logs, onSelectDate }: MonthlyCalendarPr
   return (
     <section className="grid gap-4">
       <div className="grid grid-cols-7 text-center text-sm font-medium text-slate-500">
-        {["M", "T", "W", "T", "F", "S", "S"].map((day, index) => (
+        {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
           <span key={`${day}-${index}`}>{day}</span>
         ))}
       </div>

@@ -70,7 +70,7 @@ export function DashboardPage() {
       <div className="mx-auto w-full max-w-[430px]">
         <header className="mb-5 flex items-center justify-between">
           <h1 className="text-xl font-semibold text-slate-950">Habits</h1>
-          <div className="flex items-center gap-3">
+          <div className="flex h-12 items-center gap-3">
             {/* User clicks bell -> setIsReminderOpen(true) -> React rerenders dahsboard  */}
             <Button
               aria-label="Open habit reminders"

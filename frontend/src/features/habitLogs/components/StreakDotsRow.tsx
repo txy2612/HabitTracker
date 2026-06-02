@@ -1,7 +1,7 @@
 import type { HabitLog } from "../../../shared/types/api.types";
 import { getDayNumber, todayString } from "../../../shared/utils/dateUtils";
 
-const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export type StreakDotsRowProps = {
   dates: string[];

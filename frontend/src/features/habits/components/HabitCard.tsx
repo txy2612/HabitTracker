@@ -135,8 +135,8 @@ export function HabitCard({
   }
 
   return (
-    <article className="relative rounded-[22px] bg-white px-5 py-5 shadow-[0_2px_10px_rgba(15,23,42,0.12)]">
-      <div className="mb-7 flex items-start justify-between gap-4">
+    <article className="relative rounded-[22px] bg-white px-5 py-6 shadow-[0_2px_10px_rgba(15,23,42,0.12)]">
+      <div className="mb-8 flex items-start justify-between gap-4">
         {isEditingName ? (
           <form className="grid flex-1 gap-2" onSubmit={handleUpdateName}>
             <input
