@@ -19,7 +19,17 @@ export async function findUserSettings(): Promise<UserSettings> {
      WHERE id = 1`,
   );
 
-  return result.rows[0];
+  if (result.rows[0]) {
+    return result.rows[0];
+  }
+
+  const insertResult = await pool.query<UserSettings>(
+    `INSERT INTO user_settings (id)
+     VALUES (1)
+     RETURNING *`,
+  );
+
+  return insertResult.rows[0];
 }
 
 // Find all habits that could need reminders

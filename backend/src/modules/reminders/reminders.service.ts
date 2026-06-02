@@ -2,6 +2,7 @@ import type { ReminderChannel, ReminderLog } from "../../shared/types.js";
 import {
   findEmailReminderCandidates,
   findReminderLog,
+  findUserSettings,
   insertReminderLog,
   type EmailReminderCandidate,
 } from "./reminders.repository.js";
@@ -31,6 +32,14 @@ export type ReminderProcessingSummary = {
   failures: ReminderProcessingFailure[];
 };
 
+export async function getReminderSettings() {
+  const settings = await findUserSettings();
+
+  return {
+    reminderEmail: settings.reminder_email,
+    timezone: settings.timezone,
+  };
+}
 
 // Purpose: convert NOW into user's local timezone
 export function getReminderClock(timezone: string, now = new Date()): ReminderClock {

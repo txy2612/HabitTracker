@@ -27,6 +27,11 @@ export type SaveHabitRemindersInput = {
   reminders: HabitReminderInput[];
 };
 
+export type HabitReminderSettings = {
+  reminderEmail: string | null;
+  timezone: string;
+};
+
 export type HabitLogStatus = "done" | "missed" | "skipped";
 
 export type HabitLog = {

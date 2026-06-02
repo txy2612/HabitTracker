@@ -6,6 +6,7 @@ import type {
   Habit,
   HabitLog,
   HabitLogStatus,
+  HabitReminderSettings,
   SaveHabitRemindersInput,
   StreakSummary,
   UpdateHabitInput,
@@ -37,6 +38,11 @@ type HabitLogRow = {
   note: string | null;
   created_at: string;
   updated_at: string;
+};
+
+type HabitReminderSettingsRow = {
+  reminderEmail: string | null;
+  timezone: string;
 };
 
 // 2. mapper = chopper of the food into baby food
@@ -132,6 +138,10 @@ export const apiClient = {
     });
 
     return habits.map(mapHabit);
+  },
+
+  getHabitReminderSettings: async (): Promise<HabitReminderSettings> => {
+    return request<HabitReminderSettingsRow>("/habits/reminders");
   },
 
   // function deleteHabit

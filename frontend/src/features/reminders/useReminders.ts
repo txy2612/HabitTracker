@@ -77,6 +77,30 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
     setDrafts(createDrafts(habits));
   }, [habits]);
 
+  useEffect(() => {
+    let isActive = true;
+
+    async function fetchReminderSettings() {
+      try {
+        const settings = await apiClient.getHabitReminderSettings();
+
+        if (isActive) {
+          const savedEmail = settings.reminderEmail ?? "";
+          setEmail(savedEmail);
+          window.localStorage.setItem(REMINDER_EMAIL_STORAGE_KEY, savedEmail);
+        }
+      } catch {
+        // Keep the localStorage fallback if backend settings cannot load.
+      }
+    }
+
+    void fetchReminderSettings();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
   function setReminderEnabled(habitId: string, isEnabled: boolean) {
     setSavedMessage(null);
     // React detects changes by comparing OLD w NEW

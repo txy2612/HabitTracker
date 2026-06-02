@@ -23,6 +23,7 @@ import {
   renameHabit,
   saveHabitReminders,
 } from "./habits.service.js";
+import { getReminderSettings } from "../reminders/reminders.service.js";
 
 const router = Router();
 
@@ -50,6 +51,16 @@ const getHabits: RequestHandler = async (_request, response, next) => {
     const habits = await listHabits();
 
     response.json(habits);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getHabitReminderSettings: RequestHandler = async (_request, response, next) => {
+  try {
+    const settings = await getReminderSettings();
+
+    response.json(settings);
   } catch (error) {
     next(error);
   }
@@ -97,6 +108,7 @@ const deleteHabit: RequestHandler = async (request, response, next) => {
 
 router.post("/", validate(createHabitRequestSchema), createHabit);
 router.get("/", getHabits);
+router.get("/reminders", getHabitReminderSettings);
 router.patch("/reminders", validate(updateHabitRemindersRequestSchema), updateHabitReminders); 
 // patch = update part of existing data (Change reminder time only)
 router.put("/:id", validate(updateHabitRequestSchema), updateHabit);
