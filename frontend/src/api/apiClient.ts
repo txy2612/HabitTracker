@@ -1,11 +1,12 @@
 // frontend gateway to backend
-
+// frontend use apiClient(helper) to talk to backend
 import type {
   CreateHabitInput,
   CreateHabitLogInput,
   Habit,
   HabitLog,
   HabitLogStatus,
+  SaveHabitRemindersInput,
   StreakSummary,
   UpdateHabitInput,
   UpdateHabitLogInput,
@@ -23,6 +24,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 type HabitRow = {
   id: string;
   name: string;
+  reminder_enabled: boolean;
+  reminder_time: string | null;
   created_at: string;
 };
 
@@ -39,10 +42,16 @@ type HabitLogRow = {
 // 2. mapper = chopper of the food into baby food
 // converts backend data (adult food) -> frontend format (baby food) to be eaten by baby (React)
 // changes names like created_at -> createdAt
+function mapReminderTime(reminderTime: string | null): string | null {
+  return reminderTime ? reminderTime.slice(0, 5) : null;
+}
+
 function mapHabit(row: HabitRow): Habit {
   return {
     id: row.id,
     name: row.name,
+    reminderEnabled: row.reminder_enabled,
+    reminderTime: mapReminderTime(row.reminder_time),
     createdAt: row.created_at,
   };
 }
@@ -60,8 +69,8 @@ function mapHabitLog(row: HabitLogRow): HabitLog {
 }
 
 // 3. Send HTTP request
-// so dh to repeat fetch(...), error, parse json in :
-// getHabits(), createHabits(), saveLog(), deleteLog(), ...
+// so dh to repeat fetch(...), error, parse json
+// knows how to deliver food
 async function request<T>(path: string, options: RequestInit = {}) {
 
     //sends HTTP request to backend
@@ -91,6 +100,7 @@ async function request<T>(path: string, options: RequestInit = {}) {
 }
 
 // 4. Expose all API functions
+// Menu of foods customer can order
 export const apiClient = {
   getHabits: async (): Promise<Habit[]> => {
     const habits = await request<HabitRow[]>("/habits");
@@ -113,6 +123,15 @@ export const apiClient = {
     });
 
     return mapHabit(habit);
+  },
+
+  saveHabitReminders: async (input: SaveHabitRemindersInput): Promise<Habit[]> => {
+    const habits = await request<HabitRow[]>("/habits/reminders", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    });
+
+    return habits.map(mapHabit);
   },
 
   // function deleteHabit

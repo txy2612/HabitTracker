@@ -1,6 +1,11 @@
+// define frontend <-> backend contracts
+// frontend promise to send data in this shape
+// backend promises to send data in this shape
 export type Habit = {
   id: string;
   name: string;
+  reminderEnabled: boolean;
+  reminderTime: string | null;
   createdAt: string;
 };
 
@@ -9,6 +14,18 @@ export type CreateHabitInput = {
 };
 
 export type UpdateHabitInput = Partial<CreateHabitInput>;
+
+export type HabitReminderInput = {
+  id: string;
+  reminderEnabled: boolean;
+  reminderTime: string | null;
+};
+
+export type SaveHabitRemindersInput = {
+  reminderEmail?: string | null;
+  timezone: string;
+  reminders: HabitReminderInput[];
+};
 
 export type HabitLogStatus = "done" | "missed" | "skipped";
 
