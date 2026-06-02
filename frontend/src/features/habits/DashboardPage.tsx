@@ -5,6 +5,7 @@ import { AddHabitModal } from "./components/AddHabitModal";
 import { HabitList } from "./components/HabitList";
 import { useHabits } from "./useHabits";
 import { HabitDetailPage } from "./HabitDetailPage";
+import { ReminderSettingsPage } from "../reminders/ReminderSettingsPage";
 
 export function DashboardPage() {
   
@@ -24,8 +25,13 @@ export function DashboardPage() {
   // Modal state
   // onClick={() => setIsAddHabitOpen(true)} -> click opens the modal
   const [isAddHabitOpen, setIsAddHabitOpen] = useState(false);
-  const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null); // selectedHabitId = null -> no habit is selected
+
+  // false -> dashboard showing, true -> reminder page showing
+  const [isReminderCenterOpen, setIsReminderCenterOpen] = useState(false);
+
+  // selectedHabitId = null -> no habit is selected
   // these states will be passed to children component at the code at the bottom (child component receive it as props)
+  const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null); 
   const selectedHabit = habits.find((habit) => habit.id === selectedHabitId);
 
   function handleViewHabit(habitId: string) {
@@ -46,14 +52,40 @@ export function DashboardPage() {
     return <HabitDetailPage habit={selectedHabit} onClose={() => setSelectedHabitId(null)} />;
   }
 
+  // switch page when Reminder Center is opne
+  if (isReminderCenterOpen) {
+    return <ReminderSettingsPage onClose={() => setIsReminderCenterOpen(false)} />;
+  }
+
   return (
     <main className="min-h-screen bg-[#fafafa] px-5 py-7 text-slate-950">
       <div className="mx-auto w-full max-w-[430px]">
         <header className="mb-5 flex items-center justify-between">
           <h1 className="text-xl font-semibold text-slate-950">Habits</h1>
-          <Button className="min-h-9 rounded-full px-4" onClick={() => setIsAddHabitOpen(true)} type="button">
-            + Add Habit
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* User clicks bell -> setIsReminderOpen(true) -> React rerenders dahsboard  */}
+            <Button
+              aria-label="Open habit reminders"
+              className="min-h-10 w-10 rounded-full px-0 text-slate-600"
+              onClick={() => setIsReminderCenterOpen(true)}
+              title="Reminders"
+              type="button"
+              variant="ghost"
+            >
+              <svg aria-hidden="true" className="h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path
+                  d="M15 17H9m9-2V11a6 6 0 0 0-12 0v4l-2 2h20l-2-2Zm-6 2a3 3 0 0 1-6 0"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                />
+              </svg>
+            </Button>
+            <Button className="min-h-9 rounded-full px-4" onClick={() => setIsAddHabitOpen(true)} type="button">
+              + Add Habit
+            </Button>
+          </div>
         </header>
 
         {/* show loading text if is loading */}
@@ -81,6 +113,7 @@ export function DashboardPage() {
           />
         ) : null}
 
+        {/* Parent pass Prop VALUES to child */}
         <AddHabitModal
           isOpen={isAddHabitOpen}
           onClose={() => setIsAddHabitOpen(false)}

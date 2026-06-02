@@ -3,7 +3,7 @@ import type { Habit } from "../../../shared/types/api.types";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import { HabitCard } from "./HabitCard";
 
-// define what data/functions HabitList expect to receive
+//1. props to <expects> to receive from parent components
 export type HabitListProps = {
   habits: Habit[];// array of Habit objects
   onViewHabit: (habitId: string) => void;// function (receives parameter) => returns ntg
@@ -13,6 +13,7 @@ export type HabitListProps = {
   onMoveHabitDown: (habitId: string) => void;
 };
 
+// 2. receive props
 // destructuring:
 // equi to :
   // export function HabitList(props: HabitListProps)
@@ -34,7 +35,7 @@ export function HabitList({
     );
   }
 
-  // HabitList passes HabitCard to HabitCard
+  // 3. use props
   return (
     <section className="grid gap-3">
       {habits.map((habit, index) => (
