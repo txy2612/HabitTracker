@@ -1,66 +1,88 @@
 # Habit Tracker
 
-A React, TypeScript, Tailwind CSS, Express, TypeScript, and PostgreSQL habit/streak tracker.
+A full-stack habit tracking application built with React, TypeScript, Express, and PostgreSQL.
 
-## What Is Included
+## Features
 
-- Fast habit creation.
-- Daily habit logging.
-- Monthly progress view.
-- Current and highest streak summaries.
-- 8am browser notification prompt.
-- PostgreSQL schema for `habits` and `habit_logs`.
-- API routes for habits, logs, and streaks.
+* Create and manage habits
+* Daily habit logging
+* Monthly progress view
+* Current and highest streak tracking
+* Personalized email reminders
+
+## Tech Stack
+
+### Frontend
+
+* React
+* TypeScript
+* Tailwind CSS
+
+### Backend
+
+* Express
+* TypeScript
+* PostgreSQL
+
+## Architecture
+
+### Backend
+
+* Controller – request handling
+* Service – business logic
+* Repository – database access
+* Schema – validation
+
+### Frontend
+
+* Pages
+* Components
+* Hooks
+* Shared TypeScript contracts
 
 ## Setup
 
-Install dependencies:
-
 ```bash
+# Frontend
 cd frontend
 npm install
 
+# Backend
 cd ../backend
 npm install
 ```
 
-Create the backend environment file:
+Create environment file:
 
 ```bash
 cd backend
 copy .env.example .env
 ```
 
-Start PostgreSQL with Docker if Docker is available:
+Start PostgreSQL:
 
 ```bash
 docker compose up -d
 ```
 
-If you use your own PostgreSQL database, run `backend/database/schema.sql` and update `backend/.env`.
-
-Start the API:
+Start backend:
 
 ```bash
 cd backend
 npm run dev
 ```
 
-Start the frontend:
+Start frontend:
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173`.
+Open:
 
-## API Routes
+```text
+http://127.0.0.1:5173
+```
 
-- `POST /api/habits`
-- `GET /api/habits`
-- `PUT /api/habits/:id`
-- `POST /api/habits/:id/logs`
-- `GET /api/habits/:id/logs?month=2026-05`
-- `DELETE /api/habits/:id/logs?date=2026-05-30`
-- `GET /api/habits/:id/streak`
+
