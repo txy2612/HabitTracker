@@ -1,6 +1,8 @@
 export type Habit = {
   id: string;
   name: string;
+  reminder_enabled: boolean;
+  reminder_time: string | null;
   created_at: string;
 };
 
@@ -14,6 +16,23 @@ export type HabitLog = {
   note: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type UserSettings = {
+  id: number;
+  reminder_email: string | null;
+  timezone: string;
+  updated_at: string;
+};
+
+export type ReminderChannel = "email" | "browser" | "push";
+
+export type ReminderLog = {
+  id: string;
+  habit_id: string;
+  sent_for_date: string;
+  channel: ReminderChannel;
+  sent_at: string;
 };
 
 // calculated result

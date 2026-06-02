@@ -1,4 +1,4 @@
-//database
+//database query
 import { pool } from "../../config/db/pool.js";
 import type { Habit } from "../../shared/types.js";
 
