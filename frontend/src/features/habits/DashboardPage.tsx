@@ -54,7 +54,15 @@ export function DashboardPage() {
 
   // switch page when Reminder Center is opne
   if (isReminderCenterOpen) {
-    return <ReminderSettingsPage onClose={() => setIsReminderCenterOpen(false)} />;
+    return (
+      <ReminderSettingsPage
+        error={error}
+        habits={habits}
+        isLoading={isLoading}
+        onClose={() => setIsReminderCenterOpen(false)}
+        onSaved={fetchHabits}
+      />
+    );
   }
 
   return (
@@ -72,6 +80,8 @@ export function DashboardPage() {
               type="button"
               variant="ghost"
             >
+              {/* svg = drawing instead of picture file */}
+              {/* ucide = collections of svg code */}
               <svg aria-hidden="true" className="h-6 w-6" fill="none" viewBox="0 0 24 24">
                 <path
                   d="M15 17H9M18 8A6 6 0 0 0 6 8c0 7-3 7-3 9h18c0-2-3-2-3-9ZM13.73 21a2 2 0 0 1-3.46 0"
