@@ -7,7 +7,7 @@ import {
 } from "./reminders.repository.js";
 import { isEmailConfigured, sendHabitReminderEmail } from "./email.service.js";
 
-
+// types that define data shapes (not expect nor receive props)
 export type ReminderClock = {
   date: string;
   time: string;
@@ -86,25 +86,35 @@ export async function recordReminderSent(input: {
   return insertReminderLog(input);
 }
 
+// Main reminder workflow
 export async function processDueEmailReminders(now = new Date()): Promise<ReminderProcessingSummary> {
+  // 1. Create summary
   const summary: ReminderProcessingSummary = {
     checked: 0,
-    sent: 0,
-    skippedAlreadySent: 0,
+    sent: 0,//sent
+    skippedAlreadySent: 0,//skipped
     skippedEmailNotConfigured: false,
-    failures: [],
+    failures: [],//failed
   };
 
+  //2. check set up
   if (!isEmailConfigured()) {
+    // if not set up, stop immediately & return summary
     summary.skippedEmailNotConfigured = true;
     return summary;
   }
 
+  //3. find reminders due now
+  // Result [Jogging]
   const dueReminders = await getDueEmailReminders(now);
   summary.checked = dueReminders.length;
 
+  //4. for each reminder
   for (const reminder of dueReminders) {
     const clock = getReminderClock(reminder.timezone, now);
+
+    //5. check duplicate
+    // if alr sent tdy, skip
     const alreadySent = await wasReminderSent({
       habitId: reminder.habit_id,
       sentForDate: clock.date,
@@ -112,11 +122,13 @@ export async function processDueEmailReminders(now = new Date()): Promise<Remind
     });
 
     if (alreadySent) {
+      // and +1
       summary.skippedAlreadySent += 1;
       continue;
     }
 
     try {
+       //6. send email
       await sendHabitReminderEmail({
         to: reminder.reminder_email,
         habitName: reminder.habit_name,
@@ -124,14 +136,17 @@ export async function processDueEmailReminders(now = new Date()): Promise<Remind
         timezone: reminder.timezone,
       });
 
+      //7. save reminder log, so future checks know
       await recordReminderSent({
         habitId: reminder.habit_id,
         sentForDate: clock.date,
         channel: "email",
       });
 
+      //8. count success
       summary.sent += 1;
     } catch (error) {
+      //9. handle failure
       summary.failures.push({
         habitId: reminder.habit_id,
         habitName: reminder.habit_name,
@@ -140,5 +155,7 @@ export async function processDueEmailReminders(now = new Date()): Promise<Remind
     }
   }
 
+  // return summary (to reminderCron.ts -> which called processDueEmailReminders())
+  // Why return summary? -> not just "Some emails failed" OR "Sent 3 emails"
   return summary;
 }

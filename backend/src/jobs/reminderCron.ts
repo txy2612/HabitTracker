@@ -5,25 +5,27 @@ import { processDueEmailReminders } from "../modules/reminders/reminders.service
 
 const REMINDER_CHECK_INTERVAL_MS = 60_000;// = 60s = 1 min
 
-let interval: NodeJS.Timeout | null = null;
+let interval: NodeJS.Timeout | null = null;// stores the timer
 let isChecking = false;
 
-// runs reminder processing & logs result
+// delegates everything to service (the business logic of reminders & email sending)
 async function runReminderCheck() {
-  if (isChecking) {
+  if (isChecking) {// prevent concurrent + overlapping checks
     return;
   }
 
   isChecking = true;
 
   try {
-    // delegates everything to service (the business logic of reminders & email sending)
+    // get summary from service, by calling processDueEmailReminders()
     const summary = await processDueEmailReminders();
 
+    // success logging : Sent 3 habit reminder email(s).
     if (summary.sent > 0) {
       console.log(`Sent ${summary.sent} habit reminder email(s).`);
     }
 
+    // failure logging
     if (summary.failures.length > 0) {
       console.error("Some habit reminder emails failed to send.", summary.failures);
     }

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "reminders:run": "tsx src/jobs/runReminderCheckOnce.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
