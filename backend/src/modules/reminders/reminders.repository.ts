@@ -1,10 +1,18 @@
 import { pool } from "../../config/db/pool.js";
-import type { ReminderChannel, ReminderLog, UserSettings } from "../../shared/types.js";
+import type {
+  ReminderChannel,
+  ReminderLog,
+  ReminderWeekday,
+  UserSettings,
+} from "../../shared/types.js";
 
 export type EmailReminderCandidate = {
   habit_id: string;
   habit_name: string;
+  schedule_type: "daily" | "weekly" | "specific_date";
   reminder_time: string;
+  weekdays: ReminderWeekday[];
+  specific_date: string | null;
   reminder_email: string;
   timezone: string;
 };
@@ -32,20 +40,25 @@ export async function findUserSettings(): Promise<UserSettings> {
   return insertResult.rows[0];
 }
 
-// Find all habits that could need reminders
+// Find all habits that MIGHT need reminders
 // reminder enabled + reminder time exists + email exists
 export async function findEmailReminderCandidates(): Promise<EmailReminderCandidate[]> {
   const result = await pool.query<EmailReminderCandidate>(
     `SELECT
        habits.id AS habit_id,
        habits.name AS habit_name,
-       habits.reminder_time::text AS reminder_time,
+       schedules.schedule_type AS schedule_type,
+       schedules.reminder_time::text AS reminder_time,
+       schedules.weekdays AS weekdays,
+       schedules.specific_date::text AS specific_date,
        user_settings.reminder_email AS reminder_email,
        user_settings.timezone AS timezone
-     FROM habits
+     FROM habit_reminder_schedules AS schedules
+     INNER JOIN habits
+       ON habits.id = schedules.habit_id
      CROSS JOIN user_settings
-     WHERE habits.reminder_enabled = true
-       AND habits.reminder_time IS NOT NULL
+     WHERE schedules.is_active = true
+       AND schedules.reminder_time IS NOT NULL
        AND user_settings.id = 1
        AND user_settings.reminder_email IS NOT NULL
        AND BTRIM(user_settings.reminder_email) <> ''

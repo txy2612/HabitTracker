@@ -86,6 +86,11 @@ export async function updateHabitReminders(
     );
 
     for (const reminder of input.reminders) {
+      const normalizedScheduleType = reminder.reminderEnabled ? reminder.scheduleType : "daily";
+      const normalizedWeekdays = reminder.reminderEnabled ? reminder.weekdays : [];
+      const normalizedSpecificDate = reminder.reminderEnabled ? reminder.specificDate : null;
+      const normalizedReminderTime = reminder.reminderEnabled ? reminder.reminderTime : null;
+
       const result = await client.query<Habit>(
         `UPDATE habits
          SET reminder_enabled = $1,
@@ -94,14 +99,46 @@ export async function updateHabitReminders(
          RETURNING *`,
         [
           reminder.reminderEnabled,
-          reminder.reminderEnabled ? reminder.reminderTime : null,
+          normalizedReminderTime,
           reminder.id,
         ],
       );
 
       if (result.rowCount === 0) {
         missingHabitIds.push(reminder.id);
+        continue;
       }
+
+      // ON CONFLICT = upsert
+      // if log not present -> CREATE
+      // OR update existing one
+      // no duplicated logs and no unecessary errors
+      await client.query(
+        `INSERT INTO habit_reminder_schedules (
+           habit_id,
+           is_active,
+           schedule_type,
+           reminder_time,
+           weekdays,
+           specific_date
+         )
+         VALUES ($1, $2, $3, $4::time, $5::smallint[], $6::date)
+         ON CONFLICT (habit_id) 
+         DO UPDATE SET
+           is_active = EXCLUDED.is_active,
+           schedule_type = EXCLUDED.schedule_type,
+           reminder_time = EXCLUDED.reminder_time,
+           weekdays = EXCLUDED.weekdays,
+           specific_date = EXCLUDED.specific_date`,
+        [
+          reminder.id,
+          reminder.reminderEnabled,
+          normalizedScheduleType,
+          normalizedReminderTime,
+          normalizedWeekdays,
+          normalizedSpecificDate,
+        ],
+      );
     }
 
     if (missingHabitIds.length > 0) {

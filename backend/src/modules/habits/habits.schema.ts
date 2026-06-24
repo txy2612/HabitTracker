@@ -10,6 +10,18 @@ const reminderTimeSchema = z
   .string()
   .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Reminder time must use HH:mm format.");
 
+const reminderScheduleTypeSchema = z.enum(["daily", "weekly", "specific_date"]);
+
+const reminderWeekdaySchema = z
+  .number()
+  .int("Weekday must be a whole number.")
+  .min(0, "Weekday must be between 0 and 6.")
+  .max(6, "Weekday must be between 0 and 6.");
+
+const specificDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Specific date must use YYYY-MM-DD format.");
+
 const reminderEmailSchema = z.preprocess(
   (value) => (typeof value === "string" && value.trim() === "" ? null : value),
   z.string().trim().email("Reminder email must be a valid email address.").nullable().optional(),
@@ -45,6 +57,9 @@ const habitReminderSchema = z
     id: z.string().min(1, "Habit id is required."),
     reminderEnabled: z.boolean(),
     reminderTime: reminderTimeSchema.nullable(),
+    scheduleType: reminderScheduleTypeSchema.default("daily"),
+    weekdays: z.array(reminderWeekdaySchema).default([]),
+    specificDate: specificDateSchema.nullable().default(null),
   })
   .superRefine((reminder, context) => {
     if (reminder.reminderEnabled && reminder.reminderTime === null) {
@@ -53,6 +68,64 @@ const habitReminderSchema = z
         message: "Reminder time is required when reminder is enabled.",
         path: ["reminderTime"],
       });
+    }
+
+    if (!reminder.reminderEnabled) {
+      return;
+    }
+
+    if (reminder.scheduleType === "daily") {
+      if (reminder.weekdays.length > 0) {
+        context.addIssue({
+          code: "custom",
+          message: "Weekdays must be empty for daily reminders.",
+          path: ["weekdays"],
+        });
+      }
+
+      if (reminder.specificDate !== null) {
+        context.addIssue({
+          code: "custom",
+          message: "Specific date must be empty for daily reminders.",
+          path: ["specificDate"],
+        });
+      }
+    }
+
+    if (reminder.scheduleType === "weekly") {
+      if (reminder.weekdays.length === 0) {
+        context.addIssue({
+          code: "custom",
+          message: "Select at least one weekday for weekly reminders.",
+          path: ["weekdays"],
+        });
+      }
+
+      if (reminder.specificDate !== null) {
+        context.addIssue({
+          code: "custom",
+          message: "Specific date must be empty for weekly reminders.",
+          path: ["specificDate"],
+        });
+      }
+    }
+
+    if (reminder.scheduleType === "specific_date") {
+      if (reminder.weekdays.length > 0) {
+        context.addIssue({
+          code: "custom",
+          message: "Weekdays must be empty for specific-date reminders.",
+          path: ["weekdays"],
+        });
+      }
+
+      if (reminder.specificDate === null) {
+        context.addIssue({
+          code: "custom",
+          message: "Specific date is required for specific-date reminders.",
+          path: ["specificDate"],
+        });
+      }
     }
   });
 

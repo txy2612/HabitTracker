@@ -6,6 +6,22 @@ export type Habit = {
   created_at: string;
 };
 
+export type ReminderScheduleType = "daily" | "weekly" | "specific_date";
+
+export type ReminderWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+export type HabitReminderSchedule = {
+  id: string;
+  habit_id: string;
+  is_active: boolean;
+  schedule_type: ReminderScheduleType;
+  reminder_time: string | null;
+  weekdays: ReminderWeekday[];
+  specific_date: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type HabitLogStatus = "done" | "missed" | "skipped";
 
 export type HabitLog = {
