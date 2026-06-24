@@ -1,5 +1,6 @@
-import type { ReminderChannel, ReminderLog } from "../../shared/types.js";
+import type { ReminderChannel, ReminderLog, ReminderWeekday } from "../../shared/types.js";
 import {
+  deactivateSpecificDateReminder,
   findEmailReminderCandidates,
   findReminderLog,
   findUserSettings,
@@ -12,6 +13,7 @@ import { isEmailConfigured, sendHabitReminderEmail } from "./email.service.js";
 export type ReminderClock = {
   date: string;
   time: string;
+  weekday: ReminderWeekday;
 };
 
 export type EmailReminder = EmailReminderCandidate & {
@@ -41,6 +43,20 @@ export async function getReminderSettings() {
   };
 }
 
+function toReminderWeekday(weekday: string): ReminderWeekday {
+  const weekdayMap: Record<string, ReminderWeekday> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+
+  return weekdayMap[weekday] ?? 0;
+}
+
 // Purpose: convert NOW into user's local timezone
 export function getReminderClock(timezone: string, now = new Date()): ReminderClock {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -50,6 +66,7 @@ export function getReminderClock(timezone: string, now = new Date()): ReminderCl
     hourCycle: "h23",
     minute: "2-digit",
     month: "2-digit",
+    weekday: "short",
     timeZone: timezone,
     year: "numeric",
   }).formatToParts(now);
@@ -59,7 +76,32 @@ export function getReminderClock(timezone: string, now = new Date()): ReminderCl
   return {
     date: `${partMap.get("year")}-${partMap.get("month")}-${partMap.get("day")}`,
     time: `${partMap.get("hour")}:${partMap.get("minute")}`,
+    weekday: toReminderWeekday(partMap.get("weekday") ?? "Sun"),// converts  Sun -> 0, MOn -> 1, Tue -> 2, ...
   };
+}
+
+export function isReminderDue(candidate: EmailReminderCandidate, clock: ReminderClock): boolean {
+  // compare current time with reminder time 
+  // candidate.reminder_time = "20:00:00"
+  // clock.time = "20:00"
+  if (candidate.reminder_time.slice(0, 5) !== clock.time) {
+    return false;// if does not match -> stop
+  }
+
+  // else, if time match: continue
+  if (candidate.schedule_type === "daily") {
+    return true;// time match -> send reminder
+  }
+
+  if (candidate.schedule_type === "weekly") {
+    return candidate.weekdays.includes(clock.weekday);// clock.weekday = 3
+  }
+
+  if (candidate.schedule_type === "specific_date") {
+    return candidate.specific_date === clock.date;
+  }
+
+  return false;
 }
 
 export async function getDueEmailReminders(now = new Date()): Promise<EmailReminder[]> {
@@ -68,11 +110,7 @@ export async function getDueEmailReminders(now = new Date()): Promise<EmailRemin
 
   return candidates.filter((candidate) => {
     const clock = getReminderClock(candidate.timezone, now);
-
-    // Checks (example):
-    // Reminder 18:00 === Current Local Time 18:00 
-    // ONLY keep MATCHING habits
-    return candidate.reminder_time.slice(0, 5) === clock.time;
+    return isReminderDue(candidate, clock);
   });
 }
 
@@ -93,6 +131,14 @@ export async function recordReminderSent(input: {
   channel: ReminderChannel;
 }): Promise<ReminderLog | null> {
   return insertReminderLog(input);
+}
+
+export async function finalizeReminderAfterSend(reminder: EmailReminderCandidate): Promise<void> {
+  if (reminder.schedule_type !== "specific_date") {
+    return;
+  }
+
+  await deactivateSpecificDateReminder(reminder.habit_id);
 }
 
 // Main reminder workflow
@@ -151,6 +197,8 @@ export async function processDueEmailReminders(now = new Date()): Promise<Remind
         sentForDate: clock.date,
         channel: "email",
       });
+
+      await finalizeReminderAfterSend(reminder);
 
       //8. count success
       summary.sent += 1;
