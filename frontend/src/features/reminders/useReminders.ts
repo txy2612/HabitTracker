@@ -46,7 +46,7 @@ function createDrafts(habits: Habit[]): ReminderDraft[] {
     id: habit.id,
     name: habit.name,
     reminderEnabled: habit.reminderEnabled,
-    reminderTime: habit.reminderEnabled ? habit.reminderTime ?? DEFAULT_REMINDER_TIME : null,
+    reminderTime: habit.reminderTime ?? DEFAULT_REMINDER_TIME,
   }));
 }
 
@@ -114,13 +114,7 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
           ? {
               ...draft,
               reminderEnabled: isEnabled,
-              // Derived/prepared data
-              // If reminder is ON -> use existing time -> no time, use 900
-              // If reminder if OFF -> time = null
-              /* if true, use value after ? 
-                  if false, use value after :
-               */
-              reminderTime: isEnabled ? draft.reminderTime ?? DEFAULT_REMINDER_TIME : null,
+              reminderTime: draft.reminderTime ?? DEFAULT_REMINDER_TIME,
             }
           : draft,
       ),
@@ -147,7 +141,7 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
         reminders: drafts.map(({ id, reminderEnabled, reminderTime }) => ({
           id,
           reminderEnabled,
-          reminderTime: reminderEnabled ? reminderTime ?? DEFAULT_REMINDER_TIME : null,
+          reminderTime: reminderTime ?? DEFAULT_REMINDER_TIME,
         })),
       });
 

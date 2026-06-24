@@ -16,16 +16,40 @@ export type UpdateHabitRemindersResult = {
   missingHabitIds: string[];
 };
 
+// habitsSelectQuery now left joins habit_reminder_schedules
+// so ev habit can return complete habit data shape
+// Why imp? -> the object is reused in many places (Dashbaord, Reminder page)
+const habitSelectQuery = `
+  SELECT
+    habits.id,
+    habits.name,
+    habits.reminder_enabled,
+    habits.reminder_time,
+    schedules.schedule_type AS reminder_schedule_type,
+    COALESCE(schedules.weekdays, '{}'::smallint[]) AS reminder_weekdays,
+    schedules.specific_date::text AS reminder_specific_date,
+    habits.created_at
+  FROM habits
+  LEFT JOIN habit_reminder_schedules AS schedules
+    ON schedules.habit_id = habits.id
+`;
+
 // Promise = "I promise I'll give you the result/cook burger LATER"
 // with Promise, JS won't freeze while waiting 
 
 // insertHabit(name) -> INSERT INTO habits -> Create a new habit
 export async function insertHabit(name: string): Promise<Habit> {
-  const result = await pool.query<Habit>(
+  const insertResult = await pool.query<{ id: string }>(
     `INSERT INTO habits (name)
      VALUES ($1)
-     RETURNING *`,
-    [name],
+     RETURNING id`,
+    [name],// prevent SQL injection
+  );
+
+  const result = await pool.query<Habit>(
+    `${habitSelectQuery}
+     WHERE habits.id = $1`,
+    [insertResult.rows[0].id],
   );
 
   return result.rows[0];
@@ -34,8 +58,7 @@ export async function insertHabit(name: string): Promise<Habit> {
 // findHabits() -> SELECT * -> Fetch all habits
 export async function findHabits(): Promise<Habit[]> {
   const result = await pool.query<Habit>(
-    `SELECT *
-     FROM habits
+    `${habitSelectQuery}
      ORDER BY created_at DESC`,
   );
 
@@ -43,15 +66,25 @@ export async function findHabits(): Promise<Habit[]> {
 }
 
 export async function updateHabitName(id: string, name: string): Promise<Habit | null> {
-  const result = await pool.query<Habit>(
+  const updateResult = await pool.query<{ id: string }>(
     `UPDATE habits
      SET name = $1
      WHERE id = $2
-     RETURNING *`,
+     RETURNING id`,
     [name, id],
   );
 
-  return result.rowCount === 0 ? null : result.rows[0];
+  if (updateResult.rowCount === 0) {
+    return null;
+  }
+
+  const result = await pool.query<Habit>(
+    `${habitSelectQuery}
+     WHERE habits.id = $1`,
+    [id],
+  );
+
+  return result.rows[0] ?? null;
 }
 
 export async function deleteHabitById(id: string): Promise<boolean> {
@@ -72,7 +105,17 @@ export async function updateHabitReminders(
   const missingHabitIds: string[] = [];
 
   try {
+    /* Transaction: (update 3 tables, if one fail -> rollbcak entire Trans)
+    BEGIN
 
+    update user_settings
+    update habits
+    update schedules
+
+    COMMIT
+
+    if any steps throws: ROLLBACK
+    */
     await client.query("BEGIN");
 
     await client.query(
@@ -86,10 +129,10 @@ export async function updateHabitReminders(
     );
 
     for (const reminder of input.reminders) {
-      const normalizedScheduleType = reminder.reminderEnabled ? reminder.scheduleType : "daily";
-      const normalizedWeekdays = reminder.reminderEnabled ? reminder.weekdays : [];
-      const normalizedSpecificDate = reminder.reminderEnabled ? reminder.specificDate : null;
-      const normalizedReminderTime = reminder.reminderEnabled ? reminder.reminderTime : null;
+      const savedScheduleType = reminder.scheduleType; 
+      const savedWeekdays = reminder.weekdays;
+      const savedSpecificDate = reminder.specificDate; 
+      const savedReminderTime = reminder.reminderTime;
 
       const result = await client.query<Habit>(
         `UPDATE habits
@@ -99,11 +142,13 @@ export async function updateHabitReminders(
          RETURNING *`,
         [
           reminder.reminderEnabled,
-          normalizedReminderTime,
+          savedReminderTime,
           reminder.id,
         ],
       );
 
+      // if frontend sends an invalid habit ID, it records it
+      // later: ROLLBACK
       if (result.rowCount === 0) {
         missingHabitIds.push(reminder.id);
         continue;
@@ -133,11 +178,11 @@ export async function updateHabitReminders(
         [
           reminder.id,
           reminder.reminderEnabled,
-          normalizedScheduleType,
-          normalizedReminderTime,
-          normalizedWeekdays,
-          normalizedSpecificDate,
-        ],
+          savedScheduleType,
+          savedReminderTime,
+          savedWeekdays,
+          savedSpecificDate,
+        ]
       );
     }
 
@@ -148,8 +193,7 @@ export async function updateHabitReminders(
     }
 
     const habits = await client.query<Habit>(
-      `SELECT *
-       FROM habits
+      `${habitSelectQuery}
        ORDER BY created_at DESC`,
     );
 
