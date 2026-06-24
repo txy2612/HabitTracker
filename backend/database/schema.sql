@@ -16,6 +16,9 @@ ALTER TABLE habits
 
 CREATE TABLE IF NOT EXISTS habit_logs (
   id BIGSERIAL PRIMARY KEY,
+
+  -- Example: habit_id = 1 (Exercise), habit_id = 2 (Read 3 pages)
+  -- if (delete habit id = 1), all logs of Exercises will be deleted
   habit_id BIGINT NOT NULL REFERENCES habits(id) ON DELETE CASCADE,
   log_date DATE NOT NULL,
   status TEXT NOT NULL DEFAULT 'done' CHECK (status IN ('done', 'missed', 'skipped')), -- only these values are allowed
