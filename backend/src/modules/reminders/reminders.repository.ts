@@ -106,3 +106,43 @@ export async function insertReminderLog(input: {
 
   return result.rows[0] ?? null;
 }
+
+// if a specific date reminder already passed
+// no more date for the reminders -> set_active = false
+export async function deactivateSpecificDateReminder(habitId: string): Promise<void> {
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    await client.query(
+      `UPDATE habit_reminder_schedules
+       SET is_active = false,
+           reminder_time = NULL,
+           weekdays = '{}'::smallint[],
+           specific_date = NULL,
+           schedule_type = 'daily'
+       WHERE habit_id = $1
+         AND schedule_type = 'specific_date'`,
+      [habitId],
+    );
+
+    // update old habits table
+    // set to no active reminder
+    await client.query(
+      `UPDATE habits
+       SET reminder_enabled = false,
+           reminder_time = NULL
+       WHERE id = $1`,
+      [habitId],
+    );
+
+    // either BOTH tables are updated OR NEITHER
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
