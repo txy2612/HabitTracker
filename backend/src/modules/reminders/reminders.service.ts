@@ -133,8 +133,14 @@ export async function recordReminderSent(input: {
   return insertReminderLog(input);
 }
 
+// clean-up code
+// so it doesnt stay after reminder checked for one-time reminder
+export function shouldDeactivateReminderAfterSend(reminder: EmailReminderCandidate): boolean {
+  return reminder.schedule_type === "specific_date";
+}
+
 export async function finalizeReminderAfterSend(reminder: EmailReminderCandidate): Promise<void> {
-  if (reminder.schedule_type !== "specific_date") {
+  if (!shouldDeactivateReminderAfterSend(reminder)) {
     return;
   }
 

@@ -107,8 +107,10 @@ export async function insertReminderLog(input: {
   return result.rows[0] ?? null;
 }
 
-// if a specific date reminder already passed
-// no more date for the reminders -> set_active = false
+// One-time reminders are completed by turning them inactive.
+// Keep the saved schedule fields so the UI can still show and reuse them.
+// do not clean up too many data (by nulling them) upon setting is_active = FALSE
+// keeping record of past specific dates reminders -> easier to debug if it had problem
 export async function deactivateSpecificDateReminder(habitId: string): Promise<void> {
   const client = await pool.connect();
 
@@ -117,22 +119,17 @@ export async function deactivateSpecificDateReminder(habitId: string): Promise<v
 
     await client.query(
       `UPDATE habit_reminder_schedules
-       SET is_active = false,
-           reminder_time = NULL,
-           weekdays = '{}'::smallint[],
-           specific_date = NULL,
-           schedule_type = 'daily'
+       SET is_active = false
        WHERE habit_id = $1
          AND schedule_type = 'specific_date'`,
       [habitId],
     );
 
-    // update old habits table
-    // set to no active reminder
+    // Keep the mirrored reminder time in habits so the previous settings
+    // are still available when the user re-enables the reminder later.
     await client.query(
       `UPDATE habits
-       SET reminder_enabled = false,
-           reminder_time = NULL
+       SET reminder_enabled = false
        WHERE id = $1`,
       [habitId],
     );

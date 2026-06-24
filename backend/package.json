@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "tsc",
+    "db:check": "tsx src/jobs/runDbHealthCheck.ts",
     "start": "node dist/server.js",
-    "reminders:run": "tsx src/jobs/runReminderCheckOnce.ts"
+    "reminders:run": "tsx src/jobs/runReminderCheckOnce.ts",
+    "test": "node --test --import tsx src/**/*.test.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

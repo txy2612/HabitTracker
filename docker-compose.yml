@@ -11,7 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - habit_tracker_data:/var/lib/postgresql/data
-      - ./backend/database/schema.sql:/ docker-entrypoint-initdb.d/001-schema.sql:ro #run on first creation of PostgreSQL container, it auto uses schema.sql to create tables
+      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro #run on first creation of PostgreSQL container, it auto uses schema.sql to create tables
 
 volumes:
   habit_tracker_data:

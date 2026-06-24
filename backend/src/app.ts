@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import { checkDatabaseHealth } from "./config/db/health.js";
 import habitsRouter from "./routes.js";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -18,6 +19,12 @@ app.use(requestId);
 
 app.get("/api/health", (_request, response) => {
   response.json({ ok: true });
+});
+
+app.get("/api/health/db", async (_request, response) => {
+  const health = await checkDatabaseHealth();
+
+  response.status(health.ok ? 200 : 503).json(health);
 });
 
 app.use("/api/habits", habitsRouter);

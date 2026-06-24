@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import { problemDetails, type ProblemDetailsErrors } from "../shared/problemDetails.js";
 
 type ErrorLike = {
+  code?: unknown;
   status?: unknown;
   statusCode?: unknown;
   message?: unknown;
@@ -32,8 +33,41 @@ function getStringProperty(error: unknown, key: "message" | "type" | "title"): s
   return typeof value === "string" && value.trim() ? value : undefined;
 }
 
+function getOptionalStringProperty(error: unknown, key: "code"): string | undefined {
+  if (!isErrorLike(error)) {
+    return undefined;
+  }
+
+  const value = error[key];
+  return typeof value === "string" && value.trim() ? value : undefined;
+}
+
 function isPublicStatus(status: number): boolean {
   return status >= 400 && status < 500;
+}
+
+function getDatabaseProblem(error: unknown) {
+  const code = getOptionalStringProperty(error, "code");
+
+  if (code === "ECONNREFUSED" || code === "08001" || code === "08006" || code === "57P03") {
+    return {
+      status: 503,
+      title: "Database unavailable",
+      detail: "The app could not reach PostgreSQL. Make sure PostgreSQL is running and DATABASE_URL is correct.",
+      type: "https://habit-tracker.local/problems/database-unavailable",
+    };
+  }
+
+  if (code === "42P01") {
+    return {
+      status: 500,
+      title: "Database schema out of date",
+      detail: "The database is missing required tables. Re-apply backend/database/schema.sql.",
+      type: "https://habit-tracker.local/problems/database-schema-out-of-date",
+    };
+  }
+
+  return null;
 }
 
 function formatZodErrors(error: ZodError): ProblemDetailsErrors {
@@ -66,6 +100,27 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, next
           instance: request.originalUrl,
           requestId: request.id,
           errors: formatZodErrors(error),
+        }),
+      );
+    return;
+  }
+
+  const databaseProblem = getDatabaseProblem(error);
+
+  if (databaseProblem) {
+    console.error(error);
+
+    response
+      .status(databaseProblem.status)
+      .type("application/problem+json")
+      .json(
+        problemDetails({
+          type: databaseProblem.type,
+          title: databaseProblem.title,
+          status: databaseProblem.status,
+          detail: databaseProblem.detail,
+          instance: request.originalUrl,
+          requestId: request.id,
         }),
       );
     return;
