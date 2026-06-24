@@ -6,8 +6,15 @@ export type Habit = {
   name: string;
   reminderEnabled: boolean;
   reminderTime: string | null;
+  reminderScheduleType: ReminderScheduleType;
+  reminderWeekdays: ReminderWeekday[];
+  reminderSpecificDate: string | null;
   createdAt: string;
 };
+
+export type ReminderScheduleType = "daily" | "weekly" | "specific_date";
+
+export type ReminderWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export type CreateHabitInput = {
   name: string;
@@ -19,6 +26,9 @@ export type HabitReminderInput = {
   id: string;
   reminderEnabled: boolean;
   reminderTime: string | null;
+  scheduleType: ReminderScheduleType;
+  weekdays: ReminderWeekday[];
+  specificDate: string | null;
 };
 
 export type SaveHabitRemindersInput = {

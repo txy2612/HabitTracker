@@ -7,6 +7,8 @@ import type {
   HabitLog,
   HabitLogStatus,
   HabitReminderSettings,
+  ReminderScheduleType,
+  ReminderWeekday,
   SaveHabitRemindersInput,
   StreakSummary,
   UpdateHabitInput,
@@ -27,6 +29,9 @@ type HabitRow = {
   name: string;
   reminder_enabled: boolean;
   reminder_time: string | null;
+  reminder_schedule_type: ReminderScheduleType | null;
+  reminder_weekdays: ReminderWeekday[] | null;
+  reminder_specific_date: string | null;
   created_at: string;
 };
 
@@ -71,6 +76,9 @@ function mapHabit(row: HabitRow): Habit {
     name: row.name,
     reminderEnabled: row.reminder_enabled,
     reminderTime: mapReminderTime(row.reminder_time),
+    reminderScheduleType: row.reminder_schedule_type ?? "daily",
+    reminderWeekdays: row.reminder_weekdays ?? [],
+    reminderSpecificDate: row.reminder_specific_date,
     createdAt: row.created_at,
   };
 }

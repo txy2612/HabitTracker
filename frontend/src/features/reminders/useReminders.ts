@@ -1,8 +1,13 @@
 // useReminders = hook = brain/controller
 // RemindersPage = UI 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiClient } from "../../api/apiClient";
-import type { Habit, HabitReminderInput } from "../../shared/types/api.types";
+import type {
+  Habit,
+  HabitReminderInput,
+  ReminderScheduleType,
+  ReminderWeekday,
+} from "../../shared/types/api.types";
 
 /*
 useReminders.ts = brain / controller
@@ -30,6 +35,9 @@ export type UseRemindersResult = {
   setEmail: (email: string) => void;
   setReminderEnabled: (habitId: string, isEnabled: boolean) => void;
   setReminderTime: (habitId: string, reminderTime: string) => void;
+  setScheduleType: (habitId: string, scheduleType: ReminderScheduleType) => void;
+  toggleWeekday: (habitId: string, weekday: ReminderWeekday) => void;
+  setSpecificDate: (habitId: string, specificDate: string) => void;
   saveReminders: () => Promise<Habit[]>;
 };
 
@@ -47,6 +55,9 @@ function createDrafts(habits: Habit[]): ReminderDraft[] {
     name: habit.name,
     reminderEnabled: habit.reminderEnabled,
     reminderTime: habit.reminderTime ?? DEFAULT_REMINDER_TIME,
+    scheduleType: habit.reminderScheduleType,
+    weekdays: habit.reminderWeekdays,
+    specificDate: habit.reminderSpecificDate,
   }));
 }
 
@@ -59,6 +70,7 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
   */
   const [drafts, setDrafts] = useState<ReminderDraft[]>(() => createDrafts(habits));
   const [email, setEmail] = useState(getStoredEmail);
+  const [timezone, setTimezone] = useState(getLocalTimezone);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
@@ -70,8 +82,6 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
 
       [] = run only once during first load
    */
-  const timezone = useMemo(getLocalTimezone, []);
-
   // whenever habits change, re-create the drafts
   useEffect(() => {
     setDrafts(createDrafts(habits));
@@ -87,10 +97,11 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
         if (isActive) {
           const savedEmail = settings.reminderEmail ?? "";
           setEmail(savedEmail);
+          setTimezone(settings.timezone || getLocalTimezone());
           window.localStorage.setItem(REMINDER_EMAIL_STORAGE_KEY, savedEmail);
         }
       } catch {
-        // Keep the localStorage fallback if backend settings cannot load.
+        // Keep local defaults if backend settings cannot load.
       }
     }
 
@@ -128,6 +139,74 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
     );
   }
 
+  function setScheduleType(habitId: string, scheduleType: ReminderScheduleType) {
+    setSavedMessage(null);
+    setDrafts((currentDrafts) =>
+      currentDrafts.map((draft) => {
+        if (draft.id !== habitId) {
+          return draft;
+        }
+
+        if (scheduleType === "daily") {
+          return {
+            ...draft,
+            scheduleType,
+            weekdays: [],
+            specificDate: null,
+          };
+        }
+
+        if (scheduleType === "weekly") {
+          return {
+            ...draft,
+            scheduleType,
+            specificDate: null,
+          };
+        }
+
+        return {
+          ...draft,
+          scheduleType,
+          weekdays: [],
+        };
+      }),
+    );
+  }
+
+  function toggleWeekday(habitId: string, weekday: ReminderWeekday) {
+    setSavedMessage(null);
+    setDrafts((currentDrafts) =>
+      currentDrafts.map((draft) => {
+        if (draft.id !== habitId) {
+          return draft;
+        }
+
+        const alreadySelected = draft.weekdays.includes(weekday);
+
+        return {
+          ...draft,
+          weekdays: alreadySelected
+            ? draft.weekdays.filter((value) => value !== weekday)
+            : [...draft.weekdays, weekday].sort((left, right) => left - right),
+        };
+      }),
+    );
+  }
+
+  function setSpecificDate(habitId: string, specificDate: string) {
+    setSavedMessage(null);
+    setDrafts((currentDrafts) =>
+      currentDrafts.map((draft) =>
+        draft.id === habitId
+          ? {
+              ...draft,
+              specificDate: specificDate === "" ? null : specificDate,
+            }
+          : draft,
+      ),
+    );
+  }
+
   async function saveReminders() {
     try {
       setIsSaving(true);
@@ -138,10 +217,13 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
       const habits = await apiClient.saveHabitReminders({
         reminderEmail: trimmedEmail === "" ? null : trimmedEmail,
         timezone,
-        reminders: drafts.map(({ id, reminderEnabled, reminderTime }) => ({
+        reminders: drafts.map(({ id, reminderEnabled, reminderTime, scheduleType, weekdays, specificDate }) => ({
           id,
           reminderEnabled,
           reminderTime: reminderTime ?? DEFAULT_REMINDER_TIME,
+          scheduleType,
+          weekdays,
+          specificDate,
         })),
       });
 
@@ -169,6 +251,9 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
     setEmail,
     setReminderEnabled,
     setReminderTime,
+    setScheduleType,
+    toggleWeekday,
+    setSpecificDate,
     saveReminders,
   };
 }
