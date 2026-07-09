@@ -36,7 +36,7 @@ export function AddHabitForm({ onCreated, onCreate }: AddHabitFormProps) {
   }
 
   return (
-    <form className="grid gap-4" onSubmit={handleSubmit}>
+    <form className="grid gap-5" onSubmit={handleSubmit}>
       <Input
         label="Habit name"
         name="name"
@@ -44,10 +44,14 @@ export function AddHabitForm({ onCreated, onCreate }: AddHabitFormProps) {
         placeholder="Morning Exercise"
         value={name}
       />
+
       {error ? <p className="text-sm text-red-500">{error}</p> : null}
-      <Button disabled={isSaving || !name.trim()} type="submit">
-        {isSaving ? "Creating..." : "Create habit"}
-      </Button>
+
+      <div className="flex justify-end">
+        <Button className="h-11 px-6" disabled={isSaving || !name.trim()} type="submit">
+          {isSaving ? "Creating..." : "Create habit"}
+        </Button>
+      </div>
     </form>
   );
 }

@@ -66,8 +66,8 @@ export function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#fafafa] px-5 py-7 text-slate-950">
-      <div className="mx-auto w-full max-w-[430px]">
+    <main className="min-h-screen bg-[#fafafa] px-6 py-8 text-slate-950 lg:px-10">
+      <div className="mx-auto w-full max-w-7xl">
         <header className="mb-5 flex items-center justify-between">
           <h1 className="text-xl font-semibold text-slate-950">Habits</h1>
           <div className="flex h-12 items-center gap-3">

@@ -55,55 +55,66 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
   }
 
   return (
-    // creates full screen bg : <main className="min-h-screen bg-[#fafafa]...
-    <main className="min-h-screen bg-[#fafafa] px-5 py-5 text-slate-950">
-      {/* Card container */}
-      <div className="mx-auto w-full max-w-[430px] rounded-[20px] bg-white px-7 py-6 shadow-[0_2px_10px_rgba(15,23,42,0.10)]">
-        <header className="mb-8 flex items-start justify-between gap-4">
-          {/* Header (Habit name + Close button) */}
-          <h1 className="text-xl font-semibold text-slate-950">{habit.name}</h1>
-          <button
-            className="text-sm font-semibold text-slate-500 transition hover:text-slate-800"
-            onClick={onClose}
-            type="button"
-          >
-            Close
-          </button>
-        </header>
+    <main className="min-h-screen bg-[#f7f7f2] px-6 py-8 text-slate-950 lg:px-10">
+      <div className="mx-auto w-full max-w-[1440px]">
+        <div className="grid gap-8 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <aside className="xl:sticky xl:top-8 xl:self-start">
+            <div className="rounded-[28px] border border-[#e8e6dc] bg-white p-6 shadow-[0_20px_40px_rgba(15,23,42,0.08)]">
+              <header className="mb-6 grid gap-4 border-b border-slate-100 pb-6">
+                <div className="grid gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">Habit detail</p>
+                  <h1 className="text-3xl font-semibold text-slate-950">{habit.name}</h1>
+                  <p className="text-sm leading-6 text-slate-500">
+                    Review streak progress and update daily results from a full calendar workspace.
+                  </p>
+                </div>
+                <button
+                  className="self-start rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                  onClick={onClose}
+                  type="button"
+                >
+                  Back to habits
+                </button>
+              </header>
 
-      {/* Streaks */}
-        <StreakStats error={streakError} isLoading={isStreakLoading} streak={streak} />
+              <StreakStats error={streakError} isLoading={isStreakLoading} streak={streak} />
+            </div>
+          </aside>
 
-      {/* Month navigation */}
-        <section className="mt-9">
-          <div className="mb-6 grid grid-cols-[40px_1fr_40px] items-center">
-            {/* (currentMonth, -1) = prev month */}
-            <button
-              aria-label="Previous month"
-              className="text-2xl font-semibold text-slate-700 transition hover:text-slate-950"
-              onClick={() => setMonth((currentMonth) => shiftMonth(currentMonth, -1))}
-              type="button"
-            >
-              {"<"}
-            </button>
-            <h2 className="text-center text-lg font-semibold text-slate-950">{formatMonthLabel(month)}</h2>
-            {/* (currentMonth, 1) = Next month */}
-            <button
-              aria-label="Next month"
-              className="text-2xl font-semibold text-slate-700 transition hover:text-slate-950"
-              onClick={() => setMonth((currentMonth) => shiftMonth(currentMonth, 1))}
-              type="button"
-            >
-              {">"}
-            </button>
-          </div>
+          <section className="rounded-[28px] border border-[#e8e6dc] bg-white p-6 shadow-[0_20px_40px_rgba(15,23,42,0.08)] sm:p-8">
+            <div className="mb-8 flex flex-col gap-4 border-b border-slate-100 pb-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="grid gap-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Monthly timeline</p>
+                <h2 className="text-2xl font-semibold text-slate-950">{formatMonthLabel(month)}</h2>
+              </div>
 
-          {/* Display the calendar circles(dates) */}
-          <MonthlyCalendar logs={logs} month={month} onSelectDate={setSelectedDate} />
+              <div className="grid grid-cols-[52px_1fr_52px] items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2 lg:min-w-[260px]">
+                <button
+                  aria-label="Previous month"
+                  className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-slate-700 transition hover:bg-white hover:text-slate-950"
+                  onClick={() => setMonth((currentMonth) => shiftMonth(currentMonth, -1))}
+                  type="button"
+                >
+                  {"<"}
+                </button>
+                <p className="text-center text-sm font-semibold text-slate-700">Jump month</p>
+                <button
+                  aria-label="Next month"
+                  className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-slate-700 transition hover:bg-white hover:text-slate-950"
+                  onClick={() => setMonth((currentMonth) => shiftMonth(currentMonth, 1))}
+                  type="button"
+                >
+                  {">"}
+                </button>
+              </div>
+            </div>
 
-          {isLoading ? <p className="mt-4 text-sm text-slate-400">Loading logs...</p> : null}
-          {error ? <p className="mt-4 text-sm text-red-500">{error}</p> : null}
-        </section>
+            <MonthlyCalendar logs={logs} month={month} onSelectDate={setSelectedDate} />
+
+            {isLoading ? <p className="mt-4 text-sm text-slate-400">Loading logs...</p> : null}
+            {error ? <p className="mt-4 text-sm text-red-500">{error}</p> : null}
+          </section>
+        </div>
 
         {/*HabitDetailPage pass selectedLog (prop) -> LogNoteEditor */}
         {/* In LogNoteEditor , see export ... log on top, means:

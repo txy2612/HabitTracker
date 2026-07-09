@@ -20,11 +20,11 @@ export function Modal({ children, isOpen, title, onClose }: ModalProps) {
     >
       <section
         aria-modal="true"
-        className="w-full max-w-md rounded-md bg-white p-5 shadow-xl"
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >
-        <div className="mb-4 flex items-center justify-between gap-4">
+        <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
           {title ? <h2 className="text-lg font-semibold text-zinc-950">{title}</h2> : <span />}
           <button
             aria-label="Close modal"

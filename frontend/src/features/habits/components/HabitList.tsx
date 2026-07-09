@@ -37,7 +37,7 @@ export function HabitList({
 
   // 3. use props
   return (
-    <section className="space-y-5">
+    <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
       {habits.map((habit, index) => (
         <HabitCard
           canMoveDown={index < habits.length - 1}
