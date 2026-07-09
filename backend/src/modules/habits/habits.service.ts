@@ -17,13 +17,11 @@ import {
 // controller sends: name: "Jogging" -> service
 // Service calls repo -> INSERT INTO habits
 export async function createHabit(userId: string, input: HabitBody): Promise<Habit> {
-  void userId;
-  return insertHabit(input.name);
+  return insertHabit(userId, input.name);
 }
 
 export async function listHabits(userId: string): Promise<Habit[]> {
-  void userId;
-  return findHabits();// Repo later: SELECT * FROM habits
+  return findHabits(userId);// Repo later: SELECT * FROM habits
 }
 
 export async function renameHabit(
@@ -31,8 +29,7 @@ export async function renameHabit(
   id: string,
   input: HabitBody,
 ): Promise<Habit> {
-  void userId;
-  const habit = await updateHabitName(id, input.name);
+  const habit = await updateHabitName(userId, id, input.name);
 
   if (!habit) {
     throw new HttpError(404, "Habit not found.", {
@@ -49,8 +46,7 @@ export async function renameHabit(
 // WHERE id = ""
 
 export async function deleteHabit(userId: string, id: string): Promise<void> {
-  void userId;
-  const wasDeleted = await deleteHabitById(id);
+  const wasDeleted = await deleteHabitById(userId, id);
 
   if (!wasDeleted) {
     throw new HttpError(404, "Habit not found.", {
@@ -67,10 +63,8 @@ export async function saveHabitReminders(
   userId: string,
   input: UpdateHabitRemindersRequest["body"],
 ): Promise<Habit[]> {// Promise to return an array of habits
-  void userId;
-
   // Dentist -> Clinic computer : updateReminderSettings``
-  const result = await updateHabitRemindersRepository(input);
+  const result = await updateHabitRemindersRepository(userId, input);
 
   if (result.missingHabitIds.length > 0) {
     throw new HttpError(404, "One or more habits were not found.", {

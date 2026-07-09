@@ -38,40 +38,44 @@ const habitSelectQuery = `
 // with Promise, JS won't freeze while waiting 
 
 // insertHabit(name) -> INSERT INTO habits -> Create a new habit
-export async function insertHabit(name: string): Promise<Habit> {
+export async function insertHabit(userId: string, name: string): Promise<Habit> {
   const insertResult = await pool.query<{ id: string }>(
-    `INSERT INTO habits (name)
-     VALUES ($1)
+    `INSERT INTO habits (name, user_id)
+     VALUES ($1, $2::bigint)
      RETURNING id`,
-    [name],// prevent SQL injection
+    [name, userId],// prevent SQL injection
   );
 
   const result = await pool.query<Habit>(
     `${habitSelectQuery}
-     WHERE habits.id = $1`,
-    [insertResult.rows[0].id],
+     WHERE habits.id = $1
+       AND habits.user_id = $2::bigint`,
+    [insertResult.rows[0].id, userId],
   );
 
   return result.rows[0];
 }
 
 // findHabits() -> SELECT * -> Fetch all habits
-export async function findHabits(): Promise<Habit[]> {
+export async function findHabits(userId: string): Promise<Habit[]> {
   const result = await pool.query<Habit>(
     `${habitSelectQuery}
+     WHERE habits.user_id = $1::bigint
      ORDER BY created_at DESC`,
+    [userId],
   );
 
   return result.rows;
 }
 
-export async function updateHabitName(id: string, name: string): Promise<Habit | null> {
+export async function updateHabitName(userId: string, id: string, name: string): Promise<Habit | null> {
   const updateResult = await pool.query<{ id: string }>(
     `UPDATE habits
      SET name = $1
-     WHERE id = $2
+     WHERE user_id = $2::bigint
+       AND id = $3
      RETURNING id`,
-    [name, id],
+    [name, userId, id],
   );
 
   if (updateResult.rowCount === 0) {
@@ -80,24 +84,27 @@ export async function updateHabitName(id: string, name: string): Promise<Habit |
 
   const result = await pool.query<Habit>(
     `${habitSelectQuery}
-     WHERE habits.id = $1`,
-    [id],
+     WHERE habits.id = $1
+       AND habits.user_id = $2::bigint`,
+    [id, userId],
   );
 
   return result.rows[0] ?? null;
 }
 
-export async function deleteHabitById(id: string): Promise<boolean> {
+export async function deleteHabitById(userId: string, id: string): Promise<boolean> {
   const result = await pool.query(
     `DELETE FROM habits
-     WHERE id = $1`,
-    [id],
+     WHERE user_id = $1::bigint
+       AND id = $2`,
+    [userId, id],
   );
 
   return (result.rowCount ?? 0) > 0;
 }
 
 export async function updateHabitReminders(
+  userId: string,
   input: UpdateHabitRemindersInput,
 ): Promise<UpdateHabitRemindersResult> {
 
@@ -139,11 +146,13 @@ export async function updateHabitReminders(
          SET reminder_enabled = $1,
              reminder_time = $2::time
          WHERE id = $3
+           AND user_id = $4::bigint
          RETURNING *`,
         [
           reminder.reminderEnabled,
           savedReminderTime,
           reminder.id,
+          userId,
         ],
       );
 
@@ -194,7 +203,9 @@ export async function updateHabitReminders(
 
     const habits = await client.query<Habit>(
       `${habitSelectQuery}
+       WHERE habits.user_id = $1::bigint
        ORDER BY created_at DESC`,
+      [userId],
     );
 
     await client.query("COMMIT");
