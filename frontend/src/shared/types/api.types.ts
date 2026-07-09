@@ -93,3 +93,10 @@ export type AuthResult = {
   token: string;
   user: AuthUser;
 };
+
+// Keep provider explicit so "Sign in with Google" can plug into the same session shape later.
+export type AuthProvider = "password" | "google";
+
+export type StoredAuthSession = AuthResult & {
+  provider: AuthProvider;
+};
