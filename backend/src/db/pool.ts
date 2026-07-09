@@ -1,5 +1,5 @@
 import pg from "pg"; // pg = postgreSQL tranlator; Node -> pg library -> PostgreSQL
-import { env } from "../env.js";
+import { env } from "../config/env.js";
 
 const { Pool, types } = pg;
 // pool = database pool

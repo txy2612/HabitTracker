@@ -1,6 +1,7 @@
 import cors from "cors";
 import express from "express";
-import { checkDatabaseHealth } from "./config/db/health.js";
+import { checkDatabaseHealth } from "./db/health.js";
+import { authRoutes } from "./modules/auth/auth.routes.js";
 import habitsRouter from "./routes.js";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -27,6 +28,7 @@ app.get("/api/health/db", async (_request, response) => {
   response.status(health.ok ? 200 : 503).json(health);
 });
 
+app.use("/api/auth", authRoutes);
 app.use("/api/habits", habitsRouter);
 
 app.use(notFoundHandler);

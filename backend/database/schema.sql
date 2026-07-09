@@ -157,6 +157,20 @@ BEFORE UPDATE ON habit_reminder_schedules
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
+CREATE TABLE users (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- add user_id column to habits, and connect it to the id column in users
+-- ON DELETE CASCADE: If a user is deleted, all their habits are automatically deleted too
+ALTER TABLE habits
+ADD COLUMN user_id BIGINT REFERENCES users(id) ON DELETE CASCADE;
+
+
 
 -- Example:
 -- Habit - Jogging (id=1)

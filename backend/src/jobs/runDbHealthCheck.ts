@@ -1,5 +1,5 @@
-import { pool } from "../config/db/pool.js";
-import { checkDatabaseHealth } from "../config/db/health.js";
+import { pool } from "../db/pool.js";
+import { checkDatabaseHealth } from "../db/health.js";
 
 async function main() {
   const health = await checkDatabaseHealth();

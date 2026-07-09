@@ -1,5 +1,5 @@
 //database query
-import { pool } from "../../config/db/pool.js";
+import { pool } from "../../db/pool.js";
 import type { Habit } from "../../shared/types.js";
 import type { HabitReminderInput } from "./habits.schema.js";
 // so Repo knows what fields should reminder & habits contain = clinic computer gets X-ray image, to check DB SHAPE

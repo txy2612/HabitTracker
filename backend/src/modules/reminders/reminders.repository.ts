@@ -1,4 +1,4 @@
-import { pool } from "../../config/db/pool.js";
+import { pool } from "../../db/pool.js";
 import type {
   ReminderChannel,
   ReminderLog,

@@ -1,4 +1,4 @@
-import { pool } from "../../config/db/pool.js";
+import { pool } from "../../db/pool.js";
 import type { HabitLog } from "../../shared/types.js";
 
 export async function findHabitLogsForStreak(habitId: string): Promise<HabitLog[]> {

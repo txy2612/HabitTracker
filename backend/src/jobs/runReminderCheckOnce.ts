@@ -1,4 +1,4 @@
-import { pool } from "../config/db/pool.js";
+import { pool } from "../db/pool.js";
 import { processDueEmailReminders, type ReminderProcessingSummary } from "../modules/reminders/reminders.service.js";
 
 // format the summary -> console easier to read, converts:
