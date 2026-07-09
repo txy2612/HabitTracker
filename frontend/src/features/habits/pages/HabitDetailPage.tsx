@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { LogNoteEditor } from "../habitLogs/components/LogNoteEditor";
-import { MonthlyCalendar } from "../habitLogs/components/MonthlyCalendar";
-import { StreakStats } from "../habitLogs/components/StreakStats";
-import { useHabitLogs } from "../habitLogs/useHabitLogs";
-import { useStreak } from "../habitLogs/useStreak";
-import type { Habit, HabitLogStatus } from "../../shared/types/api.types";
-import { currentMonthString, formatMonthLabel, shiftMonth } from "../../shared/utils/dateUtils";
+import { LogNoteEditor } from "../../habitLogs/components/LogNoteEditor";
+import { MonthlyCalendar } from "../../habitLogs/components/MonthlyCalendar";
+import { StreakStats } from "../../habitLogs/components/StreakStats";
+import { useHabitLogs } from "../../habitLogs/hooks/useHabitLogs";
+import { useStreak } from "../../habitLogs/hooks/useStreak";
+import type { Habit, HabitLogStatus } from "../../../shared/types/api.types";
+import { currentMonthString, formatMonthLabel, shiftMonth } from "../../../shared/utils/dateUtils";
 
 // this component receive these props
 // in React, page IS a component

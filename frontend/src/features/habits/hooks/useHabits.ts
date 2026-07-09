@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { apiClient } from "../../api/apiClient";
+import { apiClient } from "../../../api/apiClient";
 import type {
   CreateHabitInput,
   Habit,
   UpdateHabitInput,
-} from "../../shared/types/api.types";
+} from "../../../shared/types/api.types";
 
 // desc what useHabits() returns
 // if someone call useHabits(), they will receive these

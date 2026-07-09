@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken"; // used to create login tokens
 import type { LoginInput, RegisterInput } from "./auth.schema.js";
 import { createUser, findUserByEmail } from "./auth.repository.js";// connects service to db 
@@ -28,10 +29,11 @@ export async function registerUser(input: RegisterInput) {
     throw error;// stop evth -> jump to controller 'catch(error)' -> controller: next(error) -> msg: "Email alr registered"
   }
 
+  const passwordHash = await bcrypt.hash(input.password, 10);
   const user = await createUser({
     name: input.name,
     email: input.email,
-    passwordHash: input.password,
+    passwordHash,
   });
 
   // return response to Controller 
@@ -48,7 +50,9 @@ export async function registerUser(input: RegisterInput) {
 export async function loginUser(input: LoginInput) {
   const user = await findUserByEmail(input.email);
 
-  if (!user || user.password_hash !== input.password) {
+  const passwordMatches = user ? await bcrypt.compare(input.password, user.password_hash) : false;
+
+  if (!user || !passwordMatches) {
     const error = new Error("Invalid email or password");
     (error as Error & { statusCode?: number }).statusCode = 401;
     throw error;

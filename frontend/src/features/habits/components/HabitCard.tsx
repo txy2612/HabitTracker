@@ -7,7 +7,7 @@ import {
   getRecentSevenDays,
 } from "../../../shared/utils/dateUtils";
 import { StreakDotsRow } from "../../habitLogs/components/StreakDotsRow";
-import { useHabitLogs } from "../../habitLogs/useHabitLogs";
+import { useHabitLogs } from "../../habitLogs/hooks/useHabitLogs";
 
 // props AKA what the card receives 
 // parameters passed into a component

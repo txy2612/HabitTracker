@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import { apiClient } from "../../api/apiClient";
-import type { StreakSummary } from "../../shared/types/api.types";
+import { apiClient } from "../../../api/apiClient";
+import type { StreakSummary } from "../../../shared/types/api.types";
 
 
 export type UseStreakResult = {

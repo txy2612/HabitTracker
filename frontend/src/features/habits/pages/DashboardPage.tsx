@@ -1,11 +1,11 @@
 import { useState } from "react";
-import type { CreateHabitInput } from "../../shared/types/api.types";
-import { Button } from "../../shared/components/Button";
-import { AddHabitModal } from "./components/AddHabitModal";
-import { HabitList } from "./components/HabitList";
-import { useHabits } from "./useHabits";
+import type { CreateHabitInput } from "../../../shared/types/api.types";
+import { Button } from "../../../shared/components/Button";
+import { AddHabitModal } from "../components/AddHabitModal";
+import { HabitList } from "../components/HabitList";
+import { useHabits } from "../hooks/useHabits";
 import { HabitDetailPage } from "./HabitDetailPage";
-import { ReminderSettingsPage } from "../reminders/ReminderSettingsPage";
+import { ReminderSettingsPage } from "../../reminders/ReminderSettingsPage";
 
 export function DashboardPage() {
   
