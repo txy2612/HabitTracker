@@ -6,6 +6,7 @@ import habitsRouter from "./routes.js";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFoundHandler } from "./middleware/notFoundHandler.js";
+import { requireAuth } from "./middleware/requireAuth.js";
 import { requestId } from "./middleware/requestId.js";
 
 export const app = express();
@@ -22,14 +23,14 @@ app.get("/api/health", (_request, response) => {
   response.json({ ok: true });
 });
 
-app.get("/api/health/db", async (_request, response) => {
+app.get("/api/health/db", requireAuth, async (_request, response) => {
   const health = await checkDatabaseHealth();
 
   response.status(health.ok ? 200 : 503).json(health);
 });
 
 app.use("/api/auth", authRoutes);
-app.use("/api/habits", habitsRouter);
+app.use("/api/habits", requireAuth, habitsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
