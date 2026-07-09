@@ -70,3 +70,26 @@ export type StreakSummary = {
   highestStartDate: string | null;
   highestEndDate: string | null;
 };
+
+// describe what a loggedin user looks in frontend
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+export type RegisterInput = {
+  name: string;
+  email: string;
+  password: string;
+};
+
+export type LoginInput = {
+  email: string;
+  password: string;
+};
+
+export type AuthResult = {
+  token: string;
+  user: AuthUser;
+};
