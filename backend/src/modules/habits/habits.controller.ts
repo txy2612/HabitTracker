@@ -38,7 +38,8 @@ const router = Router();
 const createHabit: RequestHandler = async (request, response, next) => {
   try {
     const { body } = request.validated as CreateHabitRequest;// type is used here
-    const habit = await createHabitService(body);
+    const userId = request.user!.id;
+    const habit = await createHabitService(userId, body);
 
     response.status(201).json(habit);
   } catch (error) {
@@ -46,9 +47,10 @@ const createHabit: RequestHandler = async (request, response, next) => {
   }
 };
 
-const getHabits: RequestHandler = async (_request, response, next) => {
+const getHabits: RequestHandler = async (request, response, next) => {
   try {
-    const habits = await listHabits();
+    const userId = request.user!.id;
+    const habits = await listHabits(userId);
 
     response.json(habits);
   } catch (error) {
@@ -56,9 +58,10 @@ const getHabits: RequestHandler = async (_request, response, next) => {
   }
 };
 
-const getHabitReminderSettings: RequestHandler = async (_request, response, next) => {
+const getHabitReminderSettings: RequestHandler = async (request, response, next) => {
   try {
-    const settings = await getReminderSettings();
+    const userId = request.user!.id;
+    const settings = await getReminderSettings(userId);
 
     response.json(settings);
   } catch (error) {
@@ -69,7 +72,8 @@ const getHabitReminderSettings: RequestHandler = async (_request, response, next
 const updateHabit: RequestHandler = async (request, response, next) => {
   try {
     const { body, params } = request.validated as UpdateHabitRequest;
-    const habit = await renameHabit(params.id, body);
+    const userId = request.user!.id;
+    const habit = await renameHabit(userId, params.id, body);
 
     response.json(habit);
   } catch (error) {
@@ -86,7 +90,8 @@ const updateHabitReminders: RequestHandler = async (request, response, next) => 
     // request.validated comes from middleware, mdw = door
     // controller = receptionist
     const { body } = request.validated as UpdateHabitRemindersRequest;
-    const habits = await saveHabitReminders(body);
+    const userId = request.user!.id;
+    const habits = await saveHabitReminders(userId, body);
 
     response.json(habits);
   } catch (error) {
@@ -97,8 +102,9 @@ const updateHabitReminders: RequestHandler = async (request, response, next) => 
 const deleteHabit: RequestHandler = async (request, response, next) => {
   try {
     const { params } = request.validated as DeleteHabitRequest;
+    const userId = request.user!.id;
 
-    await deleteHabitService(params.id);
+    await deleteHabitService(userId, params.id);
 
     response.status(204).send();
   } catch (error) {

@@ -2,7 +2,8 @@ import type { HabitLog, StreakSummary } from "../../shared/types.js";
 import { addDays, todayString } from "../../shared/utils/dates.js";
 import { findHabitLogsForStreak } from "./streaks.repository.js";
 
-export async function getStreak(habitId: string): Promise<StreakSummary> {
+export async function getStreak(userId: string, habitId: string): Promise<StreakSummary> {
+  void userId;
   const logs = await findHabitLogsForStreak(habitId);
 
   return calculateStreak(logs);

@@ -16,17 +16,22 @@ import {
 
 // controller sends: name: "Jogging" -> service
 // Service calls repo -> INSERT INTO habits
-export async function createHabit(input: HabitBody): Promise<Habit> {
+export async function createHabit(userId: string, input: HabitBody): Promise<Habit> {
+  void userId;
   return insertHabit(input.name);
 }
 
-export async function listHabits(): Promise<Habit[]> {
+export async function listHabits(userId: string): Promise<Habit[]> {
+  void userId;
   return findHabits();// Repo later: SELECT * FROM habits
 }
 
 export async function renameHabit(
-  id: string, input: HabitBody
+  userId: string,
+  id: string,
+  input: HabitBody,
 ): Promise<Habit> {
+  void userId;
   const habit = await updateHabitName(id, input.name);
 
   if (!habit) {
@@ -43,7 +48,8 @@ export async function renameHabit(
 // SET name = "" 
 // WHERE id = ""
 
-export async function deleteHabit(id: string): Promise<void> {
+export async function deleteHabit(userId: string, id: string): Promise<void> {
+  void userId;
   const wasDeleted = await deleteHabitById(id);
 
   if (!wasDeleted) {
@@ -58,8 +64,10 @@ export async function deleteHabit(id: string): Promise<void> {
 // async = wait for db
 // take body section (data) of request 
 export async function saveHabitReminders(
+  userId: string,
   input: UpdateHabitRemindersRequest["body"],
 ): Promise<Habit[]> {// Promise to return an array of habits
+  void userId;
 
   // Dentist -> Clinic computer : updateReminderSettings``
   const result = await updateHabitRemindersRepository(input);

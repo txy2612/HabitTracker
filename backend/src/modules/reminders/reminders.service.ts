@@ -34,7 +34,8 @@ export type ReminderProcessingSummary = {
   failures: ReminderProcessingFailure[];
 };
 
-export async function getReminderSettings() {
+export async function getReminderSettings(userId: string) {
+  void userId;
   const settings = await findUserSettings();
 
   return {

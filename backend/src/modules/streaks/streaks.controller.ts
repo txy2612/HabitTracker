@@ -9,7 +9,8 @@ const router = Router();
 const getStreak: RequestHandler = async (request, response, next) => {
   try {
     const { params } = request.validated as GetStreakRequest;
-    const streak = await getStreakService(params.id);
+    const userId = request.user!.id;
+    const streak = await getStreakService(userId, params.id);
 
     response.json(streak);
   } catch (error) {

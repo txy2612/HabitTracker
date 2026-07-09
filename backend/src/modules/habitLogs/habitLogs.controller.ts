@@ -17,8 +17,10 @@ const router = Router();
 const saveHabitLog: RequestHandler = async (request, response, next) => {
   try {
     const { body, params } = request.validated as SaveHabitLogRequest;
+    const userId = request.user!.id;
 
     const log = await saveHabitLogService({
+      userId,
       habitId: params.id,
       logDate: body.logDate,
       status: body.status,
@@ -34,8 +36,10 @@ const saveHabitLog: RequestHandler = async (request, response, next) => {
 const getHabitLogs: RequestHandler = async (request, response, next) => {
   try {
     const { query, params } = request.validated as GetHabitLogsRequest;
+    const userId = request.user!.id;
 
     const logs = await getHabitLogsService({
+      userId,
       habitId: params.id,
       month: query.month,
     });
@@ -49,8 +53,10 @@ const getHabitLogs: RequestHandler = async (request, response, next) => {
 const deleteHabitLog: RequestHandler = async (request, response, next) => {
   try {
     const { query, params } = request.validated as DeleteHabitLogRequest;
+    const userId = request.user!.id;
 
     await deleteHabitLogService({
+      userId,
       habitId: params.id,
       date: query.date,
     });

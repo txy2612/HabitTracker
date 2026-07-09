@@ -4,11 +4,13 @@ import { HttpError } from "../../shared/httpError.js";
 import { deleteHabitLogByDate, findHabitLogsForRange, upsertHabitLog } from "./habitLogs.repository.js";
 
 export async function saveHabitLog(input: {
+  userId: string;
   habitId: string;
   logDate: string;
   status: HabitLogStatus;
   note: string | null;
 }): Promise<HabitLog> {
+  void input.userId;
   if (input.logDate > todayString()) {
     throw new HttpError(400, "Cannot log future dates.", {
       title: "Invalid habit log",
@@ -19,7 +21,8 @@ export async function saveHabitLog(input: {
   return upsertHabitLog(input);
 }
 
-export async function getHabitLogs(input: { habitId: string; month: string }): Promise<HabitLog[]> {
+export async function getHabitLogs(input: { userId: string; habitId: string; month: string }): Promise<HabitLog[]> {
+  void input.userId;
   const range = monthRange(input.month);
 
   return findHabitLogsForRange({
@@ -29,6 +32,7 @@ export async function getHabitLogs(input: { habitId: string; month: string }): P
   });
 }
 
-export async function deleteHabitLog(input: { habitId: string; date: string }): Promise<void> {
+export async function deleteHabitLog(input: { userId: string; habitId: string; date: string }): Promise<void> {
+  void input.userId;
   await deleteHabitLogByDate(input);
 }
