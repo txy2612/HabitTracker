@@ -7,11 +7,15 @@ import type { AuthProvider, AuthResult, AuthUser, StoredAuthSession } from "../.
 // key with matching session values (token, user)
 const AUTH_SESSION_STORAGE_KEY = "habitTracker.auth.session";
 
+// window: a toolbox that provides fetch() document. localStorage ...
 function getStorage(): Storage | null {
+  // Am I running in a browser? 
+  // bcz sometimes it runs w/o browser
   if (typeof window === "undefined") {
     return null;
   }
 
+  // YES -> browser creates localStorage -> return it
   return window.localStorage;
 }
 
@@ -94,6 +98,8 @@ export function clearAuthSession(): void {
   storage.removeItem(AUTH_SESSION_STORAGE_KEY);
 }
 
+// Check whether a session exists:
+// session or null -> true or false
 export function hasStoredAuthSession(): boolean {
   return getStoredAuthSession() !== null;
 }
