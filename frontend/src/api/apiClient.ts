@@ -1,5 +1,6 @@
 // frontend gateway to backend
 // frontend use apiClient(helper) to talk to backend
+import { getStoredAuthToken } from "../features/auth/authStorage";
 import type {
   CreateHabitInput,
   CreateHabitLogInput,
@@ -99,20 +100,23 @@ function mapHabitLog(row: HabitLogRow): HabitLog {
 // so dh to repeat fetch(...), error, parse json
 // knows how to deliver food
 async function request<T>(path: string, options: RequestInit = {}) {
+  const token = getStoredAuthToken();
+  const headers = new Headers(options.headers);
+  headers.set("Content-Type", "application/json");
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
 
     //sends HTTP request to backend
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      // merge whatever options : POST, DELETE, PUT etc
-      ...options.headers,
-    },
+    headers,
     ...options,
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Request failed." }));
-    throw new Error(error.message ?? "Request failed.");
+    const error = await response.json().catch(() => ({ detail: "Request failed." }));
+    throw new Error(error.detail ?? error.message ?? "Request failed.");
   }
 
   // handle delete responses w no body

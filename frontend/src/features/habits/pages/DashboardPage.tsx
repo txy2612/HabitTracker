@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "../../auth/AuthContext";
 import type { CreateHabitInput } from "../../../shared/types/api.types";
 import { Button } from "../../../shared/components/Button";
 import { AddHabitModal } from "../components/AddHabitModal";
@@ -8,6 +9,7 @@ import { HabitDetailPage } from "./HabitDetailPage";
 import { ReminderSettingsPage } from "../../reminders/ReminderSettingsPage";
 
 export function DashboardPage() {
+  const { logout, user } = useAuth();
   
   // dashboard itself doesnt fetch directly, it asks the hook
   // get habit state from useHabits
@@ -68,9 +70,14 @@ export function DashboardPage() {
   return (
     <main className="min-h-screen bg-[#fafafa] px-6 py-8 text-slate-950 lg:px-10">
       <div className="mx-auto w-full max-w-7xl">
-        <header className="mb-5 flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-slate-950">Habits</h1>
-          <div className="flex h-12 items-center gap-3">
+        <header className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="grid gap-1">
+            <h1 className="text-xl font-semibold text-slate-950">Habits</h1>
+            <p className="text-sm text-slate-500">
+              Signed in as <span className="font-medium text-slate-700">{user?.email ?? "Unknown user"}</span>
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
             {/* User clicks bell -> setIsReminderOpen(true) -> React rerenders dahsboard  */}
             <Button
               aria-label="Open habit reminders"
@@ -94,6 +101,9 @@ export function DashboardPage() {
             </Button>
             <Button className="h-12 min-h-12 rounded-full px-5" onClick={() => setIsAddHabitOpen(true)} type="button">
               + Add Habit
+            </Button>
+            <Button className="h-12 rounded-full px-5" onClick={logout} type="button" variant="secondary">
+              Sign out
             </Button>
           </div>
         </header>
