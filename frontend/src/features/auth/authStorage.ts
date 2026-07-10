@@ -3,6 +3,7 @@ import type { AuthProvider, AuthResult, AuthUser, StoredAuthSession } from "../.
 // This file: creates somewhere permanent to store the token
 // so when refresh -> token not lost -> X "Nobody is logged in"
 // token is stored in localStorage (key, value)
+// save, load, clear data -> Knows ntg abt login/logout flow
 
 // key with matching session values (token, user)
 const AUTH_SESSION_STORAGE_KEY = "habitTracker.auth.session";

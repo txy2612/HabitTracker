@@ -11,6 +11,11 @@ import { clearAuthSession, getStoredAuthSession, saveAuthSession } from "./authS
 // this file connects authApi & authStorage
 // after success API login -> save the session
 
+// Purpose: decide WHEN to SAVE session (part of login flow)
+// Whereas storage X logic, only -> save, load, clear data
+// () = parameters 
+// 1)var auth, type AuthResult, exp: auth = { token: , user: { id, name, email }}
+// 2)var provider type AuthProvider
 function persistSession(auth: AuthResult, provider: AuthProvider): StoredAuthSession {
   saveAuthSession(auth, provider);
 
@@ -22,11 +27,17 @@ function persistSession(auth: AuthResult, provider: AuthProvider): StoredAuthSes
 }
 
 export const authService = {
+  // functionName (para): return type {}
   getSession(): StoredAuthSession | null {
     return getStoredAuthSession();
   },
 
-  async register(input: RegisterInput): Promise<StoredAuthSession> {
+  // async functionName(paraName : paraType) : returnType
+  // input = { name, email, pw }
+  // async -> inside has await
+  async register(input: RegisterInput): Promise<StoredAuthSession> {// promise to return StoredAuthSession later
+
+    // call backend + wait -> fin + response
     const response = await authApi.register(input);
 
     return persistSession(response.data, "password");

@@ -89,6 +89,7 @@ export type LoginInput = {
   password: string;
 };
 
+// result after login or register
 export type AuthResult = {
   token: string;
   user: AuthUser;
