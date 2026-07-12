@@ -36,33 +36,27 @@ export const habitBodySchema = z.object({
   name: habitNameSchema,
 });
 
+const habitIdParamsSchema = z.object({
+  id: z.string().min(1, "Habit id is required."),
+});
+
+const habitIdRequestSchema = z.object({
+  params: habitIdParamsSchema,
+});
+
 export const createHabitRequestSchema = z.object({
   body: habitBodySchema,
 });
 
 export const updateHabitRequestSchema = createHabitRequestSchema.extend({
-  params: z.object({
-    id: z.string().min(1, "Habit id is required."),
-  }),
+  params: habitIdParamsSchema,
 });
 
-export const deleteHabitRequestSchema = z.object({
-  params: z.object({
-    id: z.string().min(1, "Habit id is required."),
-  }),
-});
+export const deleteHabitRequestSchema = habitIdRequestSchema;
 
-export const archiveHabitRequestSchema = z.object({
-  params: z.object({
-    id: z.string().min(1, "Habit id is required."),
-  }),
-});
+export const archiveHabitRequestSchema = habitIdRequestSchema;
 
-export const restoreHabitRequestSchema = z.object({
-  params: z.object({
-    id: z.string().min(1, "Habit id is required."),
-  }),
-});
+export const restoreHabitRequestSchema = habitIdRequestSchema;
 
 const habitReminderSchema = z
   .object({
