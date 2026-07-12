@@ -158,7 +158,9 @@ BEFORE UPDATE ON habit_reminder_schedules
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
-CREATE TABLE users (
+-- USERS table allow multi-users, by adding id to each record
+-- IF NOT EXISTS -> X run if alr exists -> X 500 server error
+CREATE TABLE IF NOT EXISTS users (
   id BIGSERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
@@ -169,7 +171,7 @@ CREATE TABLE users (
 -- add user_id column to habits, and connect it to the id column in users
 -- ON DELETE CASCADE: If a user is deleted, all their habits are automatically deleted too
 ALTER TABLE habits
-ADD COLUMN user_id BIGINT REFERENCES users(id) ON DELETE CASCADE;
+ADD COLUMN IF NOT EXISTS user_id BIGINT REFERENCES users(id) ON DELETE CASCADE;
 
 
 -- Example:
