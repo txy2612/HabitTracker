@@ -16,18 +16,27 @@ export function todayString(): string {
 
 export function getRecentSevenDays(): string[] {
   const today = new Date();
-  const dayOfWeek = today.getDay();
-  const sundayOffset = -dayOfWeek;
 
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);
-    date.setDate(today.getDate() + sundayOffset + index);
+    date.setDate(today.getDate() - 6 + index);
     return toDateString(date);
   });
 }
 
 export function getDayNumber(dateString: string): string {
   return String(new Date(`${dateString}T00:00:00`).getDate());
+}
+
+export function formatRecentDayLabel(dateString: string): string {
+  if (dateString === todayString()) {
+    return "Today";
+  }
+
+  return new Date(`${dateString}T00:00:00`).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+  });
 }
 
 export function currentMonthString(): string {

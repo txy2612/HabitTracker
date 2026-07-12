@@ -1,7 +1,5 @@
 import type { HabitLog } from "../../../shared/types/api.types";
-import { getDayNumber, todayString } from "../../../shared/utils/dateUtils";
-
-const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+import { formatRecentDayLabel, getDayNumber, todayString } from "../../../shared/utils/dateUtils";
 
 export type StreakDotsRowProps = {
   dates: string[];
@@ -43,17 +41,15 @@ function getConnectorClasses(leftDate: string, rightDate: string, leftLog?: Habi
 }
 
 export function StreakDotsRow({ dates, logs, onSelectDate }: StreakDotsRowProps) {
-  const visibleWeekdayLabels = weekdayLabels.slice(0, dates.length);
-
   return (
     <div>
       <div className="mb-2 flex items-center">
-        {visibleWeekdayLabels.map((label, index) => (
-          <div className="flex items-center" key={`${label}-${index}`}>
-            <span className="block w-10 text-center text-[11px] font-medium text-[#9ca3af]">
-              {label}
+        {dates.map((date, index) => (
+          <div className="flex items-center" key={`label-${date}`}>
+            <span className="block w-10 text-center text-[10px] font-medium text-[#9ca3af]">
+              {formatRecentDayLabel(date)}
             </span>
-            {index < visibleWeekdayLabels.length - 1 ? <span className="w-3 shrink-0" aria-hidden="true" /> : null}
+            {index < dates.length - 1 ? <span className="w-3 shrink-0" aria-hidden="true" /> : null}
           </div>
         ))}
       </div>
