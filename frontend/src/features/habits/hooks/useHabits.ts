@@ -6,6 +6,17 @@ import type {
   UpdateHabitInput,
 } from "../../../shared/types/api.types";
 
+/* Purpose of this file:
+ - handle logic of the App, but moved to reusable function
+
+ Mini-project: App stores users
+ Habit Tracker: useHabits stores habits
+
+ Mini-project: has deleteUser()
+ Habit Tracker: useHabits has deleteHabit()
+
+*/
+
 // desc what useHabits() returns
 // if someone call useHabits(), they will receive these
 export type UseHabitsResult = {

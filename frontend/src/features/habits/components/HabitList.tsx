@@ -13,20 +13,23 @@ type HabitSortOption =
 export type HabitListProps = {
   habits: Habit[];
   onViewHabit: (habitId: string) => void;
+  onArchiveHabit: (habitId: string) => Promise<void>;
   onDeleteHabit: (habitId: string) => Promise<void>;
   onUpdateHabit: (habitId: string, name: string) => Promise<void>;
   onEditReminder: (habitId: string) => void;
   onOpenReminders: () => void;
 };
 
+// W/o destructuring: function HabitList(props: HabitListProps) { props.habits, props.onArchiveHabit, props.blabla }
 export function HabitList({
   habits,
   onViewHabit,
+  onArchiveHabit,
   onDeleteHabit,
   onUpdateHabit,
   onEditReminder,
   onOpenReminders,
-}: HabitListProps) {
+}: HabitListProps) {// destructuring
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<HabitSortOption>("newest");
 
@@ -134,6 +137,7 @@ export function HabitList({
             <HabitCard
               habit={habit}
               key={habit.id}
+              onArchiveHabit={onArchiveHabit}
               onDeleteHabit={onDeleteHabit}
               onEditReminder={onEditReminder}
               onUpdateHabit={onUpdateHabit}

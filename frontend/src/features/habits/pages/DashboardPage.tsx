@@ -5,6 +5,7 @@ import { Button } from "../../../shared/components/Button";
 import { AddHabitModal } from "../components/AddHabitModal";
 import { HabitList } from "../components/HabitList";
 import { useHabits } from "../hooks/useHabits";
+import { ArchivedHabitsPage } from "./ArchivedHabitsPage";
 import { HabitDetailPage } from "./HabitDetailPage";
 import { ReminderSettingsPage } from "../../reminders/ReminderSettingsPage";
 
@@ -12,16 +13,20 @@ export function DashboardPage() {
   const { logout, user } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   
-  // dashboard itself doesnt fetch directly, it asks the hook
-  // get habit state from useHabits
+  // call useHabits {habits, isLoading, error, archive, create, delete, update } from useHabits.ts
   const {
-    habits, // get the list of habits
-    isLoading, // tell if loading/error
+    habits, 
+    archivedHabits,
+    isLoading,
+    isArchivedLoading,
     error,
+    archiveHabit,
     createHabit,
     updateHabit,
     deleteHabit,
+    fetchArchivedHabits,
     fetchHabits,
+    restoreHabit,
   } = useHabits();
 
   // Modal state
@@ -30,6 +35,7 @@ export function DashboardPage() {
 
   // false -> dashboard showing, true -> reminder page showing
   const [isReminderCenterOpen, setIsReminderCenterOpen] = useState(false);
+  const [isArchivedHabitsOpen, setIsArchivedHabitsOpen] = useState(false);
   const [focusedReminderHabitId, setFocusedReminderHabitId] = useState<string | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
@@ -65,6 +71,16 @@ export function DashboardPage() {
   function handleCloseReminderCenter() {
     setIsReminderCenterOpen(false);
     setFocusedReminderHabitId(null);
+  }
+
+  function handleCloseArchivedHabits() {
+    setIsArchivedHabitsOpen(false);
+  }
+
+  function handleOpenArchivedHabits() {
+    setIsProfileMenuOpen(false);
+    setIsArchivedHabitsOpen(true);
+    void fetchArchivedHabits();
   }
 
   useEffect(() => {
@@ -105,6 +121,18 @@ export function DashboardPage() {
 
   if (selectedHabit) {
     return <HabitDetailPage habit={selectedHabit} onClose={() => setSelectedHabitId(null)} />;
+  }
+
+  if (isArchivedHabitsOpen) {
+    return (
+      <ArchivedHabitsPage
+        archivedHabits={archivedHabits}
+        error={error}
+        isLoading={isArchivedLoading}
+        onClose={handleCloseArchivedHabits}
+        onRestoreHabit={restoreHabit}
+      />
+    );
   }
 
   // switch page when Reminder Center is opne
@@ -170,6 +198,13 @@ export function DashboardPage() {
                     </div>
                     <div className="grid gap-1 px-2 py-2">
                       <button
+                        className="rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                        onClick={handleOpenArchivedHabits}
+                        type="button"
+                      >
+                        View archived habits
+                      </button>
+                      <button
                         className="flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-slate-400"
                         disabled
                         type="button"
@@ -220,6 +255,7 @@ export function DashboardPage() {
         {!isLoading ? (
           <HabitList
             habits={habits}
+            onArchiveHabit={archiveHabit}
             onDeleteHabit={deleteHabit}
             onEditReminder={handleEditHabitReminder}
             onOpenReminders={handleOpenReminderCenter}

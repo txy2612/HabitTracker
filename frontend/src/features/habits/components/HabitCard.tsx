@@ -21,6 +21,9 @@ export type HabitCardProps = {
 
   // actions
   onViewHabit: (habitId: string) => void;
+
+  // when it touches repo -> DB -> likely a Promise (takes time)
+  onArchiveHabit: (habitId: string) => Promise<void>;
   onDeleteHabit: (habitId: string) => Promise<void>;
   onUpdateHabit: (habitId: string, name: string) => Promise<void>; // receives HabitId, takes time (call backend) + returns ntg
   onEditReminder: (habitId: string) => void;
@@ -31,6 +34,7 @@ export type HabitCardProps = {
 export function HabitCard({
   habit,
   onViewHabit,
+  onArchiveHabit,
   onDeleteHabit,
   onUpdateHabit,
   onEditReminder,
@@ -45,6 +49,7 @@ export function HabitCard({
 
   // three-dot menu open?
   const [isSavingName, setIsSavingName] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [draftName, setDraftName] = useState(habit.name);
@@ -94,6 +99,17 @@ export function HabitCard({
       // The habits hook owns the visible error message.
     } finally {
       setIsDeleting(false);
+    }
+  }
+
+  async function handleArchiveHabit() {
+    try {
+      setIsArchiving(true);
+      await onArchiveHabit(habit.id);
+    } catch {
+      // The habits hook owns the visible error message.
+    } finally {
+      setIsArchiving(false);
     }
   }
 
@@ -186,7 +202,7 @@ export function HabitCard({
 
       {isMenuOpen ? (
         <div
-          className="absolute right-5 top-11 z-10 w-36 overflow-hidden rounded-xl border border-slate-100 bg-white py-1 text-sm shadow-lg"
+          className="absolute right-5 top-11 z-10 w-40 overflow-hidden rounded-xl border border-slate-100 bg-white py-1 text-sm shadow-lg"
           onClick={(event) => event.stopPropagation()}
         >
           <button
@@ -199,6 +215,17 @@ export function HabitCard({
             type="button"
           >
             Edit name
+          </button>
+          <button
+            className="block w-full px-3 py-2 text-left text-amber-700 hover:bg-amber-50 disabled:text-amber-400"
+            disabled={isArchiving}
+            onClick={() => {
+              void handleArchiveHabit();
+              setIsMenuOpen(false);
+            }}
+            type="button"
+          >
+            {isArchiving ? "Archiving..." : "Archive habit"}
           </button>
           
           {/* when deletion is happeing, isDeleting = true 

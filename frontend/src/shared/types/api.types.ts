@@ -9,7 +9,7 @@ export type Habit = {
   reminderScheduleType: ReminderScheduleType;
   reminderWeekdays: ReminderWeekday[];
   reminderSpecificDate: string | null;
-  archivedAt: string | null;
+  archivedAt: string | null;// tells backend: ev habit returned by repo/controller/service may now include archivedAt
   createdAt: string;
 };
 
