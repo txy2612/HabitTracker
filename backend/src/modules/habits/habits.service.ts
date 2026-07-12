@@ -2,9 +2,12 @@ import type { Habit } from "../../shared/types.js";
 import type { HabitBody, UpdateHabitRemindersRequest } from "./habits.schema.js";
 import { HttpError } from "../../shared/httpError.js";
 import {
+  archiveHabitById,
   deleteHabitById,
-  findHabits,
+  findActiveHabits,
+  findArchivedHabits,
   insertHabit,
+  restoreHabitById,
   updateHabitName,
   updateHabitReminders as updateHabitRemindersRepository,
 } from "./habits.repository.js";
@@ -21,7 +24,11 @@ export async function createHabit(userId: string, input: HabitBody): Promise<Hab
 }
 
 export async function listHabits(userId: string): Promise<Habit[]> {
-  return findHabits(userId);// Repo later: SELECT * FROM habits
+  return findActiveHabits(userId);// Repo later: SELECT * FROM habits
+}
+
+export async function listArchivedHabits(userId: string): Promise<Habit[]> {
+  return findArchivedHabits(userId);
 }
 
 export async function renameHabit(
@@ -54,6 +61,32 @@ export async function deleteHabit(userId: string, id: string): Promise<void> {
       type: "https://habit-tracker.local/problems/habit-not-found",
     });
   }
+}
+
+export async function archiveHabit(userId: string, id: string): Promise<Habit> {
+  const habit = await archiveHabitById(userId, id);
+
+  if (!habit) {
+    throw new HttpError(404, "Habit not found.", {
+      title: "Habit not found",
+      type: "https://habit-tracker.local/problems/habit-not-found",
+    });
+  }
+
+  return habit;
+}
+
+export async function restoreHabit(userId: string, id: string): Promise<Habit> {
+  const habit = await restoreHabitById(userId, id);
+
+  if (!habit) {
+    throw new HttpError(404, "Habit not found.", {
+      title: "Habit not found",
+      type: "https://habit-tracker.local/problems/habit-not-found",
+    });
+  }
+
+  return habit;
 }
 
 // export to controller

@@ -58,12 +58,15 @@ export async function findEmailReminderCandidates(): Promise<EmailReminderCandid
        ON habits.id = schedules.habit_id
      CROSS JOIN user_settings
      WHERE schedules.is_active = true
+       AND habits.archived_at IS NULL 
        AND schedules.reminder_time IS NOT NULL
        AND user_settings.id = 1
        AND user_settings.reminder_email IS NOT NULL
        AND BTRIM(user_settings.reminder_email) <> ''
      ORDER BY habits.created_at DESC`,
   );
+  // Note: when we archive a habit, it has to archive in reminder as well
+  // Only retrive reminders with archived = NULL
 
   return result.rows;
 }

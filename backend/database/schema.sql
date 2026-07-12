@@ -4,14 +4,15 @@ CREATE TABLE IF NOT EXISTS habits (
   name TEXT NOT NULL,
   reminder_enabled BOOLEAN NOT NULL DEFAULT false,
   reminder_time TIME,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() -- auto records creation time
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  archived_at TIMESTAMPTZ NULL
 );
 
--- keep schema compatible with existing databases
+-- keep schema compatible with existing databases (DB doesnt auto change when we make add smtg to it)
 ALTER TABLE habits
   ADD COLUMN IF NOT EXISTS reminder_enabled BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS reminder_time TIME,
-  DROP COLUMN IF EXISTS archived_at;
+  ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
 
 
 CREATE TABLE IF NOT EXISTS habit_logs (
@@ -169,7 +170,6 @@ CREATE TABLE users (
 -- ON DELETE CASCADE: If a user is deleted, all their habits are automatically deleted too
 ALTER TABLE habits
 ADD COLUMN user_id BIGINT REFERENCES users(id) ON DELETE CASCADE;
-
 
 
 -- Example:

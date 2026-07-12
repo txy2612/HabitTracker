@@ -6,6 +6,7 @@ export type Habit = {
   reminder_schedule_type: ReminderScheduleType | null;
   reminder_weekdays: ReminderWeekday[];
   reminder_specific_date: string | null;
+  archived_at: string | null;
   created_at: string;
 };
 

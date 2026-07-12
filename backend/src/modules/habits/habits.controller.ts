@@ -1,8 +1,10 @@
 import { Router, type RequestHandler } from "express";
 import { validate } from "../../middleware/validate.js";
 import type {
+  ArchiveHabitRequest,
   CreateHabitRequest,
   DeleteHabitRequest,
+  RestoreHabitRequest,
   UpdateHabitRemindersRequest,
   UpdateHabitRequest,
 } from "./habits.schema.js";
@@ -10,17 +12,22 @@ import type {
 // REMOVED after compilation
 // js do NOT have this (that checks the program)
 import {
+  archiveHabitRequestSchema,
   createHabitRequestSchema,
   deleteHabitRequestSchema,
+  restoreHabitRequestSchema,
   updateHabitRemindersRequestSchema,
   updateHabitRequestSchema,
 } from "./habits.schema.js";// real values
 // import for runtime validation
 import {
+  archiveHabit as archiveHabitService,
   createHabit as createHabitService,
   deleteHabit as deleteHabitService,
+  listArchivedHabits,
   listHabits,
   renameHabit,
+  restoreHabit as restoreHabitService,
   saveHabitReminders,
 } from "./habits.service.js";
 import { getReminderSettings } from "../reminders/reminders.service.js";
@@ -51,6 +58,17 @@ const getHabits: RequestHandler = async (request, response, next) => {
   try {
     const userId = request.user!.id;
     const habits = await listHabits(userId);
+
+    response.json(habits);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getArchivedHabits: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = request.user!.id;
+    const habits = await listArchivedHabits(userId);
 
     response.json(habits);
   } catch (error) {
@@ -112,11 +130,38 @@ const deleteHabit: RequestHandler = async (request, response, next) => {
   }
 };
 
+const archiveHabit: RequestHandler = async (request, response, next) => {
+  try {
+    const { params } = request.validated as ArchiveHabitRequest;
+    const userId = request.user!.id;
+    const habit = await archiveHabitService(userId, params.id);
+
+    response.json(habit);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const restoreHabit: RequestHandler = async (request, response, next) => {
+  try {
+    const { params } = request.validated as RestoreHabitRequest;
+    const userId = request.user!.id;
+    const habit = await restoreHabitService(userId, params.id);
+
+    response.json(habit);
+  } catch (error) {
+    next(error);
+  }
+};
+
 router.post("/", validate(createHabitRequestSchema), createHabit);
 router.get("/", getHabits);
+router.get("/archived", getArchivedHabits);
 router.get("/reminders", getHabitReminderSettings);
 router.patch("/reminders", validate(updateHabitRemindersRequestSchema), updateHabitReminders); 
 // patch = update part of existing data (Change reminder time only)
+router.patch("/:id/archive", validate(archiveHabitRequestSchema), archiveHabit);
+router.patch("/:id/restore", validate(restoreHabitRequestSchema), restoreHabit);
 router.put("/:id", validate(updateHabitRequestSchema), updateHabit);
 router.delete("/:id", validate(deleteHabitRequestSchema), deleteHabit);
 

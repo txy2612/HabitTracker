@@ -28,6 +28,7 @@ const habitSelectQuery = `
     schedules.schedule_type AS reminder_schedule_type,
     COALESCE(schedules.weekdays, '{}'::smallint[]) AS reminder_weekdays,
     schedules.specific_date::text AS reminder_specific_date,
+    habits.archived_at::text AS archived_at,
     habits.created_at
   FROM habits
   LEFT JOIN habit_reminder_schedules AS schedules
@@ -56,12 +57,25 @@ export async function insertHabit(userId: string, name: string): Promise<Habit> 
   return result.rows[0];
 }
 
-// findHabits() -> SELECT * -> Fetch all habits
-export async function findHabits(userId: string): Promise<Habit[]> {
+// find active habits() -> SELECT * -> Fetch all non-archived habits
+export async function findActiveHabits(userId: string): Promise<Habit[]> {
   const result = await pool.query<Habit>(
     `${habitSelectQuery}
      WHERE habits.user_id = $1::bigint
+       AND habits.archived_at IS NULL
      ORDER BY created_at DESC`,
+    [userId],
+  );
+
+  return result.rows;
+}
+
+export async function findArchivedHabits(userId: string): Promise<Habit[]> {
+  const result = await pool.query<Habit>(
+    `${habitSelectQuery}
+     WHERE habits.user_id = $1::bigint
+       AND habits.archived_at IS NOT NULL
+     ORDER BY habits.archived_at DESC, habits.created_at DESC`,
     [userId],
   );
 
@@ -101,6 +115,56 @@ export async function deleteHabitById(userId: string, id: string): Promise<boole
   );
 
   return (result.rowCount ?? 0) > 0;
+}
+
+export async function archiveHabitById(userId: string, id: string): Promise<Habit | null> {
+  const updateResult = await pool.query<{ id: string }>(
+    `UPDATE habits
+     SET archived_at = NOW()
+     WHERE user_id = $1::bigint
+       AND id = $2
+       AND archived_at IS NULL
+     RETURNING id`,
+    [userId, id],
+  );
+
+  if (updateResult.rowCount === 0) {
+    return null;
+  }
+
+  const archivedHabit = await pool.query<Habit>(
+    `${habitSelectQuery}
+     WHERE habits.id = $1
+       AND habits.user_id = $2::bigint`,
+    [id, userId],
+  );
+
+  return archivedHabit.rows[0] ?? null;
+}
+
+export async function restoreHabitById(userId: string, id: string): Promise<Habit | null> {
+  const updateResult = await pool.query<{ id: string }>(
+    `UPDATE habits
+     SET archived_at = NULL
+     WHERE user_id = $1::bigint
+       AND id = $2
+       AND archived_at IS NOT NULL
+     RETURNING id`,
+    [userId, id],
+  );
+
+  if (updateResult.rowCount === 0) {
+    return null;
+  }
+
+  const result = await pool.query<Habit>(
+    `${habitSelectQuery}
+     WHERE habits.id = $1
+       AND habits.user_id = $2::bigint`,
+    [id, userId],
+  );
+
+  return result.rows[0] ?? null;
 }
 
 export async function updateHabitReminders(

@@ -52,6 +52,18 @@ export const deleteHabitRequestSchema = z.object({
   }),
 });
 
+export const archiveHabitRequestSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, "Habit id is required."),
+  }),
+});
+
+export const restoreHabitRequestSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, "Habit id is required."),
+  }),
+});
+
 const habitReminderSchema = z
   .object({
     id: z.string().min(1, "Habit id is required."),
@@ -159,5 +171,7 @@ export type HabitBody = z.infer<typeof habitBodySchema>;
 export type CreateHabitRequest = z.infer<typeof createHabitRequestSchema>;
 export type UpdateHabitRequest = z.infer<typeof updateHabitRequestSchema>;
 export type DeleteHabitRequest = z.infer<typeof deleteHabitRequestSchema>;
+export type ArchiveHabitRequest = z.infer<typeof archiveHabitRequestSchema>;
+export type RestoreHabitRequest = z.infer<typeof restoreHabitRequestSchema>;
 export type UpdateHabitRemindersRequest = z.infer<typeof updateHabitRemindersRequestSchema>;
 export type HabitReminderInput = z.infer<typeof habitReminderSchema>;
