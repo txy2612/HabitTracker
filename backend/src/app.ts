@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import { requestLogger } from "./middleware/requestLogger.js";
 import { checkDatabaseHealth } from "./db/health.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import habitsRouter from "./routes.js";
@@ -8,9 +9,9 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { notFoundHandler } from "./middleware/notFoundHandler.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import { requestId } from "./middleware/requestId.js";
-
 export const app = express();
 
+app.use(requestLogger);
 app.use(
   cors({
     origin: env.corsOrigin,
