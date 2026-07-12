@@ -25,6 +25,7 @@ export type UseHabitsResult = {
   isLoading: boolean;
   isArchivedLoading: boolean;
   error: string | null;
+  archivedError: string | null; // add archivedError -> Habits & ArchivedHabits pages X share same error -> if error happens we can know which one 
   fetchHabits: () => Promise<void>; // () = takes no arguments ; Promise<void> = finishes later & returns ntg
   fetchArchivedHabits: () => Promise<void>;
   createHabit: (input: CreateHabitInput) => Promise<void>;
@@ -44,6 +45,7 @@ export function useHabits(): UseHabitsResult {
   const [isLoading, setIsLoading] = useState(true);
   const [isArchivedLoading, setIsArchivedLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [archivedError, setArchivedError] = useState<string | null>(null);
 
 
   // useCallback = keep the function stable btwn renders
@@ -67,12 +69,12 @@ export function useHabits(): UseHabitsResult {
   const fetchArchivedHabits = useCallback(async () => {
     try {
       setIsArchivedLoading(true);
-      setError(null);
+      setArchivedError(null);
 
       const data = await apiClient.getArchivedHabits();
       setArchivedHabits(data);
     } catch (fetchError) {
-      setError(fetchError instanceof Error ? fetchError.message : "Failed to load archived habits.");
+      setArchivedError(fetchError instanceof Error ? fetchError.message : "Failed to load archived habits.");
     } finally {
       setIsArchivedLoading(false);
     }
@@ -81,6 +83,7 @@ export function useHabits(): UseHabitsResult {
   const createHabit = useCallback(async (input: CreateHabitInput) => {
     try {
       setError(null);
+      setArchivedError(null);
 
       // create habit
       const habit = await apiClient.createHabit(input);
@@ -94,6 +97,7 @@ export function useHabits(): UseHabitsResult {
   const updateHabit = useCallback(async (habitId: string, input: UpdateHabitInput) => {
     try {
       setError(null);
+      setArchivedError(null);
 
       // update habit
       const updatedHabit = await apiClient.updateHabit(habitId, input);
@@ -114,6 +118,7 @@ export function useHabits(): UseHabitsResult {
   const archiveHabit = useCallback(async (habitId: string) => {
     try {
       setError(null);
+      setArchivedError(null);
 
       const archivedHabit = await apiClient.archiveHabit(habitId);
       setHabits((currentHabits) => currentHabits.filter((habit) => habit.id !== habitId));
@@ -127,6 +132,7 @@ export function useHabits(): UseHabitsResult {
   const restoreHabit = useCallback(async (habitId: string) => {
     try {
       setError(null);
+      setArchivedError(null);
 
       const restoredHabit = await apiClient.restoreHabit(habitId);
       setArchivedHabits((currentArchivedHabits) => currentArchivedHabits.filter((habit) => habit.id !== habitId));
@@ -140,6 +146,7 @@ export function useHabits(): UseHabitsResult {
   const deleteHabit = useCallback(async (habitId: string) => {
     try {
       setError(null);
+      setArchivedError(null);
 
       await apiClient.deleteHabit(habitId);
       setHabits((currentHabits) => currentHabits.filter((habit) => habit.id !== habitId));
@@ -185,6 +192,7 @@ export function useHabits(): UseHabitsResult {
     isLoading,
     isArchivedLoading,
     error,
+    archivedError,
     fetchHabits,
     fetchArchivedHabits,
     createHabit,

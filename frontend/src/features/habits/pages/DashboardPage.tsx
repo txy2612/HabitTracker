@@ -20,6 +20,7 @@ export function DashboardPage() {
     isLoading,
     isArchivedLoading,
     error,
+    archivedError,
     archiveHabit,
     createHabit,
     updateHabit,
@@ -127,7 +128,7 @@ export function DashboardPage() {
     return (
       <ArchivedHabitsPage
         archivedHabits={archivedHabits}
-        error={error}
+        error={archivedError}
         isLoading={isArchivedLoading}
         onClose={handleCloseArchivedHabits}
         onRestoreHabit={restoreHabit}

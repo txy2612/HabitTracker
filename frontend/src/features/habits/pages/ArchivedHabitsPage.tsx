@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "../../../shared/components/Button";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import type { Habit } from "../../../shared/types/api.types";
@@ -29,6 +30,18 @@ export function ArchivedHabitsPage({
   onClose,
   onRestoreHabit,
 }: ArchivedHabitsPageProps) {
+  // many habits in archived, how to know which one is restoring -> s=restoring + id
+  const [restoringHabitId, setRestoringHabitId] = useState<string | null>(null);
+
+  async function handleRestoreHabit(habitId: string) {
+    try {
+      setRestoringHabitId(habitId);
+      await onRestoreHabit(habitId);
+    } finally {
+      setRestoringHabitId(null);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#fafafa] px-6 py-8 text-slate-950 lg:px-10">
       <div className="mx-auto w-full max-w-7xl">
@@ -51,13 +64,20 @@ export function ArchivedHabitsPage({
           </div>
         ) : null}
 
-        {!isLoading && archivedHabits.length === 0 ? (
+        {!isLoading && !error ? (
+          <div className="mb-5 rounded-[24px] border border-slate-200 bg-white px-5 py-4 text-sm text-slate-600 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+            Archived habits are paused.
+            <span className="ml-1 text-slate-500">Restore one to edit reminders, logs, or habit details again.</span>
+          </div>
+        ) : null}
+
+        {!isLoading && !error && archivedHabits.length === 0 ? (
           <EmptyState title="No archived habits">
             <p>Archived habits will show up here once you archive them from the dashboard.</p>
           </EmptyState>
         ) : null}
 
-        {archivedHabits.length > 0 ? (
+        {!error && archivedHabits.length > 0 ? (
           <section className="grid gap-4 lg:grid-cols-2">
             {archivedHabits.map((habit) => (
               <article
@@ -71,11 +91,12 @@ export function ArchivedHabitsPage({
                   </div>
                   <Button
                     className="rounded-full px-4"
-                    onClick={() => void onRestoreHabit(habit.id)}
+                    disabled={restoringHabitId === habit.id}
+                    onClick={() => void handleRestoreHabit(habit.id)}
                     type="button"
                     variant="secondary"
                   >
-                    Restore
+                    {restoringHabitId === habit.id ? "Restoring..." : "Restore"}
                   </Button>
                 </div>
               </article>
