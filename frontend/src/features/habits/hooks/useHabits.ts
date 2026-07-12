@@ -10,11 +10,16 @@ import type {
 // if someone call useHabits(), they will receive these
 export type UseHabitsResult = {
   habits: Habit[];// array of habits
+  archivedHabits: Habit[];
   isLoading: boolean;
+  isArchivedLoading: boolean;
   error: string | null;
   fetchHabits: () => Promise<void>; // () = takes no arguments ; Promise<void> = finishes later & returns ntg
+  fetchArchivedHabits: () => Promise<void>;
   createHabit: (input: CreateHabitInput) => Promise<void>;
   updateHabit: (habitId: string, input: UpdateHabitInput) => Promise<void>;
+  archiveHabit: (habitId: string) => Promise<void>;
+  restoreHabit: (habitId: string) => Promise<void>;
   deleteHabit: (habitId: string) => Promise<void>;
   moveHabitLocal: (habitId: string, direction: "up" | "down") => void;
 };
@@ -24,7 +29,9 @@ export function useHabits(): UseHabitsResult {
   // stores: habits, error msg, loading status
   //useStates = store changing data
   const [habits, setHabits] = useState<Habit[]>([]);
+  const [archivedHabits, setArchivedHabits] = useState<Habit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isArchivedLoading, setIsArchivedLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
 
@@ -43,6 +50,20 @@ export function useHabits(): UseHabitsResult {
       setError(fetchError instanceof Error ? fetchError.message : "Failed to load habits.");
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  const fetchArchivedHabits = useCallback(async () => {
+    try {
+      setIsArchivedLoading(true);
+      setError(null);
+
+      const data = await apiClient.getArchivedHabits();
+      setArchivedHabits(data);
+    } catch (fetchError) {
+      setError(fetchError instanceof Error ? fetchError.message : "Failed to load archived habits.");
+    } finally {
+      setIsArchivedLoading(false);
     }
   }, []);
 
@@ -70,9 +91,38 @@ export function useHabits(): UseHabitsResult {
       // otherwise keep it unchanged
         currentHabits.map((habit) => (habit.id === habitId ? updatedHabit : habit)),
       );
+      setArchivedHabits((currentArchivedHabits) =>
+        currentArchivedHabits.map((habit) => (habit.id === habitId ? updatedHabit : habit)),
+      );
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : "Failed to update habit.");
       throw updateError;
+    }
+  }, []);
+
+  const archiveHabit = useCallback(async (habitId: string) => {
+    try {
+      setError(null);
+
+      const archivedHabit = await apiClient.archiveHabit(habitId);
+      setHabits((currentHabits) => currentHabits.filter((habit) => habit.id !== habitId));
+      setArchivedHabits((currentArchivedHabits) => [archivedHabit, ...currentArchivedHabits]);
+    } catch (archiveError) {
+      setError(archiveError instanceof Error ? archiveError.message : "Failed to archive habit.");
+      throw archiveError;
+    }
+  }, []);
+
+  const restoreHabit = useCallback(async (habitId: string) => {
+    try {
+      setError(null);
+
+      const restoredHabit = await apiClient.restoreHabit(habitId);
+      setArchivedHabits((currentArchivedHabits) => currentArchivedHabits.filter((habit) => habit.id !== habitId));
+      setHabits((currentHabits) => [restoredHabit, ...currentHabits]);
+    } catch (restoreError) {
+      setError(restoreError instanceof Error ? restoreError.message : "Failed to restore habit.");
+      throw restoreError;
     }
   }, []);
 
@@ -120,11 +170,16 @@ export function useHabits(): UseHabitsResult {
 
   return {
     habits,
+    archivedHabits,
     isLoading,
+    isArchivedLoading,
     error,
     fetchHabits,
+    fetchArchivedHabits,
     createHabit,
     updateHabit,
+    archiveHabit,
+    restoreHabit,
     deleteHabit,
     moveHabitLocal,
   };

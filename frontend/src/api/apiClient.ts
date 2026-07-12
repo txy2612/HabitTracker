@@ -33,6 +33,7 @@ type HabitRow = {
   reminder_schedule_type: ReminderScheduleType | null;
   reminder_weekdays: ReminderWeekday[] | null;
   reminder_specific_date: string | null;
+  archived_at: string | null;
   created_at: string;
 };
 
@@ -80,6 +81,7 @@ function mapHabit(row: HabitRow): Habit {
     reminderScheduleType: row.reminder_schedule_type ?? "daily",
     reminderWeekdays: row.reminder_weekdays ?? [],
     reminderSpecificDate: row.reminder_specific_date,
+    archivedAt: row.archived_at,
     createdAt: row.created_at,
   };
 }
@@ -138,6 +140,11 @@ export const apiClient = {
     return habits.map(mapHabit);
   },
 
+  getArchivedHabits: async (): Promise<Habit[]> => {
+    const habits = await request<HabitRow[]>("/habits/archived");
+    return habits.map(mapHabit);
+  },
+
   createHabit: async (input: CreateHabitInput): Promise<Habit> => {
     const habit = await request<HabitRow>("/habits", {
       method: "POST",
@@ -151,6 +158,22 @@ export const apiClient = {
     const habit = await request<HabitRow>(`/habits/${habitId}`, {
       method: "PUT",
       body: JSON.stringify(input),
+    });
+
+    return mapHabit(habit);
+  },
+
+  archiveHabit: async (habitId: string): Promise<Habit> => {
+    const habit = await request<HabitRow>(`/habits/${habitId}/archive`, {
+      method: "PATCH",
+    });
+
+    return mapHabit(habit);
+  },
+
+  restoreHabit: async (habitId: string): Promise<Habit> => {
+    const habit = await request<HabitRow>(`/habits/${habitId}/restore`, {
+      method: "PATCH",
     });
 
     return mapHabit(habit);
