@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import type { Habit, ReminderScheduleType, ReminderWeekday } from "../../shared/types/api.types";
 import { Button } from "../../shared/components/Button";
 import { useReminders, type ReminderDraft } from "./useReminders";
+import { formatReminderSchedule } from "./reminderSummary";
 
 /*ReminderSettingsPage.tsx = UI / screen
 
@@ -18,6 +20,7 @@ export type ReminderSettingsPageProps = {
   habits: Habit[];
   isLoading: boolean;
   error: string | null;
+  focusedHabitId?: string | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
 };
@@ -39,30 +42,32 @@ const weekdayOptions: { value: ReminderWeekday; label: string }[] = [
 ];
 
 function formatReminderSummary(habit: ReminderDraft) {
-  const time = habit.reminderTime ?? "09:00";
-
-  if (habit.scheduleType === "weekly") {
-    if (habit.weekdays.length === 0) {
-      return `Saved schedule: pick weekdays at ${time}`;
-    }
-
-    const labels = weekdayOptions
-      .filter((weekday) => habit.weekdays.includes(weekday.value))
-      .map((weekday) => weekday.label)
-      .join(", ");
-
-    return `Saved schedule: ${labels} at ${time}`;
-  }
-
-  if (habit.scheduleType === "specific_date") {
-    return `Saved schedule: ${habit.specificDate ?? "pick a date"} at ${time}`;
-  }
-
-  return `Saved schedule: every day at ${time}`;
+  return `Saved schedule: ${formatReminderSchedule(habit)}`;
 }
 
-export function ReminderSettingsPage({ habits, isLoading, error, onClose, onSaved }: ReminderSettingsPageProps) {
+export function ReminderSettingsPage({
+  habits,
+  isLoading,
+  error,
+  focusedHabitId = null,
+  onClose,
+  onSaved,
+}: ReminderSettingsPageProps) {
   const reminders = useReminders(habits);// custom hook (starts with 'use')
+
+  useEffect(() => {
+    if (!focusedHabitId) {
+      return;
+    }
+
+    const target = document.getElementById(`reminder-habit-${focusedHabitId}`);
+
+    if (!target) {
+      return;
+    }
+
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [focusedHabitId, reminders.drafts]);
 
   async function handleSave() {
     try {
@@ -117,8 +122,13 @@ export function ReminderSettingsPage({ habits, isLoading, error, onClose, onSave
               {reminders.drafts.map((habit) => (
                 <section
                   className={`rounded-[28px] border px-5 py-5 shadow-[0_16px_35px_rgba(15,23,42,0.06)] transition sm:px-6 ${
-                    habit.reminderEnabled ? "border-emerald-200 bg-white" : "border-slate-200 bg-[#fbfbf8]"
+                    focusedHabitId === habit.id
+                      ? "border-emerald-400 bg-emerald-50/40 ring-2 ring-emerald-100"
+                      : habit.reminderEnabled
+                        ? "border-emerald-200 bg-white"
+                        : "border-slate-200 bg-[#fbfbf8]"
                   }`}
+                  id={`reminder-habit-${habit.id}`}
                   key={habit.id}
                 >
                   <div className="mb-5 flex flex-col gap-4 border-b border-slate-100 pb-5 lg:flex-row lg:items-start lg:justify-between">

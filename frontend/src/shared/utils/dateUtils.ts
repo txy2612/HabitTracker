@@ -52,6 +52,14 @@ export function formatMonthLabel(month: string): string {
   });
 }
 
+export function formatMonthName(month: string): string {
+  const [year, monthNumber] = month.split("-").map(Number);
+
+  return new Date(year, monthNumber - 1).toLocaleDateString(undefined, {
+    month: "long",
+  });
+}
+
 export function getMonthDates(month: string): string[] {
   const [year, monthNumber] = month.split("-").map(Number);
   const totalDays = new Date(year, monthNumber, 0).getDate();

@@ -69,7 +69,9 @@ export function StreakDotsRow({ dates, logs, onSelectDate }: StreakDotsRowProps)
                   isFutureDate ? "" : "hover:scale-105 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
                 } ${getCircleClasses(date, log)}`}
                 disabled={isFutureDate}
-                onClick={() => {
+                onClick={(event) => {
+                  event.stopPropagation();
+
                   if (!isFutureDate) {
                     onSelectDate?.(date);
                   }

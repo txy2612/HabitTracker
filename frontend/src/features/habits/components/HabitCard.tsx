@@ -1,13 +1,15 @@
 // each habit card
 
 import { type FormEvent, type KeyboardEvent, useMemo, useState } from "react";
-import type { Habit } from "../../../shared/types/api.types";
+import type { Habit, HabitLogStatus } from "../../../shared/types/api.types";
 import {
   currentMonthString,
   getRecentSevenDays,
 } from "../../../shared/utils/dateUtils";
+import { LogNoteEditor } from "../../habitLogs/components/LogNoteEditor";
 import { StreakDotsRow } from "../../habitLogs/components/StreakDotsRow";
 import { useHabitLogs } from "../../habitLogs/hooks/useHabitLogs";
+import { formatReminderCardSummary } from "../../reminders/reminderSummary";
 
 // props AKA what the card receives 
 // parameters passed into a component
@@ -21,12 +23,7 @@ export type HabitCardProps = {
   onViewHabit: (habitId: string) => void;
   onDeleteHabit: (habitId: string) => Promise<void>;
   onUpdateHabit: (habitId: string, name: string) => Promise<void>; // receives HabitId, takes time (call backend) + returns ntg
-  onMoveHabitUp: (habitId: string) => void;// returns ntg too, but does not call backend
-  onMoveHabitDown: (habitId: string) => void;
-
-  //whether move buttons shud be enabled
-  canMoveUp: boolean;
-  canMoveDown: boolean;
+  onEditReminder: (habitId: string) => void;
 };
 
 // equi:
@@ -36,10 +33,7 @@ export function HabitCard({
   onViewHabit,
   onDeleteHabit,
   onUpdateHabit,
-  onMoveHabitUp,
-  onMoveHabitDown,
-  canMoveUp,
-  canMoveDown,
+  onEditReminder,
 }: HabitCardProps) {// deconstruction
 
   // get recent 7 days & get current month
@@ -47,7 +41,7 @@ export function HabitCard({
   // useMemo = remember(caches) calculated value -> x recalculate
   const weekDates = useMemo(() => getRecentSevenDays(), []);
   const month = currentMonthString();
-  const { logs, isLoading, error } = useHabitLogs(habit.id, month);
+  const { logs, isLoading, error, saveLog } = useHabitLogs(habit.id, month);
 
   // three-dot menu open?
   const [isSavingName, setIsSavingName] = useState(false);
@@ -55,6 +49,12 @@ export function HabitCard({
   const [isEditingName, setIsEditingName] = useState(false);
   const [draftName, setDraftName] = useState(habit.name);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [isSavingLog, setIsSavingLog] = useState(false);
+  const selectedLog = useMemo(
+    () => logs.find((log) => log.logDate === selectedDate),
+    [logs, selectedDate],
+  );
 
   async function handleUpdateName(event: FormEvent<HTMLFormElement>) {
     // stop page refresh
@@ -97,6 +97,24 @@ export function HabitCard({
     }
   }
 
+  async function handleSaveLog(input: { status: HabitLogStatus; note?: string | null }) {
+    if (!selectedDate) {
+      return;
+    }
+
+    try {
+      setIsSavingLog(true);
+      await saveLog(habit.id, {
+        logDate: selectedDate,
+        note: input.note,
+        status: input.status,
+      });
+      setSelectedDate(null);
+    } finally {
+      setIsSavingLog(false);
+    }
+  }
+
   function handleCardKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.target !== event.currentTarget) {
       return;
@@ -117,7 +135,7 @@ export function HabitCard({
       role="button"
       tabIndex={0}
     >
-      <div className="mb-8 flex items-start justify-between gap-4">
+      <div className="mb-5 flex items-start justify-between gap-4">
         {isEditingName ? (
           <form className="grid flex-1 gap-2" onClick={(event) => event.stopPropagation()} onSubmit={handleUpdateName}>
             <input
@@ -166,12 +184,6 @@ export function HabitCard({
         </div>
       </div>
 
-      {/* only shows if isMenuOpen is true */}
-      {/* buttons call parent functions:            onMoveHabitUp(habit.id)
-        onMoveHabitDown(habit.id)
-        onDeleteHabit(habit.id)
-      */}
-      {/* these come from [arents, HabitCard X decide how they work] */}
       {isMenuOpen ? (
         <div
           className="absolute right-5 top-11 z-10 w-36 overflow-hidden rounded-xl border border-slate-100 bg-white py-1 text-sm shadow-lg"
@@ -188,28 +200,7 @@ export function HabitCard({
           >
             Edit name
           </button>
-          <button
-            className="block w-full px-3 py-2 text-left text-slate-600 hover:bg-slate-50 disabled:text-slate-300"
-            disabled={!canMoveUp}
-            onClick={() => {
-              onMoveHabitUp(habit.id);
-              setIsMenuOpen(false);
-            }}
-            type="button"
-          >
-            Move up
-          </button>
-          <button
-            className="block w-full px-3 py-2 text-left text-slate-600 hover:bg-slate-50 disabled:text-slate-300"
-            disabled={!canMoveDown}
-            onClick={() => {
-              onMoveHabitDown(habit.id);
-              setIsMenuOpen(false);
-            }}
-            type="button"
-          >
-            Move down
-          </button>
+          
           {/* when deletion is happeing, isDeleting = true 
               
           button disabled to prevent: delete delete delete delete
@@ -228,10 +219,40 @@ export function HabitCard({
         </div>
       ) : null}
 
-      <StreakDotsRow dates={weekDates} logs={logs} />
+      <div className="grid gap-3">
+        <button
+          aria-label={`Edit reminder for ${habit.name}`}
+          className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-left text-sm transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+          onClick={(event) => {
+            event.stopPropagation();
+            onEditReminder(habit.id);
+          }}
+          type="button"
+        >
+          <span className="font-medium text-slate-500">Reminder:</span>
+          <span className="truncate pl-3 text-right text-slate-700">{formatReminderCardSummary({
+            reminderEnabled: habit.reminderEnabled,
+            reminderTime: habit.reminderTime,
+            scheduleType: habit.reminderScheduleType,
+            weekdays: habit.reminderWeekdays,
+            specificDate: habit.reminderSpecificDate,
+          })}</span>
+        </button>
+
+        <StreakDotsRow dates={weekDates} logs={logs} onSelectDate={setSelectedDate} />
+      </div>
 
       {isLoading ? <p className="mt-3 text-xs text-slate-400">Loading logs...</p> : null}
       {error ? <p className="mt-3 text-xs text-red-500">{error}</p> : null}
+
+      <LogNoteEditor
+        date={selectedDate}
+        isOpen={Boolean(selectedDate)}
+        isSaving={isSavingLog}
+        log={selectedLog}
+        onClose={() => setSelectedDate(null)}
+        onSave={handleSaveLog}
+      />
     </article>
   );
 }
