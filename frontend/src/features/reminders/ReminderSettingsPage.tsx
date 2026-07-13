@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import type { Habit, ReminderScheduleType, ReminderWeekday } from "../../shared/types/api.types";
 import { Button } from "../../shared/components/Button";
+import { EmptyState } from "../../shared/components/EmptyState";
 import { useReminders, type ReminderDraft } from "./useReminders";
 import { formatReminderSchedule } from "./reminderSummary";
+import { ReminderToggle } from "./components/ReminderToggle";
 
 /*ReminderSettingsPage.tsx = UI / screen
 
@@ -42,7 +44,55 @@ const weekdayOptions: { value: ReminderWeekday; label: string }[] = [
 ];
 
 function formatReminderSummary(habit: ReminderDraft) {
-  return `Saved schedule: ${formatReminderSchedule(habit)}`;
+  return formatReminderSchedule(habit);
+}
+
+function ReminderPageSkeleton() {
+  return (
+    <div className="grid gap-5" aria-label="Loading reminder settings">
+      {[0, 1, 2].map((item) => (
+        <div
+          className="rounded-[28px] border border-slate-200 bg-white px-5 py-5 shadow-[0_16px_35px_rgba(15,23,42,0.06)]"
+          key={item}
+        >
+          <div className="mb-5 flex items-start justify-between gap-4 border-b border-slate-100 pb-5">
+            <div className="grid flex-1 gap-3">
+              <div className="h-5 w-44 animate-pulse rounded-full bg-slate-200" />
+              <div className="h-4 w-64 max-w-full animate-pulse rounded-full bg-slate-100" />
+            </div>
+            <div className="h-10 w-[4.5rem] animate-pulse rounded-full bg-slate-200" />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
+            <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
+            <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StatusNotice({
+  tone,
+  title,
+  children,
+}: {
+  tone: "error" | "success";
+  title: string;
+  children: string;
+}) {
+  const styles =
+    tone === "success"
+      ? "border-emerald-100 bg-emerald-50 text-emerald-800"
+      : "border-red-100 bg-red-50 text-red-700";
+
+  return (
+    <div className={`rounded-2xl border px-4 py-3 text-sm ${styles}`}>
+      <p className="font-semibold">{title}</p>
+      <p className="mt-1 opacity-90">{children}</p>
+    </div>
+  );
 }
 
 export function ReminderSettingsPage({
@@ -86,6 +136,10 @@ export function ReminderSettingsPage({
           <div className="grid gap-2">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700">Reminder Studio</p>
             <h1 className="text-3xl font-semibold text-slate-950 sm:text-4xl">Habit Reminders</h1>
+            <p className="max-w-2xl text-sm leading-6 text-slate-500">
+              Choose when each habit should nudge you. Turning a reminder off pauses it, but keeps the saved schedule ready
+              for later.
+            </p>
           </div>
           <button
             className="self-start rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
@@ -98,26 +152,27 @@ export function ReminderSettingsPage({
 
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
           <section className="grid gap-5">
-            {isLoading ? <p className="text-sm text-slate-400">Loading habits...</p> : null}
+            {isLoading ? <ReminderPageSkeleton /> : null}
 
             {error ? (
-              <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+              <StatusNotice title="Could not load habits" tone="error">
                 {error}
-              </div>
+              </StatusNotice>
             ) : null}
 
             {reminders.error ? (
-              <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+              <StatusNotice title="Could not save reminders" tone="error">
                 {reminders.error}
-              </div>
+              </StatusNotice>
             ) : null}
 
-            {!isLoading && reminders.drafts.length === 0 ? (
-              <p className="rounded-2xl border border-slate-200 bg-white px-5 py-6 text-sm text-slate-500 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
-                Add a habit first, then come back to set reminders.
-              </p>
+            {!isLoading && !error && reminders.drafts.length === 0 ? (
+              <EmptyState title="No habits to remind you about yet">
+                <p>Add a habit first, then come back here to choose daily, weekly, or one-time reminders.</p>
+              </EmptyState>
             ) : null}
 
+            {!isLoading && !error ? (
             <div className="grid gap-5">
               {reminders.drafts.map((habit) => (
                 <section
@@ -145,24 +200,17 @@ export function ReminderSettingsPage({
                           {habit.reminderEnabled ? "Active" : "Paused"}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-500">{formatReminderSummary(habit)}</p>
+                      <p className="text-sm text-slate-500">
+                        {habit.reminderEnabled
+                          ? `Reminder will send: ${formatReminderSummary(habit)}`
+                          : `Saved schedule: ${formatReminderSummary(habit)}`}
+                      </p>
                     </div>
-                    <button
-                      aria-checked={habit.reminderEnabled}
-                      aria-label={`${habit.reminderEnabled ? "Disable" : "Enable"} reminder for ${habit.name}`}
-                      className={`relative h-10 w-18 shrink-0 rounded-full transition ${
-                        habit.reminderEnabled ? "bg-emerald-500" : "bg-slate-300"
-                      }`}
-                      onClick={() => reminders.setReminderEnabled(habit.id, !habit.reminderEnabled)}
-                      role="switch"
-                      type="button"
-                    >
-                      <span
-                        className={`absolute top-1.5 h-7 w-7 rounded-full bg-white shadow-sm transition ${
-                          habit.reminderEnabled ? "left-10" : "left-1.5"
-                        }`}
-                      />
-                    </button>
+                    <ReminderToggle
+                      isEnabled={habit.reminderEnabled}
+                      label={`${habit.reminderEnabled ? "Disable" : "Enable"} reminder for ${habit.name}`}
+                      onToggle={(nextValue) => reminders.setReminderEnabled(habit.id, nextValue)}
+                    />
                   </div>
                   
                   {habit.reminderEnabled ?(
@@ -246,10 +294,19 @@ export function ReminderSettingsPage({
                       ) : null}
                     </div>
                   </div>
-                  ) : null}
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-white/70 px-4 py-4 text-sm text-slate-600">
+                      <p className="font-semibold text-slate-800">Reminder paused</p>
+                      <p className="mt-1 leading-6">
+                        The schedule is still saved as <span className="font-medium">{formatReminderSummary(habit)}</span>.
+                        Turn the reminder back on to reuse or edit it.
+                      </p>
+                    </div>
+                  )}
                 </section>
               ))}
             </div>
+            ) : null}
           </section>
 
           <aside className="xl:sticky xl:top-8 xl:self-start">
@@ -273,6 +330,9 @@ export function ReminderSettingsPage({
               <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Timezone</p>
                 <p className="mt-2 text-sm font-medium text-slate-900">{reminders.timezone}</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Reminder times use this timezone so the same saved time stays understandable.
+                </p>
               </div>
 
               <Button
@@ -284,7 +344,10 @@ export function ReminderSettingsPage({
                 {reminders.isSaving ? "Saving..." : "Save reminder settings"}
               </Button>
               {reminders.savedMessage ? (
-                <p className="mt-3 text-center text-sm font-medium text-emerald-600">{reminders.savedMessage}</p>
+                <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  <p className="font-semibold">Saved</p>
+                  <p className="mt-1">{reminders.savedMessage}</p>
+                </div>
               ) : null}
             </div>
           </aside>

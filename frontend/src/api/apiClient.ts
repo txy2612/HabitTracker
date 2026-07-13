@@ -98,6 +98,34 @@ function mapHabitLog(row: HabitLogRow): HabitLog {
   };
 }
 
+function getFriendlyRequestMessage(response: Response, fallbackMessage?: string) {
+  if (fallbackMessage && response.status < 500) {
+    return fallbackMessage;
+  }
+
+  if (response.status === 401) {
+    return "Please sign in again to continue.";
+  }
+
+  if (response.status === 403) {
+    return "You do not have permission to do that.";
+  }
+
+  if (response.status === 404) {
+    return "We could not find that item. It may have been moved or deleted.";
+  }
+
+  if (response.status === 503) {
+    return "The app is temporarily unavailable. Please try again in a moment.";
+  }
+
+  if (response.status >= 500) {
+    return "Something went wrong on our side. Please try again.";
+  }
+
+  return fallbackMessage ?? "Request failed. Please try again.";
+}
+
 // 3. Send HTTP request
 // so dh to repeat fetch(...), error, parse json
 // knows how to deliver food
@@ -118,7 +146,7 @@ async function request<T>(path: string, options: RequestInit = {}) {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: "Request failed." }));
-    throw new Error(error.detail ?? error.message ?? "Request failed.");
+    throw new Error(getFriendlyRequestMessage(response, error.detail ?? error.message));
   }
 
   // handle delete responses w no body

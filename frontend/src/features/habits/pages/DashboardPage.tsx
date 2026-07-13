@@ -9,6 +9,44 @@ import { ArchivedHabitsPage } from "./ArchivedHabitsPage";
 import { HabitDetailPage } from "./HabitDetailPage";
 import { ReminderSettingsPage } from "../../reminders/ReminderSettingsPage";
 
+function DashboardLoadingState() {
+  return (
+    <section className="grid gap-6" aria-label="Loading habits">
+      <div className="h-[76px] animate-pulse rounded-[24px] border border-slate-200 bg-white" />
+      <div className="grid gap-6 lg:grid-cols-2">
+        {[0, 1, 2, 3].map((item) => (
+          <div className="rounded-[22px] bg-white px-5 py-6 shadow-[0_2px_10px_rgba(15,23,42,0.12)]" key={item}>
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div className="h-5 w-40 animate-pulse rounded-full bg-slate-200" />
+              <div className="h-6 w-6 animate-pulse rounded-full bg-slate-100" />
+            </div>
+            <div className="grid gap-3">
+              <div className="h-10 animate-pulse rounded-xl bg-slate-100" />
+              <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function DashboardErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <section className="mb-5 rounded-[24px] border border-red-100 bg-red-50 px-5 py-4 text-sm text-red-700">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-semibold">Could not load your habits</p>
+          <p className="mt-1">{message}</p>
+        </div>
+        <Button className="self-start rounded-full px-5" onClick={onRetry} type="button" variant="secondary">
+          Try again
+        </Button>
+      </div>
+    </section>
+  );
+}
+
 export function DashboardPage() {
   const { logout, user } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
@@ -131,6 +169,7 @@ export function DashboardPage() {
         error={archivedError}
         isLoading={isArchivedLoading}
         onClose={handleCloseArchivedHabits}
+        onRetry={() => void fetchArchivedHabits()}
         onRestoreHabit={restoreHabit}
       />
     );
@@ -162,7 +201,7 @@ export function DashboardPage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-3">
-              <Button className="h-12 min-h-12 rounded-full px-5" onClick={() => setIsAddHabitOpen(true)} type="button">
+              <Button className="h-12 min-h-12 w-full rounded-full px-5 sm:w-auto" onClick={() => setIsAddHabitOpen(true)} type="button">
                 + Add Habit
               </Button>
               <div className="relative" ref={profileMenuRef}>
@@ -239,23 +278,20 @@ export function DashboardPage() {
           </div>
         </header>
 
-        {/* show loading text if is loading */}
-        {isLoading ? <p className="px-1 text-sm text-slate-400">Loading habits...</p> : null}
+        {isLoading ? <DashboardLoadingState /> : null}
 
-         {/* show error text if is API failed */}
         {error ? (
-          <div className="mb-3 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-            {error}
-          </div>
+          <DashboardErrorState message={error} onRetry={() => void fetchHabits()} />
         ) : null}
 
          {/* Only show habit list after loading is done. */}
          {/* Props passed to HabitList: */}
          {/* 1)the data: habits */}
          {/* 2)actions: view, delete, move up down */}
-        {!isLoading ? (
+        {!isLoading && !error ? (
           <HabitList
             habits={habits}
+            onAddHabit={() => setIsAddHabitOpen(true)}
             onArchiveHabit={archiveHabit}
             onDeleteHabit={deleteHabit}
             onEditReminder={handleEditHabitReminder}

@@ -8,6 +8,7 @@ export type ArchivedHabitsPageProps = {
   error: string | null;
   isLoading: boolean;
   onClose: () => void;
+  onRetry: () => void;
   onRestoreHabit: (habitId: string) => Promise<void>;
 };
 
@@ -23,11 +24,49 @@ function formatArchivedDate(archivedAt: string | null) {
   });
 }
 
+function ArchivedHabitsLoadingState() {
+  return (
+    <section className="grid gap-4 lg:grid-cols-2" aria-label="Loading archived habits">
+      {[0, 1, 2, 3].map((item) => (
+        <div
+          className="rounded-[24px] border border-slate-200 bg-white px-5 py-5 shadow-[0_12px_30px_rgba(15,23,42,0.06)]"
+          key={item}
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="grid flex-1 gap-3">
+              <div className="h-5 w-44 animate-pulse rounded-full bg-slate-200" />
+              <div className="h-4 w-56 animate-pulse rounded-full bg-slate-100" />
+            </div>
+            <div className="h-10 w-24 animate-pulse rounded-full bg-slate-100" />
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function ArchivedHabitsErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <section className="mb-5 rounded-[24px] border border-red-100 bg-red-50 px-5 py-4 text-sm text-red-700">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-semibold">Could not load archived habits</p>
+          <p className="mt-1">{message}</p>
+        </div>
+        <Button className="self-start rounded-full px-5" onClick={onRetry} type="button" variant="secondary">
+          Try again
+        </Button>
+      </div>
+    </section>
+  );
+}
+
 export function ArchivedHabitsPage({
   archivedHabits,
   error,
   isLoading,
   onClose,
+  onRetry,
   onRestoreHabit,
 }: ArchivedHabitsPageProps) {
   // many habits in archived, how to know which one is restoring -> s=restoring + id
@@ -56,12 +95,10 @@ export function ArchivedHabitsPage({
           </Button>
         </header>
 
-        {isLoading ? <p className="px-1 text-sm text-slate-400">Loading archived habits...</p> : null}
+        {isLoading ? <ArchivedHabitsLoadingState /> : null}
 
         {error ? (
-          <div className="mb-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-            {error}
-          </div>
+          <ArchivedHabitsErrorState message={error} onRetry={onRetry} />
         ) : null}
 
         {!isLoading && !error ? (

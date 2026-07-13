@@ -12,6 +12,7 @@ type HabitSortOption =
 
 export type HabitListProps = {
   habits: Habit[];
+  onAddHabit: () => void;
   onViewHabit: (habitId: string) => void;
   onArchiveHabit: (habitId: string) => Promise<void>;
   onDeleteHabit: (habitId: string) => Promise<void>;
@@ -23,6 +24,7 @@ export type HabitListProps = {
 // W/o destructuring: function HabitList(props: HabitListProps) { props.habits, props.onArchiveHabit, props.blabla }
 export function HabitList({
   habits,
+  onAddHabit,
   onViewHabit,
   onArchiveHabit,
   onDeleteHabit,
@@ -57,7 +59,10 @@ export function HabitList({
   if (habits.length === 0) {
     return (
       <EmptyState title="No habits yet">
-        <p>Add your first habit to start tracking streaks.</p>
+        <p>Add your first habit to start tracking streaks and reminders.</p>
+        <Button className="mt-5 rounded-full px-5" onClick={onAddHabit} type="button">
+          + Add Habit
+        </Button>
       </EmptyState>
     );
   }
@@ -65,7 +70,7 @@ export function HabitList({
   return (
     <section className="grid gap-6">
       <div className="flex flex-col gap-3 rounded-[24px] border border-slate-200 bg-white/90 px-4 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)] lg:flex-row lg:items-center lg:justify-between">
-        <label className="relative block w-full lg:max-w-xl">
+        <label className="relative block w-full lg:max-w-lg">
           <span className="sr-only">Search habits</span>
           <input
             className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 pr-11 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
@@ -90,8 +95,8 @@ export function HabitList({
           </span>
         </label>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-          <label className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="grid gap-3 sm:grid-cols-[minmax(190px,1fr)_auto] sm:items-center lg:flex lg:flex-wrap lg:justify-end">
+          <label className="flex items-center gap-2">
             <span className="text-sm font-medium text-slate-600">Sort</span>
             <span className="relative">
               <select

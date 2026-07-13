@@ -7,6 +7,22 @@ type AuthEnvelope = {
   data: AuthResult;
 };
 
+function getFriendlyAuthMessage(response: Response, fallbackMessage?: string) {
+  if (fallbackMessage && response.status < 500) {
+    return fallbackMessage;
+  }
+
+  if (response.status === 503) {
+    return "Sign in is temporarily unavailable. Please try again in a moment.";
+  }
+
+  if (response.status >= 500) {
+    return "Something went wrong while signing you in. Please try again.";
+  }
+
+  return fallbackMessage ?? "Request failed. Please try again.";
+}
+
 async function requestAuth(path: string, body: LoginInput | RegisterInput): Promise<AuthEnvelope> {
   // centralize fetch request
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -22,7 +38,7 @@ async function requestAuth(path: string, body: LoginInput | RegisterInput): Prom
     // parse JSON
     const error = await response.json().catch(() => ({ detail: "Request failed." }));
     // throw errors
-    throw new Error(error.detail ?? "Request failed.");
+    throw new Error(getFriendlyAuthMessage(response, error.detail));
   }
 
   // get response -> parse into JSON format -> Promise (parsing takes time)

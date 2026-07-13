@@ -264,7 +264,7 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
       });
 
       window.localStorage.setItem(REMINDER_EMAIL_STORAGE_KEY, trimmedEmail);
-      setSavedMessage("Reminders saved.");
+      setSavedMessage("Reminder settings saved. Paused reminders kept their saved schedule.");
 
       return habits;
     } catch (saveError) {
