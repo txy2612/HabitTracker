@@ -15,10 +15,35 @@ import { getDayNumber, getMonthCalendarDates, todayString } from "../../../share
 export type MonthlyCalendarProps = {
   month: string;
   logs: HabitLog[];
+  highlightedDate?: string | null;
   onSelectDate: (date: string) => void;
 };
 
-export function MonthlyCalendar({ month, logs, onSelectDate }: MonthlyCalendarProps) {
+const doneCircleClasses = [
+  "bg-[var(--app-calendar-done-1)] text-white shadow-[0_0_22px_color-mix(in_srgb,var(--app-calendar-done-1)_44%,transparent)]",
+  "bg-[var(--app-calendar-done-2)] text-white shadow-[0_0_22px_color-mix(in_srgb,var(--app-calendar-done-2)_40%,transparent)]",
+  "bg-[var(--app-calendar-done-3)] text-white shadow-[0_0_22px_color-mix(in_srgb,var(--app-calendar-done-3)_38%,transparent)]",
+  "bg-[var(--app-calendar-done-4)] text-white shadow-[0_0_22px_color-mix(in_srgb,var(--app-calendar-done-4)_38%,transparent)]",
+];
+
+const doneConnectorClasses = [
+  "bg-[var(--app-calendar-done-1)]",
+  "bg-[var(--app-calendar-done-2)]",
+  "bg-[var(--app-calendar-done-3)]",
+  "bg-[var(--app-calendar-done-4)]",
+];
+
+function getDoneCircleClass(date: string) {
+  const dayNumber = Number(date.slice(-2));
+  return doneCircleClasses[dayNumber % doneCircleClasses.length];
+}
+
+function getDoneConnectorClass(date: string) {
+  const dayNumber = Number(date.slice(-2));
+  return doneConnectorClasses[dayNumber % doneConnectorClasses.length];
+}
+
+export function MonthlyCalendar({ month, logs, highlightedDate = null, onSelectDate }: MonthlyCalendarProps) {
   // creates full calender grid
   const calendarDates = getMonthCalendarDates(month);
   const today = todayString();
@@ -57,7 +82,7 @@ export function MonthlyCalendar({ month, logs, onSelectDate }: MonthlyCalendarPr
       return "";
     }
 
-    return leftLog.status === "done" && rightLog.status === "done" ? "bg-[#22c55e]" : "bg-slate-300";
+    return leftLog.status === "done" && rightLog.status === "done" ? getDoneConnectorClass(leftDate) : "";
   }
 
   // -- Circle color logic --
@@ -65,28 +90,28 @@ export function MonthlyCalendar({ month, logs, onSelectDate }: MonthlyCalendarPr
     const log = getLog(date);
 
     if (date > today) {
-      return "cursor-not-allowed bg-slate-50/40 text-slate-300 opacity-60";
+      return "cursor-not-allowed bg-[var(--app-control-surface)] text-[var(--app-muted)] opacity-45";
     }
 
     // blurred pale circle
     if (!isCurrentMonth) {
-      return "bg-slate-100 text-slate-300 blur-[0.3px]";
+      return "bg-[var(--app-control-surface)] text-[var(--app-muted)] opacity-35 blur-[0.3px]";
     }
     // green circle
     if (log?.status === "done") {
-      return "bg-[#22c55e] text-white";
+      return getDoneCircleClass(date);
     }
     // Missed → grey circle
     if (log?.status === "missed") {
-      return "bg-slate-300 text-slate-600";
+      return "bg-[var(--app-calendar-missed)] text-[var(--app-calendar-missed-text)]";
     }
     // no log -> light grey circle
-    return "bg-slate-200 text-slate-600";
+    return "bg-[var(--app-calendar-idle)] text-[var(--app-calendar-idle-text)]";
   }
 
   return (
     <section className="grid gap-4">
-      <div className="grid grid-cols-7 text-center text-sm font-medium text-slate-500">
+      <div className="grid grid-cols-7 text-center text-sm font-semibold text-[var(--app-text)]">
         {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
           <span key={`${day}-${index}`}>{day}</span>
         ))}
@@ -107,14 +132,16 @@ export function MonthlyCalendar({ month, logs, onSelectDate }: MonthlyCalendarPr
           return (
             <div className="relative flex h-12 items-center justify-center" key={date}>
               {leftSegment ? (
-                <span className={`absolute left-0 top-1/2 h-1 w-1/2 -translate-y-1/2 ${leftSegment}`} />
+                <span className={`absolute left-0 top-1/2 h-1 w-1/2 -translate-y-1/2 transition-all duration-500 ${leftSegment}`} />
               ) : null}
               {rightSegment ? (
-                <span className={`absolute right-0 top-1/2 h-1 w-1/2 -translate-y-1/2 ${rightSegment}`} />
+                <span className={`absolute right-0 top-1/2 h-1 w-1/2 -translate-y-1/2 transition-all duration-500 ${rightSegment}`} />
               ) : null}
               <button
-                className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold transition ${
-                  isFutureDate ? "" : "hover:ring-2 hover:ring-emerald-100"
+                className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold transition duration-300 ${
+                  highlightedDate === date ? "habit-complete-pulse" : ""
+                } ${
+                  isFutureDate ? "" : "hover:scale-105 hover:ring-2 hover:ring-[var(--app-accent-soft)]"
                 } ${circleClass(
                   date,
                   isCurrentMonth,

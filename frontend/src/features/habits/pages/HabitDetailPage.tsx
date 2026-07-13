@@ -19,6 +19,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
   const yearMenuRef = useRef<HTMLDivElement | null>(null);
   const [month, setMonth] = useState(currentMonthString());// stores the current viewed month
   const [selectedDate, setSelectedDate] = useState<string | null>(null);// stores the date user clicked -> controls whether the modal popup/close
+  const [highlightedDate, setHighlightedDate] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isYearMenuOpen, setIsYearMenuOpen] = useState(false);
   const { logs, isLoading, error, saveLog } = useHabitLogs(habit.id, month);
@@ -35,7 +36,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
   const createdYear = Number(habit.createdAt.slice(0, 4));
   const isCurrentViewedMonth = month === currentMonth;
   const yearOptions = useMemo(() => {
-    const startYear = Math.min(createdYear, selectedYear);
+    const startYear = Math.min(createdYear, selectedYear, currentYear - 5);
     const years: number[] = [];
 
     for (let year = currentYear; year >= startYear; year -= 1) {
@@ -91,6 +92,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
         note: input.note,
       });
       await fetchStreak(habit.id);
+      setHighlightedDate(input.status === "done" ? selectedDate : null);
       setSelectedDate(null);
     } finally {
       setIsSaving(false);
@@ -108,111 +110,153 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f7f2] px-6 py-8 text-slate-950 lg:px-10">
-      <div className="mx-auto w-full max-w-[1440px]">
-        <div className="grid gap-8 xl:grid-cols-[320px_minmax(0,1fr)]">
-          <aside className="xl:sticky xl:top-8 xl:self-start">
-            <div className="rounded-[28px] border border-[#e8e6dc] bg-white p-6 shadow-[0_20px_40px_rgba(15,23,42,0.08)]">
-              <header className="mb-6 grid gap-4 border-b border-slate-100 pb-6">
-                <div className="grid gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">Habit detail</p>
-                  <h1 className="text-3xl font-semibold text-slate-950">{habit.name}</h1>
-                  <p className="text-sm leading-6 text-slate-500">
+    <main className="app-shell min-h-screen px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+      <div className="mx-auto w-full max-w-[1500px]">
+        <section className="app-card overflow-hidden rounded-[42px] border p-5 sm:p-7 lg:p-10">
+          <div className="grid gap-8 xl:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.35fr)]">
+            <aside className="grid gap-6 xl:sticky xl:top-8 xl:self-start">
+              <div className="grid gap-5">
+                <div className="grid gap-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--app-secondary)]">
+                    Habit Tracker
+                  </p>
+                  <h1 className="text-4xl font-bold leading-tight text-[var(--app-title)] sm:text-5xl">
+                    {habit.name}
+                  </h1>
+                  <p className="max-w-xl text-base leading-8 text-[var(--app-muted)]">
                     Review streak progress and update daily results from a full calendar workspace.
                   </p>
                 </div>
+
                 <button
-                  className="self-start rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                  className="w-full rounded-2xl border border-[var(--app-border)] bg-[var(--app-control-surface)] px-5 py-3 text-sm font-semibold text-[var(--app-text)] shadow-sm transition hover:brightness-95"
                   onClick={onClose}
                   type="button"
                 >
                   Back to habits
                 </button>
-              </header>
+              </div>
 
+              <section className="app-card-solid rounded-[30px] border p-5">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
+                      Insights
+                    </p>
+                    <h2 className="mt-2 text-2xl font-bold text-[var(--app-title)]">Progress Lens</h2>
+                  </div>
+                </div>
+                <p className="mt-4 text-sm leading-7 text-[var(--app-muted)]">
+                  A quick color summary of your streak mood: cool tones show steadier progress, while warmer tones highlight
+                  stronger streak momentum.
+                </p>
+                <div className="mt-6 overflow-hidden rounded-[26px] border border-[var(--app-border)] bg-[var(--app-palette-card)] p-6">
+                  <div className="mx-auto grid h-56 max-h-[42vw] min-h-48 w-56 max-w-[42vw] min-w-48 place-items-center rounded-[30px] bg-[radial-gradient(circle_at_50%_50%,var(--app-palette-card)_0_20%,transparent_21%),conic-gradient(from_150deg,var(--app-calendar-done-3),var(--app-calendar-done-4),var(--app-calendar-done-1),var(--app-calendar-done-5),var(--app-calendar-done-3))] shadow-[0_0_46px_color-mix(in_srgb,var(--app-calendar-done-3)_34%,transparent)]">
+                    <div className="h-16 w-16 rounded-full border-[10px] border-[var(--app-modal-surface)] bg-[var(--app-palette-card)] shadow-inner" />
+                  </div>
+                </div>
+              </section>
+            </aside>
+
+            <section className="grid gap-6">
               <StreakStats error={streakError} isLoading={isStreakLoading} streak={streak} />
-            </div>
-          </aside>
 
-          <section className="rounded-[28px] border border-[#e8e6dc] bg-white p-6 shadow-[0_20px_40px_rgba(15,23,42,0.08)] sm:p-8">
-            <div className="mb-8 flex flex-col gap-4 border-b border-slate-100 pb-6 lg:flex-row lg:items-center lg:justify-between">
-              <div className="grid gap-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Monthly timeline</p>
-                <div className="relative" ref={yearMenuRef}>
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+                <div className="grid gap-2">
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
+                    Details Progress
+                  </p>
+                  <h2 className="text-2xl font-bold text-[var(--app-title)]">Timeline Streaks</h2>
+                  <p className="max-w-xl text-sm leading-6 text-[var(--app-muted)]">
+                    This monthly calendar shows each day&apos;s log. Colored circles are completed days, muted circles are
+                    missed or empty days, and the line connects consecutive completed days.
+                  </p>
+                  <div className="mt-1 h-1.5 max-w-xs overflow-hidden rounded-full bg-[var(--app-control-surface)]">
+                    <span className="block h-full w-1/3 rounded-full bg-gradient-to-r from-[var(--app-accent)] to-[var(--app-warm)]" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[52px_1fr_52px] items-center gap-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-control-surface)] px-3 py-2">
                   <button
-                    aria-expanded={isYearMenuOpen}
-                    aria-haspopup="menu"
-                    className="inline-flex items-center gap-2 text-lg font-semibold text-slate-500 transition hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-                    onClick={() => setIsYearMenuOpen((currentValue) => !currentValue)}
+                    aria-label="Previous month"
+                    className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-[var(--app-text)] transition hover:brightness-95"
+                    onClick={() => setMonth((currentMonth) => shiftMonth(currentMonth, -1))}
                     type="button"
                   >
-                    <span>{selectedYear}</span>
-                    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <path
-                        d="m6 9 6 6 6-6"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.8"
-                      />
-                    </svg>
+                    {"<"}
                   </button>
-
-                  {isYearMenuOpen ? (
-                    <div
-                      className="absolute left-0 top-[calc(100%+0.75rem)] z-20 min-w-[120px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_24px_60px_rgba(15,23,42,0.16)]"
-                      role="menu"
+                  <div className="relative text-center" ref={yearMenuRef}>
+                    <button
+                      aria-expanded={isYearMenuOpen}
+                      aria-haspopup="menu"
+                      className="inline-flex items-center justify-center gap-1 rounded-full text-xs font-bold text-[var(--app-muted)] transition hover:text-[var(--app-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-accent)]"
+                      onClick={() => setIsYearMenuOpen((currentValue) => !currentValue)}
+                      type="button"
                     >
-                      {yearOptions.map((yearOption) => (
-                        <button
-                          className={`block w-full rounded-xl px-3 py-2 text-left text-sm font-medium transition ${
-                            yearOption === selectedYear
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "text-slate-600 hover:bg-slate-50"
-                          }`}
-                          key={yearOption}
-                          onClick={() => handleSelectYear(yearOption)}
-                          type="button"
-                        >
-                          {yearOption}
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
+                      <span>{selectedYear}</span>
+                      <svg aria-hidden="true" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+                        <path
+                          d="m6 9 6 6 6-6"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.8"
+                        />
+                      </svg>
+                    </button>
+                    <p className="text-lg font-bold text-[var(--app-text)]">{formatMonthName(month)}</p>
+
+                    {isYearMenuOpen ? (
+                      <div
+                        className="app-card-solid absolute left-1/2 top-[calc(100%+0.75rem)] z-20 min-w-[120px] -translate-x-1/2 overflow-hidden rounded-2xl border p-2"
+                        role="menu"
+                      >
+                        {yearOptions.map((yearOption) => (
+                          <button
+                            className={`block w-full rounded-xl px-3 py-2 text-left text-sm font-medium transition ${
+                              yearOption === selectedYear
+                                ? "bg-[var(--app-accent-soft)] text-[var(--app-accent-strong)]"
+                                : "text-[var(--app-muted)] hover:bg-[var(--app-control-surface)]"
+                            }`}
+                            key={yearOption}
+                            onClick={() => handleSelectYear(yearOption)}
+                            type="button"
+                          >
+                            {yearOption}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  {isCurrentViewedMonth ? (
+                    <span aria-hidden="true" className="block h-12 w-12" />
+                  ) : (
+                    <button
+                      aria-label="Next month"
+                      className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-[var(--app-text)] transition hover:brightness-95"
+                      onClick={() => setMonth((currentMonthValue) => shiftMonth(currentMonthValue, 1))}
+                      type="button"
+                    >
+                      {">"}
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-[52px_1fr_52px] items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2 lg:min-w-[260px]">
-                <button
-                  aria-label="Previous month"
-                  className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-slate-700 transition hover:bg-white hover:text-slate-950"
-                  onClick={() => setMonth((currentMonth) => shiftMonth(currentMonth, -1))}
-                  type="button"
-                >
-                  {"<"}
-                </button>
-                <p className="text-center text-lg font-semibold text-slate-900">{formatMonthName(month)}</p>
-                {isCurrentViewedMonth ? (
-                  <span aria-hidden="true" className="block h-12 w-12" />
-                ) : (
-                  <button
-                    aria-label="Next month"
-                    className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-slate-700 transition hover:bg-white hover:text-slate-950"
-                    onClick={() => setMonth((currentMonthValue) => shiftMonth(currentMonthValue, 1))}
-                    type="button"
-                  >
-                    {">"}
-                  </button>
-                )}
-              </div>
-            </div>
+              <section className="app-card-solid rounded-[32px] border p-5 sm:p-7">
+                <div className="mb-7 flex flex-col gap-3 border-b border-[var(--app-border)] pb-5 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm font-semibold text-[var(--app-muted)]">Calendar</p>
+                  <p className="text-sm font-medium text-[var(--app-muted)]">Click a date to update its log.</p>
+                </div>
 
-            <MonthlyCalendar logs={logs} month={month} onSelectDate={setSelectedDate} />
+                <MonthlyCalendar highlightedDate={highlightedDate} logs={logs} month={month} onSelectDate={setSelectedDate} />
+              </section>
+            </section>
 
             {isLoading ? <p className="mt-4 text-sm text-slate-400">Loading logs...</p> : null}
             {error ? <p className="mt-4 text-sm text-red-500">{error}</p> : null}
+          </div>
           </section>
-        </div>
 
         {/*HabitDetailPage pass selectedLog (prop) -> LogNoteEditor */}
         {/* In LogNoteEditor , see export ... log on top, means:

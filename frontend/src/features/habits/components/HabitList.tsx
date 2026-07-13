@@ -60,7 +60,7 @@ export function HabitList({
     return (
       <EmptyState title="No habits yet">
         <p>Add your first habit to start tracking streaks and reminders.</p>
-        <Button className="mt-5 rounded-full px-5" onClick={onAddHabit} type="button">
+        <Button className="mt-5 rounded-2xl px-7" onClick={onAddHabit} type="button">
           + Add Habit
         </Button>
       </EmptyState>
@@ -69,11 +69,11 @@ export function HabitList({
 
   return (
     <section className="grid gap-6">
-      <div className="flex flex-col gap-3 rounded-[24px] border border-slate-200 bg-white/90 px-4 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)] lg:flex-row lg:items-center lg:justify-between">
+      <div className="app-card flex flex-col gap-3 rounded-[24px] border px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
         <label className="relative block w-full lg:max-w-lg">
           <span className="sr-only">Search habits</span>
           <input
-            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 pr-11 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            className="h-11 w-full rounded-xl border border-[var(--app-border)] bg-[var(--app-control-surface)] px-4 pr-11 text-sm text-[var(--app-text)] outline-none transition placeholder:text-slate-400 focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)]"
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search habits..."
             type="search"
@@ -97,10 +97,10 @@ export function HabitList({
 
         <div className="grid gap-3 sm:grid-cols-[minmax(190px,1fr)_auto] sm:items-center lg:flex lg:flex-wrap lg:justify-end">
           <label className="flex items-center gap-2">
-            <span className="text-sm font-medium text-slate-600">Sort</span>
+            <span className="text-sm font-medium text-[var(--app-muted)]">Sort</span>
             <span className="relative">
               <select
-                className="h-11 min-w-[190px] appearance-none rounded-xl border border-slate-200 bg-white px-3 pr-10 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                className="h-11 min-w-[190px] appearance-none rounded-xl border border-[var(--app-border)] bg-[var(--app-control-surface)] px-3 pr-10 text-sm text-[var(--app-text)] outline-none transition focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)]"
                 onChange={(event) => setSortBy(event.target.value as HabitSortOption)}
                 value={sortBy}
               >
@@ -126,7 +126,12 @@ export function HabitList({
             </span>
           </label>
 
-          <Button className="h-11 rounded-xl px-4" onClick={onOpenReminders} type="button" variant="ghost">
+          <Button
+            className="h-11 rounded-2xl px-5 text-sm font-semibold shadow-[0_10px_24px_color-mix(in_srgb,var(--app-accent)_14%,transparent)]"
+            onClick={onOpenReminders}
+            type="button"
+            variant="ghost"
+          >
             Reminders
           </Button>
         </div>

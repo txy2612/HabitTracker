@@ -49,7 +49,7 @@ export function RegisterPage({ onAuthenticated, onShowLogin }: RegisterPageProps
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#f7f7f2_0%,#efeee7_100%)] px-6 py-10 text-slate-950 lg:px-10 lg:py-14">
+    <main className="app-shell min-h-screen px-6 py-10 lg:px-10 lg:py-14">
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-[1240px] items-center justify-center">
         <AuthForm
           error={error}

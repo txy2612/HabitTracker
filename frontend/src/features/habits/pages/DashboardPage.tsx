@@ -8,6 +8,7 @@ import { useHabits } from "../hooks/useHabits";
 import { ArchivedHabitsPage } from "./ArchivedHabitsPage";
 import { HabitDetailPage } from "./HabitDetailPage";
 import { ReminderSettingsPage } from "../../reminders/ReminderSettingsPage";
+import { ThemeSettingsModal } from "../../theme/ThemeSettingsModal";
 
 function DashboardLoadingState() {
   return (
@@ -97,6 +98,7 @@ export function DashboardPage() {
   const [isArchivedHabitsOpen, setIsArchivedHabitsOpen] = useState(false);
   const [focusedReminderHabitId, setFocusedReminderHabitId] = useState<string | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // selectedHabitId = null -> no habit is selected
@@ -141,6 +143,11 @@ export function DashboardPage() {
     setIsProfileMenuOpen(false);
     setIsArchivedHabitsOpen(true);
     void fetchArchivedHabits();
+  }
+
+  function handleOpenSettings() {
+    setIsProfileMenuOpen(false);
+    setIsSettingsOpen(true);
   }
 
   function showSuccessMessage(message: string) {
@@ -257,29 +264,33 @@ export function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#fafafa] px-6 py-8 text-slate-950 lg:px-10">
+    <main className="app-shell min-h-screen px-6 py-8 lg:px-10">
       <div className="mx-auto w-full max-w-7xl">
-        <header className="mb-6 border-b border-slate-200 pb-6">
+        <header className="app-card mb-6 rounded-[28px] border px-5 py-5">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="grid gap-1">
-              <h1 className="text-2xl font-semibold text-slate-950">My Habits</h1>
-              <p className="text-sm text-slate-500">
-                Signed in as <span className="font-medium text-slate-700">{user?.email ?? "Unknown user"}</span>
+              <h1 className="text-2xl font-bold text-[var(--app-title)]">My Habits</h1>
+              <p className="text-sm text-[var(--app-muted)]">
+                Signed in as <span className="font-medium text-[var(--app-text)]">{user?.email ?? "Unknown user"}</span>
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-3">
-              <Button className="h-12 min-h-12 w-full rounded-full px-5 sm:w-auto" onClick={() => setIsAddHabitOpen(true)} type="button">
+              <Button
+                className="h-12 min-h-12 w-full rounded-2xl px-7 shadow-[0_16px_34px_color-mix(in_srgb,var(--app-accent)_30%,transparent)] sm:w-auto"
+                onClick={() => setIsAddHabitOpen(true)}
+                type="button"
+              >
                 + Add Habit
               </Button>
               <div className="relative" ref={profileMenuRef}>
                 <button
                   aria-expanded={isProfileMenuOpen}
                   aria-haspopup="menu"
-                  className="inline-flex h-12 items-center gap-3 rounded-full border border-slate-200 bg-white px-3 pr-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                  className="inline-flex h-12 items-center gap-3 rounded-full border border-[var(--app-border)] bg-[var(--app-control-surface)] px-3 pr-4 text-sm font-semibold text-[var(--app-text)] shadow-sm transition hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-accent)] focus-visible:ring-offset-2"
                   onClick={() => setIsProfileMenuOpen((currentValue) => !currentValue)}
                   type="button"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--app-accent)] text-xs font-bold text-white">
                     {userInitials}
                   </span>
                   <span className="hidden sm:inline">{userInitials}</span>
@@ -296,16 +307,16 @@ export function DashboardPage() {
 
                 {isProfileMenuOpen ? (
                   <div
-                    className="absolute right-0 top-[calc(100%+0.75rem)] z-20 w-64 overflow-hidden rounded-[24px] border border-slate-200 bg-white p-2 shadow-[0_24px_60px_rgba(15,23,42,0.16)]"
+                    className="app-solid-surface absolute right-0 top-[calc(100%+0.75rem)] z-20 w-64 overflow-hidden rounded-[24px] border p-2 shadow-[0_24px_60px_var(--app-shadow)]"
                     role="menu"
                   >
-                    <div className="border-b border-slate-100 px-4 py-3">
-                      <p className="text-sm font-semibold text-slate-900">{user?.name ?? "User"}</p>
-                      <p className="mt-1 text-sm text-slate-500">{user?.email ?? "Unknown user"}</p>
+                    <div className="border-b border-[var(--app-border)] px-4 py-3">
+                      <p className="text-sm font-semibold text-[var(--app-text)]">{user?.name ?? "User"}</p>
+                      <p className="mt-1 text-sm text-[var(--app-muted)]">{user?.email ?? "Unknown user"}</p>
                     </div>
                     <div className="grid gap-1 px-2 py-2">
                       <button
-                        className="rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                        className="rounded-xl px-3 py-2 text-left text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-control-surface)]"
                         onClick={handleOpenArchivedHabits}
                         type="button"
                       >
@@ -320,12 +331,14 @@ export function DashboardPage() {
                         <span className="text-xs font-medium uppercase tracking-[0.12em]">Later</span>
                       </button>
                       <button
-                        className="flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-slate-400"
-                        disabled
+                        className="flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-control-surface)]"
+                        onClick={handleOpenSettings}
                         type="button"
                       >
                         <span>Settings</span>
-                        <span className="text-xs font-medium uppercase tracking-[0.12em]">Later</span>
+                        <span className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--app-accent-strong)]">
+                          Theme
+                        </span>
                       </button>
                       <button
                         className="rounded-xl px-3 py-2 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
@@ -379,6 +392,7 @@ export function DashboardPage() {
           onCreate={handleCreateHabit}
           onCreated={handleHabitCreated}
         />
+        <ThemeSettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       </div>
     </main>
   );

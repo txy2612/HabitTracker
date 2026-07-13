@@ -77,10 +77,10 @@ export function HabitCard({
   });
   const reminderStateLabel = habit.reminderEnabled ? "Active" : reminderHasSavedSettings ? "Paused" : "Off";
   const reminderStateClasses = habit.reminderEnabled
-    ? "bg-emerald-100 text-emerald-700"
+    ? "bg-[var(--app-accent-soft)] text-[var(--app-accent-strong)]"
     : reminderHasSavedSettings
-      ? "bg-amber-100 text-amber-700"
-      : "bg-slate-100 text-slate-500";
+      ? "bg-[var(--app-warm-soft)] text-[var(--app-warm)]"
+      : "bg-[var(--app-control-surface)] text-[var(--app-muted)]";
 
   async function handleUpdateName(event: FormEvent<HTMLFormElement>) {
     // stop page refresh
@@ -166,7 +166,7 @@ export function HabitCard({
   return (
     <article
       aria-label={`Open monthly view for ${habit.name}`}
-      className="relative cursor-pointer rounded-[22px] bg-white px-5 py-6 shadow-[0_2px_10px_rgba(15,23,42,0.12)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(15,23,42,0.14)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+      className="app-card-solid relative cursor-pointer rounded-[22px] border px-5 py-6 transition hover:-translate-y-0.5 hover:shadow-[0_20px_42px_var(--app-shadow)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-accent)] focus-visible:ring-offset-2"
       onClick={() => onViewHabit(habit.id)}
       onKeyDown={handleCardKeyDown}
       role="button"
@@ -205,8 +205,8 @@ export function HabitCard({
           </form>
         ) : (
           <div className="grid gap-1">
-            <h2 className="text-[15px] font-semibold text-slate-950">{habit.name}</h2>
-            <p className="text-xs font-medium text-slate-400">
+            <h2 className="text-[15px] font-semibold text-[var(--app-text)]">{habit.name}</h2>
+            <p className="text-xs font-medium text-[var(--app-muted)]">
               Past 7 days: {completedCount} done
               {missedCount > 0 ? `, ${missedCount} missed` : ""}
             </p>
@@ -229,11 +229,11 @@ export function HabitCard({
 
       {isMenuOpen ? (
         <div
-          className="absolute right-5 top-11 z-10 w-40 overflow-hidden rounded-xl border border-slate-100 bg-white py-1 text-sm shadow-lg"
+          className="app-solid-surface absolute right-5 top-11 z-10 w-40 overflow-hidden rounded-xl border py-1 text-sm shadow-lg"
           onClick={(event) => event.stopPropagation()}
         >
           <button
-            className="block w-full px-3 py-2 text-left text-slate-600 hover:bg-slate-50"
+            className="block w-full px-3 py-2 text-left text-[var(--app-text)] hover:bg-[var(--app-control-surface)]"
             onClick={() => {
               setDraftName(habit.name);
               setIsEditingName(true);
@@ -276,28 +276,28 @@ export function HabitCard({
       <div className="grid gap-3">
         <button
           aria-label={`Edit reminder for ${habit.name}`}
-          className="grid w-full gap-2 rounded-xl bg-slate-50 px-3 py-3 text-left text-sm transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 sm:grid-cols-[auto_1fr_auto] sm:items-center"
+          className="grid w-full gap-2 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-control-surface)] px-4 py-3.5 text-left text-sm shadow-[inset_0_1px_0_color-mix(in_srgb,var(--app-text)_8%,transparent)] transition hover:-translate-y-0.5 hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-accent)] focus-visible:ring-offset-2 sm:grid-cols-[auto_1fr_auto] sm:items-center"
           onClick={(event) => {
             event.stopPropagation();
             onEditReminder(habit.id);
           }}
           type="button"
         >
-          <span className="font-medium text-slate-500">Reminder</span>
-          <span className="min-w-0 text-slate-700 sm:truncate sm:text-right">{formatReminderCardSummary({
+          <span className="font-semibold text-[var(--app-muted)]">Reminder</span>
+          <span className="min-w-0 font-semibold text-[var(--app-text)] sm:truncate sm:text-right">{formatReminderCardSummary({
             reminderEnabled: habit.reminderEnabled,
             reminderTime: habit.reminderTime,
             scheduleType: habit.reminderScheduleType,
             weekdays: habit.reminderWeekdays,
             specificDate: habit.reminderSpecificDate,
           })}</span>
-          <span className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${reminderStateClasses}`}>
+          <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${reminderStateClasses}`}>
             {reminderStateLabel}
           </span>
         </button>
 
         <StreakDotsRow dates={weekDates} logs={logs} onSelectDate={setSelectedDate} />
-        <p className="text-xs leading-5 text-slate-400">Click any date to mark it done, missed, or add details.</p>
+        <p className="text-xs leading-5 text-[var(--app-muted)]">Click any date to mark it done, missed, or add details.</p>
       </div>
 
       {isLoading ? (

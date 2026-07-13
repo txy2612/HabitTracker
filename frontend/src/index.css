@@ -1,3 +1,141 @@
 @import "tailwindcss";
 
-/* TODO: Add global styles after the skeleton is wired. */
+:root {
+  --app-bg: radial-gradient(circle at 88% 8%, rgba(216, 214, 255, 0.42), transparent 30%),
+    linear-gradient(135deg, #fff8ff 0%, #f3f7ff 52%, #e9e2ff 100%);
+  --app-surface: #f8fbff;
+  --app-surface-solid: #ffffff;
+  --app-modal-surface: #fbfcff;
+  --app-control-surface: #f3f6ff;
+  --app-accent: #22c7a9;
+  --app-accent-strong: #13a58f;
+  --app-accent-soft: rgba(34, 199, 169, 0.14);
+  --app-border: rgba(38, 52, 79, 0.1);
+  --app-muted: #7b8387;
+  --app-secondary: #a6a2df;
+  --app-shadow: rgba(100, 95, 150, 0.16);
+  --app-text: #26344f;
+  --app-title: #26344f;
+  --app-data: #26344f;
+  --app-warm: #fe805d;
+  --app-warm-soft: rgba(254, 128, 93, 0.18);
+  --app-streak-card: #fff1e8;
+  --app-streak-card-end: #f1edff;
+  --app-current-card: #e9fbf8;
+  --app-current: #22c7c7;
+  --app-palette-card: #fff3eb;
+  --app-calendar-idle: rgba(232, 237, 255, 0.9);
+  --app-calendar-idle-text: #5d66a0;
+  --app-calendar-missed: #d1d5db;
+  --app-calendar-missed-text: #26344f;
+  --app-calendar-done-1: #22c55e;
+  --app-calendar-done-2: #4bc6e8;
+  --app-calendar-done-3: #ffb45f;
+  --app-calendar-done-4: #fe805d;
+  --app-calendar-done-5: #8b6ee8;
+  --app-calendar-line-1: #39c778;
+  --app-calendar-line-2: #ffbd67;
+  --app-calendar-line-3: #ff8f6e;
+  --app-calendar-line-4: #9a70ef;
+}
+
+:root[data-theme="dark"] {
+  --app-bg: radial-gradient(circle at 82% 9%, rgba(126, 82, 224, 0.42), transparent 28%),
+    radial-gradient(circle at 18% 82%, rgba(232, 83, 160, 0.18), transparent 32%),
+    radial-gradient(circle at 58% 48%, rgba(86, 55, 154, 0.54), transparent 42%),
+    linear-gradient(145deg, #100d32 0%, #1d1647 48%, #33205d 100%);
+  --app-surface: linear-gradient(145deg, #322663 0%, #241b4e 100%);
+  --app-surface-solid: linear-gradient(145deg, #362867 0%, #2b2058 100%);
+  --app-modal-surface: #2f245d;
+  --app-control-surface: linear-gradient(145deg, #3a2b70 0%, #2d235f 100%);
+  --app-accent: #25c6d9;
+  --app-accent-strong: #f0c38e;
+  --app-accent-soft: rgba(37, 198, 217, 0.18);
+  --app-border: rgba(195, 191, 217, 0.14);
+  --app-muted: #c3bfd9;
+  --app-secondary: #c46d8c;
+  --app-shadow: rgba(8, 6, 30, 0.52);
+  --app-text: #ffffff;
+  --app-title: #ffffff;
+  --app-data: #ffffff;
+  --app-warm: #ff8f73;
+  --app-warm-soft: rgba(255, 143, 115, 0.2);
+  --app-streak-card: linear-gradient(145deg, #573061 0%, #6d3a63 100%);
+  --app-streak-card-end: #6d3a63;
+  --app-current-card: linear-gradient(145deg, #263b68 0%, #29305f 100%);
+  --app-current: #25c6d9;
+  --app-palette-card: #352660;
+  --app-calendar-idle: #463372;
+  --app-calendar-idle-text: #c3bfd9;
+  --app-calendar-missed: #352b60;
+  --app-calendar-missed-text: #aaa2ca;
+  --app-calendar-done-1: #25c6d9;
+  --app-calendar-done-2: #9b59e5;
+  --app-calendar-done-3: #e24fa0;
+  --app-calendar-done-4: #ff8f73;
+  --app-calendar-done-5: #f0c38e;
+  --app-calendar-line-1: #25c6d9;
+  --app-calendar-line-2: #9b59e5;
+  --app-calendar-line-3: #e24fa0;
+  --app-calendar-line-4: #ff8f73;
+}
+
+body {
+  background: var(--app-bg);
+}
+
+.app-shell {
+  background: var(--app-bg);
+  color: var(--app-text);
+}
+
+.app-card {
+  background: var(--app-surface);
+  border-color: var(--app-border);
+  box-shadow: 0 24px 60px var(--app-shadow);
+  color: var(--app-text);
+}
+
+.app-card-solid {
+  background: var(--app-surface-solid);
+  border-color: var(--app-border);
+  box-shadow: 0 16px 35px var(--app-shadow);
+  color: var(--app-text);
+}
+
+.app-solid-surface {
+  background: var(--app-modal-surface);
+  border-color: var(--app-border);
+  color: var(--app-text);
+}
+
+.app-accent-bg {
+  background: var(--app-accent);
+}
+
+@keyframes habit-complete-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--app-accent) 38%, transparent);
+    transform: scale(1);
+  }
+
+  45% {
+    box-shadow: 0 0 0 12px color-mix(in srgb, var(--app-accent) 12%, transparent);
+    transform: scale(1.14);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    transform: scale(1);
+  }
+}
+
+.habit-complete-pulse {
+  animation: habit-complete-pulse 560ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .habit-complete-pulse {
+    animation: none;
+  }
+}

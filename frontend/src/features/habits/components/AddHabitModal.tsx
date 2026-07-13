@@ -54,7 +54,7 @@ export function AddHabitModal({ isOpen, onClose, onCreated, onCreate }: AddHabit
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Add a new habit">
       <form className="grid gap-5" onSubmit={handleSubmit}>
-        <div className="rounded-3xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-800">
+        <div className="rounded-3xl border border-[var(--app-border)] bg-[var(--app-accent-soft)] px-4 py-3 text-sm text-[var(--app-text)]">
           <p className="font-semibold">Start simple</p>
           <p className="mt-1 leading-6">
             You can add reminders, notes, and logs after the habit is created.
@@ -63,7 +63,7 @@ export function AddHabitModal({ isOpen, onClose, onCreated, onCreate }: AddHabit
 
         <Input
           autoFocus
-          className="h-12 rounded-xl border-slate-200 px-4 text-base focus:border-emerald-500 focus:ring-emerald-100"
+          className="h-12 rounded-2xl px-4 text-base font-medium"
           disabled={isSaving}
           label="Habit name"
           maxLength={80}
@@ -75,7 +75,7 @@ export function AddHabitModal({ isOpen, onClose, onCreated, onCreate }: AddHabit
           placeholder="Read 20 pages"
           value={name}
         />
-        <p className="-mt-3 text-xs text-slate-400">
+        <p className="-mt-3 text-xs text-[var(--app-muted)]">
           Examples: Drink water, Stretch, Read 20 pages, Sleep before 11.
         </p>
 
@@ -84,10 +84,10 @@ export function AddHabitModal({ isOpen, onClose, onCreated, onCreate }: AddHabit
         ) : null}
 
         <div className="grid gap-3 sm:grid-cols-[auto_auto] sm:justify-end">
-          <Button className="h-11 rounded-xl px-6" disabled={isSaving} onClick={handleClose} type="button" variant="secondary">
+          <Button className="h-11 rounded-full px-6" disabled={isSaving} onClick={handleClose} type="button" variant="secondary">
             Cancel
           </Button>
-          <Button className="h-11 rounded-xl px-6" disabled={isSaving || !trimmedName} type="submit">
+          <Button className="h-11 rounded-full px-6" disabled={isSaving || !trimmedName} type="submit">
             {isSaving ? "Creating..." : "Create habit"}
           </Button>
         </div>

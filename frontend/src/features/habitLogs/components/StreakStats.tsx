@@ -15,26 +15,33 @@ function dayLabel(count: number): string {
 
 export function StreakStats({ streak, error = null, isLoading = false }: StreakStatsProps) {
   return (
-    <section className="rounded-lg bg-slate-50 px-4 py-4">
-      <p className="text-sm text-slate-500">Longest Streak</p>
-      <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <strong className="text-lg font-semibold text-slate-950">
-          {streak?.highestStreak ?? 0} {dayLabel(streak?.highestStreak ?? 0)}
-        </strong>
-        <span className="text-sm text-slate-500">
-          {formatDateRange(streak?.highestStartDate ?? null, streak?.highestEndDate ?? null)}
-        </span>
-      </div>
+    <section className="grid gap-3 sm:grid-cols-2">
+      <article className="rounded-[22px] border border-[var(--app-border)] bg-[var(--app-streak-card)] px-5 py-4 shadow-[0_14px_32px_var(--app-shadow)]">
+        <p className="text-sm font-bold text-[var(--app-warm)]">Longest Streak</p>
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <strong className="text-xl font-bold text-[var(--app-data)]">
+            {streak?.highestStreak ?? 0} {dayLabel(streak?.highestStreak ?? 0)}
+          </strong>
+          <span className="text-sm font-medium text-[var(--app-muted)]">
+            {formatDateRange(streak?.highestStartDate ?? null, streak?.highestEndDate ?? null)}
+          </span>
+        </div>
+      </article>
 
-      {streak && streak.currentStreak > 0 ? (
-        <p className="mt-2 text-sm text-slate-500">
-          Current: {streak.currentStreak} {dayLabel(streak.currentStreak)} (
-          {formatDateRange(streak.currentStartDate, streak.currentEndDate)})
-        </p>
-      ) : null}
+      <article className="rounded-[22px] border border-[var(--app-border)] bg-[var(--app-current-card)] px-5 py-4 shadow-[0_14px_32px_var(--app-shadow)]">
+        <p className="text-sm font-bold text-[var(--app-current)]">Current</p>
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <strong className="text-xl font-bold text-[var(--app-data)]">
+            {streak?.currentStreak ?? 0} {dayLabel(streak?.currentStreak ?? 0)}
+          </strong>
+          <span className="text-sm font-medium text-[var(--app-muted)]">
+            {formatDateRange(streak?.currentStartDate ?? null, streak?.currentEndDate ?? null)}
+          </span>
+        </div>
+      </article>
 
-      {isLoading ? <p className="mt-2 text-xs text-slate-400">Loading streak...</p> : null}
-      {error ? <p className="mt-2 text-xs text-red-500">{error}</p> : null}
+      {isLoading ? <p className="text-xs text-[var(--app-muted)] sm:col-span-2">Loading streak...</p> : null}
+      {error ? <p className="text-xs text-red-500 sm:col-span-2">{error}</p> : null}
     </section>
   );
 }

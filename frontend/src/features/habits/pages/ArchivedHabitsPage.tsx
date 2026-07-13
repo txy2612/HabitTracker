@@ -108,7 +108,7 @@ export function ArchivedHabitsPage({
   }
 
   return (
-    <main className="min-h-screen bg-[#fafafa] px-6 py-8 text-slate-950 lg:px-10">
+    <main className="app-shell min-h-screen px-6 py-8 lg:px-10">
       <div className="mx-auto w-full max-w-7xl">
         <header className="mb-8 flex flex-col gap-5 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="grid gap-2">

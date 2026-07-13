@@ -6,9 +6,9 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variants = {
-  primary: "bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 focus-visible:ring-emerald-600",
-  secondary: "border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-100 focus-visible:ring-zinc-500",
-  ghost: "bg-transparent text-zinc-700 hover:bg-zinc-100 focus-visible:ring-zinc-500",
+  primary: "app-accent-bg text-white shadow-[0_12px_28px_color-mix(in_srgb,var(--app-accent)_24%,transparent)] hover:brightness-105 focus-visible:ring-[var(--app-accent)]",
+  secondary: "border border-[var(--app-border)] bg-[var(--app-control-surface)] text-[var(--app-text)] hover:brightness-105 focus-visible:ring-[var(--app-secondary)]",
+  ghost: "border border-[var(--app-border)] bg-[var(--app-control-surface)] text-[var(--app-text)] hover:brightness-105 focus-visible:ring-[var(--app-secondary)]",
   danger: "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600",
 };
 

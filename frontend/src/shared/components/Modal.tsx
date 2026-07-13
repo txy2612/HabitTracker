@@ -20,15 +20,15 @@ export function Modal({ children, isOpen, title, onClose }: ModalProps) {
     >
       <section
         aria-modal="true"
-        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-[28px] bg-white p-5 shadow-xl sm:rounded-2xl sm:p-6"
+        className="app-solid-surface max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-[28px] border p-5 shadow-[0_24px_60px_var(--app-shadow)] sm:rounded-2xl sm:p-6"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >
-        <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
-          {title ? <h2 className="text-lg font-semibold text-zinc-950">{title}</h2> : <span />}
+        <div className="mb-5 flex items-center justify-between gap-4 border-b border-[var(--app-border)] pb-4">
+          {title ? <h2 className="text-lg font-semibold text-[var(--app-text)]">{title}</h2> : <span />}
           <button
             aria-label="Close modal"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[var(--app-control-surface)] text-[var(--app-muted)] transition hover:brightness-95 hover:text-[var(--app-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-accent)]"
             onClick={onClose}
             type="button"
           >

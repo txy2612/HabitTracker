@@ -130,7 +130,7 @@ export function ReminderSettingsPage({
 
   // 3. use prop values
   return (
-    <main className="min-h-screen bg-[#f7f7f2] px-6 py-8 text-slate-950 lg:px-10">
+    <main className="app-shell min-h-screen px-6 py-8 lg:px-10">
       <div className="mx-auto w-full max-w-[1440px]">
         <header className="mb-8 flex flex-col gap-5 border-b border-[#e8e6dc] pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="grid gap-2">
