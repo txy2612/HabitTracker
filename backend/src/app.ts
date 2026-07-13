@@ -11,6 +11,7 @@ import { requireAuth } from "./middleware/requireAuth.js";
 import { requestId } from "./middleware/requestId.js";
 export const app = express();
 
+app.use(requestId);
 app.use(requestLogger);
 app.use(
   cors({
@@ -18,7 +19,6 @@ app.use(
   }),
 );
 app.use(express.json());
-app.use(requestId);
 
 app.get("/api/health", (_request, response) => {
   response.json({ ok: true });

@@ -12,7 +12,7 @@ export const notFoundHandler: RequestHandler = (request, response) => {
         status: 404,
         detail: `No route matches ${request.method} ${request.originalUrl}.`,
         instance: request.originalUrl,
-        requestId: request.id,
+        requestId: String(request.id),// gurantees result has type string -> satifies requestId = string
       }),
     );
 };

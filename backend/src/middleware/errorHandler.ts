@@ -98,7 +98,7 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, next
           status: 400,
           detail: "The request payload, query string, or route parameters are invalid.",
           instance: request.originalUrl,
-          requestId: request.id,
+          requestId: String(request.id),
           errors: formatZodErrors(error),
         }),
       );
@@ -108,7 +108,16 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, next
   const databaseProblem = getDatabaseProblem(error);
 
   if (databaseProblem) {
-    console.error(error);
+    //console.error(error);
+
+    request.log.error(
+      {
+        err: error,
+        requestId: String(request.id),
+        path: request.originalUrl,
+      },
+      "Request failed",
+    );
 
     response
       .status(databaseProblem.status)
@@ -120,7 +129,7 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, next
           status: databaseProblem.status,
           detail: databaseProblem.detail,
           instance: request.originalUrl,
-          requestId: request.id,
+          requestId: String(request.id),
         }),
       );
     return;
@@ -132,8 +141,21 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, next
     ? (getStringProperty(error, "message") ?? "The request could not be completed.")
     : "Something went wrong.";
 
+  // Expected 4xx responses (e.g. validation, authentication, not found)
+  // are normal client-side failures and should not be logged as errors.
+  // Only unexpected server-side failures (5xx) are logged.
   if (safeStatus >= 500) {
-    console.error(error);
+    //console.error(error);
+
+    request.log.error(
+      {
+        err: error,
+        requestId: String(request.id),
+        path: request.originalUrl,
+        status: safeStatus,
+      },
+      "Unhandled request error",
+    )
   }
 
   response
@@ -146,7 +168,7 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, next
         status: safeStatus,
         detail: publicMessage,
         instance: request.originalUrl,
-        requestId: request.id,
+        requestId: String(request.id),
       }),
     );
 };

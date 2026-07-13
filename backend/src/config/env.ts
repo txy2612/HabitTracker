@@ -4,6 +4,12 @@ dotenv.config();
 
 export const env = {
   port: Number(process.env.PORT ?? 4000), 
+  logging:{
+    // use log level from env, if missing -> use "info"
+      level: process.env.LOG_LEVEL ?? "info",
+      // Pretty logging is enabled unles LOG_PRETTY = the string "false"
+      pretty: process.env.LOG_PRETTY !== "false",
+  },
   databaseUrl:
     process.env.DATABASE_URL ??
     "postgres://postgres:postgres@localhost:5432/habit_tracker",

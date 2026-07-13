@@ -1,17 +1,30 @@
 import pino from "pino";// pino logging lib
+import { env } from "../config/env.js";
 
 // checks whether backend is running in development
 // developing -> readable logs; production -> JSON logs (easy for monitoring tools to search 🔎)
-const isDevelopment = process.env.NODE_ENV !== "production";
+const usePrettyLogs = env.logging.pretty;
 
 export const logger = pino({
     // controls which logs are shown
     // if in process.env, LOG_LEVEL=debug -> return debug 
     // ?? : use value on left unless null/undefined
-    level: process.env.LOG_LEVEL ?? "info",
+    level: env.logging.level,
+
+    // tells pino not to print sensitive values
+    // etc: password: "[Redacted]"
+    redact: {
+        paths: [
+        "req.headers.authorization",
+        "req.headers.cookie",
+        "password",
+        "smtpPass",
+        ],
+        censor: "[Redacted]",
+    },
 
     // ? ternarary operator
-    transport: isDevelopment
+    transport: usePrettyLogs
     ? {
         target: "pino-pretty",
         options: {
