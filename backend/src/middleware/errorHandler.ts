@@ -108,15 +108,13 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, next
   const databaseProblem = getDatabaseProblem(error);
 
   if (databaseProblem) {
-    //console.error(error);
-
     request.log.error(
       {
         err: error,
         requestId: String(request.id),
         path: request.originalUrl,
       },
-      "Request failed",
+      "Database request failed",
     );
 
     response
@@ -145,8 +143,6 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, next
   // are normal client-side failures and should not be logged as errors.
   // Only unexpected server-side failures (5xx) are logged.
   if (safeStatus >= 500) {
-    //console.error(error);
-
     request.log.error(
       {
         err: error,
@@ -155,7 +151,7 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, next
         status: safeStatus,
       },
       "Unhandled request error",
-    )
+    );
   }
 
   response
