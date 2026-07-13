@@ -240,7 +240,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
               <section className="app-card-solid rounded-[32px] border p-5 sm:p-7">
                 <div className="mb-7 border-b border-[var(--app-border)] pb-5">
                   <div>
-                    <p className="text-sm font-semibold text-[var(--app-muted)]">Calendar</p>
+                    <p className="text-sm font-semibold text-[var(--app-current)]">Calendar</p>
                     <p className="mt-1 text-sm font-medium text-[var(--app-muted)]">Colored dates are completed days.</p>
                   </div>
                 </div>
@@ -252,7 +252,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
                   Insights
                 </p>
-                <h2 className="mt-2 inline-flex items-center gap-2 text-2xl font-bold text-[var(--app-title)]">
+                <h2 className="mt-2 inline-flex items-center gap-2 text-2xl font-bold text-[var(--app-warm)]">
                   <ProgressLensIcon />
                   Progress Lens
                 </h2>

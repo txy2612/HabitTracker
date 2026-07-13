@@ -273,7 +273,7 @@ export function ReminderSettingsPage({
                   <div className="grid gap-4 xl:grid-cols-[250px_minmax(0,1fr)] xl:items-start">
                     <div className="grid gap-2 xl:row-start-1">
                       <label
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--app-soft-text)]"
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--app-current)]"
                         htmlFor={`time-${habit.id}`}
                       >
                         <ClockIcon />
@@ -314,7 +314,9 @@ export function ReminderSettingsPage({
                     {habit.scheduleType === "weekly" ? (
                       <div className="grid gap-3 xl:col-start-2">
                         <p className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--app-soft-text)]">
-                          <ScheduleIcon icon="weekly" />
+                          <span className="text-[var(--app-secondary)]">
+                            <ScheduleIcon icon="weekly" />
+                          </span>
                           Send on these weekdays
                         </p>
                         <div className="flex flex-wrap gap-2">
@@ -346,7 +348,7 @@ export function ReminderSettingsPage({
                     {habit.scheduleType === "specific_date" ? (
                       <div className="grid max-w-[325px] gap-2 xl:col-start-2">
                         <label
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--app-soft-text)]"
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--app-secondary)]"
                           htmlFor={`date-${habit.id}`}
                         >
                           <ScheduleIcon icon="date" />

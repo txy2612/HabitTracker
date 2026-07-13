@@ -13,6 +13,7 @@ import {
   formatReminderCardSummary,
   hasSavedReminderSettings,
 } from "../../reminders/reminderSummary";
+import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
 
 // props AKA what the card receives 
 // parameters passed into a component
@@ -81,6 +82,7 @@ export function HabitCard({
   const [isEditingName, setIsEditingName] = useState(false);
   const [draftName, setDraftName] = useState(habit.name);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isSavingLog, setIsSavingLog] = useState(false);
   const selectedLog = useMemo(
@@ -140,6 +142,7 @@ export function HabitCard({
 
       // call backend 
       await onDeleteHabit(habit.id);
+      setIsDeleteConfirmOpen(false);
     } catch {
       // The habits hook owns the visible error message.
     } finally {
@@ -289,8 +292,8 @@ export function HabitCard({
             className="flex w-full items-center gap-2 px-3 py-2 text-left text-red-500 hover:bg-red-50"
             disabled={isDeleting}
             onClick={() => {
-              void handleDeleteHabit();
               setIsMenuOpen(false);
+              setIsDeleteConfirmOpen(true);
             }}
             type="button"
           >
@@ -310,7 +313,7 @@ export function HabitCard({
           }}
           type="button"
         >
-          <span className="inline-flex items-center gap-2 font-semibold text-[var(--app-muted)]">
+          <span className="inline-flex items-center gap-2 font-semibold text-[var(--app-secondary)]">
             <CardIcon type="clock" />
             Reminder
           </span>
@@ -336,6 +339,17 @@ export function HabitCard({
         <div className="mt-3 h-3 w-28 animate-pulse rounded-full bg-slate-100" aria-label="Loading logs" />
       ) : null}
       {error ? <p className="mt-3 text-xs text-red-500">{error}</p> : null}
+
+      <ConfirmationModal
+        confirmLabel="Delete habit"
+        description={`Delete "${habit.name}" permanently? This removes it from your habits and cannot be undone.`}
+        isConfirming={isDeleting}
+        isOpen={isDeleteConfirmOpen}
+        onCancel={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={() => void handleDeleteHabit()}
+        title="Delete this habit?"
+        tone="danger"
+      />
 
       <LogNoteEditor
         date={selectedDate}

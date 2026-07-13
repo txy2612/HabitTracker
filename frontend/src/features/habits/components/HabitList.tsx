@@ -127,7 +127,7 @@ export function HabitList({
           </label>
 
           <Button
-            className="app-soft-control h-11 rounded-2xl border px-5 text-sm font-semibold hover:brightness-105"
+            className="app-secondary-control h-11 rounded-2xl border px-5 text-sm font-semibold hover:brightness-105"
             onClick={onOpenReminders}
             type="button"
             variant="ghost"

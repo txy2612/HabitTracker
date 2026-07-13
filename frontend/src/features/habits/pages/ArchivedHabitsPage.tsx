@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "../../../shared/components/Button";
+import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
 import { EmptyState } from "../../../shared/components/EmptyState";
 import type { Habit } from "../../../shared/types/api.types";
 
@@ -97,11 +98,17 @@ export function ArchivedHabitsPage({
 }: ArchivedHabitsPageProps) {
   // many habits in archived, how to know which one is restoring -> s=restoring + id
   const [restoringHabitId, setRestoringHabitId] = useState<string | null>(null);
+  const [habitPendingRestore, setHabitPendingRestore] = useState<Habit | null>(null);
 
-  async function handleRestoreHabit(habitId: string) {
+  async function handleConfirmRestoreHabit() {
+    if (!habitPendingRestore) {
+      return;
+    }
+
     try {
-      setRestoringHabitId(habitId);
-      await onRestoreHabit(habitId);
+      setRestoringHabitId(habitPendingRestore.id);
+      await onRestoreHabit(habitPendingRestore.id);
+      setHabitPendingRestore(null);
     } finally {
       setRestoringHabitId(null);
     }
@@ -159,7 +166,7 @@ export function ArchivedHabitsPage({
                   <Button
                     className="rounded-full px-4"
                     disabled={restoringHabitId === habit.id}
-                    onClick={() => void handleRestoreHabit(habit.id)}
+                    onClick={() => setHabitPendingRestore(habit)}
                     type="button"
                     variant="secondary"
                   >
@@ -170,6 +177,16 @@ export function ArchivedHabitsPage({
             ))}
           </section>
         ) : null}
+
+        <ConfirmationModal
+          confirmLabel="Restore habit"
+          description={`Restore "${habitPendingRestore?.name ?? "this habit"}" to your dashboard so you can track it again.`}
+          isConfirming={Boolean(habitPendingRestore && restoringHabitId === habitPendingRestore.id)}
+          isOpen={Boolean(habitPendingRestore)}
+          onCancel={() => setHabitPendingRestore(null)}
+          onConfirm={() => void handleConfirmRestoreHabit()}
+          title="Restore this habit?"
+        />
       </div>
     </main>
   );

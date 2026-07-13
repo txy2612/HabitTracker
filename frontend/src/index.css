@@ -16,9 +16,11 @@
   --app-accent: #22c7a9;
   --app-accent-strong: #13a58f;
   --app-accent-soft: rgba(34, 199, 169, 0.14);
+  --app-secondary-surface: linear-gradient(145deg, #fff8f4 0%, #fff0e8 55%, #f5f0ff 100%);
+  --app-secondary-soft: rgba(255, 155, 122, 0.18);
   --app-border: rgba(38, 52, 79, 0.1);
-  --app-muted: #7b8387;
-  --app-secondary: #a6a2df;
+  --app-muted: #667386;
+  --app-secondary: #d16f86;
   --app-shadow: rgba(100, 95, 150, 0.18);
   --app-text: #26344f;
   --app-title: #26344f;
@@ -63,6 +65,8 @@
   --app-accent: #25c6d9;
   --app-accent-strong: #f0c38e;
   --app-accent-soft: rgba(37, 198, 217, 0.18);
+  --app-secondary-surface: linear-gradient(145deg, #45316f 0%, #563263 52%, #65365b 100%);
+  --app-secondary-soft: rgba(255, 143, 115, 0.2);
   --app-border: rgba(216, 211, 238, 0.18);
   --app-muted: #c3bfd9;
   --app-secondary: #c46d8c;
@@ -136,6 +140,13 @@ body {
   box-shadow: 0 10px 24px color-mix(in srgb, var(--app-shadow) 70%, transparent);
 }
 
+.app-secondary-control {
+  background: var(--app-secondary-surface);
+  border-color: color-mix(in srgb, var(--app-secondary) 28%, var(--app-border));
+  color: var(--app-secondary);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--app-secondary) 18%, transparent);
+}
+
 :root:not([data-theme="dark"]) .app-card,
 :root:not([data-theme="dark"]) .app-card-solid,
 :root:not([data-theme="dark"]) .app-solid-surface,
@@ -150,6 +161,12 @@ body {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.8),
     0 10px 24px color-mix(in srgb, var(--app-shadow) 64%, transparent);
+}
+
+:root:not([data-theme="dark"]) .app-secondary-control {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 12px 28px color-mix(in srgb, var(--app-secondary) 18%, transparent);
 }
 
 :root[data-theme="dark"] .app-card,

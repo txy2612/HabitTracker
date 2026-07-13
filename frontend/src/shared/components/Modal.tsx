@@ -15,7 +15,10 @@ export function Modal({ children, isOpen, title, onClose }: ModalProps) {
   return (
     <div
       className="fixed inset-0 z-50 grid place-items-end bg-zinc-950/50 p-3 sm:place-items-center sm:p-4"
-      onClick={onClose}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClose();
+      }}
       role="presentation"
     >
       <section

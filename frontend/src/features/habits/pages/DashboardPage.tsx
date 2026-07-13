@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../../auth/AuthContext";
 import type { CreateHabitInput } from "../../../shared/types/api.types";
 import { Button } from "../../../shared/components/Button";
+import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
 import { AddHabitModal } from "../components/AddHabitModal";
 import { HabitList } from "../components/HabitList";
 import { useHabits } from "../hooks/useHabits";
@@ -99,6 +100,7 @@ export function DashboardPage() {
   const [focusedReminderHabitId, setFocusedReminderHabitId] = useState<string | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // selectedHabitId = null -> no habit is selected
@@ -148,6 +150,16 @@ export function DashboardPage() {
   function handleOpenSettings() {
     setIsProfileMenuOpen(false);
     setIsSettingsOpen(true);
+  }
+
+  function handleRequestSignOut() {
+    setIsProfileMenuOpen(false);
+    setIsSignOutConfirmOpen(true);
+  }
+
+  function handleConfirmSignOut() {
+    setIsSignOutConfirmOpen(false);
+    logout();
   }
 
   function showSuccessMessage(message: string) {
@@ -342,10 +354,7 @@ export function DashboardPage() {
                       </button>
                       <button
                         className="rounded-xl px-3 py-2 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
-                        onClick={() => {
-                          setIsProfileMenuOpen(false);
-                          logout();
-                        }}
+                        onClick={handleRequestSignOut}
                         type="button"
                       >
                         Sign out
@@ -393,6 +402,15 @@ export function DashboardPage() {
           onCreated={handleHabitCreated}
         />
         <ThemeSettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+        <ConfirmationModal
+          confirmLabel="Sign out"
+          description="You will return to the sign-in screen. Any unsaved form changes on this page will be lost."
+          isOpen={isSignOutConfirmOpen}
+          onCancel={() => setIsSignOutConfirmOpen(false)}
+          onConfirm={handleConfirmSignOut}
+          title="Sign out?"
+          tone="danger"
+        />
       </div>
     </main>
   );
