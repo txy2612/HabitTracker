@@ -27,10 +27,10 @@ export type ReminderSettingsPageProps = {
   onSaved: () => Promise<void>;
 };
 
-const scheduleOptions: { value: ReminderScheduleType; label: string }[] = [
-  { value: "daily", label: "Every day" },
-  { value: "weekly", label: "Days of week" },
-  { value: "specific_date", label: "Specific date" },
+const scheduleOptions: { value: ReminderScheduleType; label: string; icon: "daily" | "weekly" | "date" }[] = [
+  { value: "daily", label: "Every day", icon: "daily" },
+  { value: "weekly", label: "Days of week", icon: "weekly" },
+  { value: "specific_date", label: "Specific date", icon: "date" },
 ];
 
 const weekdayOptions: { value: ReminderWeekday; label: string }[] = [
@@ -45,6 +45,48 @@ const weekdayOptions: { value: ReminderWeekday; label: string }[] = [
 
 function formatReminderSummary(habit: ReminderDraft) {
   return formatReminderSchedule(habit);
+}
+
+function ScheduleIcon({ icon }: { icon: "daily" | "weekly" | "date" }) {
+  if (icon === "daily") {
+    return (
+      <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
+        <path
+          d="M12 4v2.2m0 11.6V20m5.7-13.7-1.6 1.6M7.9 16.1l-1.6 1.6M20 12h-2.2M6.2 12H4m13.7 5.7-1.6-1.6M7.9 7.9 6.3 6.3M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.8"
+        />
+      </svg>
+    );
+  }
+
+  if (icon === "weekly") {
+    return (
+      <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
+        <path
+          d="M7 4v3m10-3v3M5.5 9.5h13M7 13h.01M12 13h.01M17 13h.01M7 17h.01M12 17h.01M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v10A2.5 2.5 0 0 1 16.5 20h-9A2.5 2.5 0 0 1 5 17.5v-10Z"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.8"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M8 4v3m8-3v3M5 9.5h14M8 14h4m-7-6.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v9A2.5 2.5 0 0 1 16.5 19h-9A2.5 2.5 0 0 1 5 16.5v-9Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
 }
 
 function ReminderPageSkeleton() {
@@ -150,8 +192,8 @@ export function ReminderSettingsPage({
           </button>
         </header>
 
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
-          <section className="grid gap-5">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-8">
+          <section className="grid gap-4 xl:order-1">
             {isLoading ? <ReminderPageSkeleton /> : null}
 
             {error ? (
@@ -173,12 +215,12 @@ export function ReminderSettingsPage({
             ) : null}
 
             {!isLoading && !error ? (
-            <div className="grid gap-5">
+            <div className="grid gap-4">
               {reminders.drafts.map((habit) => (
                 <section
-                  className={`app-soft-card rounded-[28px] border px-5 py-5 transition sm:px-6 ${
+                  className={`app-soft-card rounded-[24px] border px-4 py-4 transition sm:px-5 ${
                     focusedHabitId === habit.id
-                      ? "border-[var(--app-accent)] ring-2 ring-[var(--app-accent-soft)]"
+                      ? "border-[var(--app-accent)] shadow-[0_0_0_4px_var(--app-accent-soft),0_18px_44px_color-mix(in_srgb,var(--app-accent)_24%,transparent)] ring-2 ring-[var(--app-accent)]"
                       : habit.reminderEnabled
                         ? "border-[var(--app-soft-border)]"
                         : "border-[var(--app-soft-border)]"
@@ -186,14 +228,14 @@ export function ReminderSettingsPage({
                   id={`reminder-habit-${habit.id}`}
                   key={habit.id}
                 >
-                  <div className="mb-5 flex flex-col gap-4 border-b border-[var(--app-soft-border)] pb-5 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="grid gap-2">
+                  <div className="mb-4 flex flex-col gap-3 border-b border-[var(--app-soft-border)] pb-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="grid gap-1.5">
                       <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="text-xl font-semibold text-[var(--app-soft-text)]">{habit.name}</h2>
+                        <h2 className="text-lg font-semibold text-[var(--app-soft-text)]">{habit.name}</h2>
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${
                             habit.reminderEnabled
-                              ? "bg-emerald-100 text-emerald-800"
+                              ? "bg-[var(--app-accent-soft)] text-[var(--app-accent-strong)]"
                               : "bg-slate-200 text-slate-600"
                           }`}
                         >
@@ -214,13 +256,13 @@ export function ReminderSettingsPage({
                   </div>
                   
                   {habit.reminderEnabled ?(
-                  <div className="grid gap-5 xl:grid-cols-[220px_minmax(0,1fr)]">
+                  <div className="grid gap-4 xl:grid-cols-[200px_minmax(0,1fr)]">
                     <div className="grid gap-2">
                       <label className="text-sm font-semibold text-[var(--app-soft-text)]" htmlFor={`time-${habit.id}`}>
                         Reminder time
                       </label>
                       <input
-                        className="h-12 rounded-xl border border-[var(--app-soft-border)] bg-white px-3 text-base text-[var(--app-soft-text)] outline-none transition focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)] disabled:cursor-not-allowed disabled:opacity-60"
+                        className="h-11 rounded-xl border border-[var(--app-soft-border)] bg-white px-3 text-base text-[var(--app-soft-text)] outline-none transition focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)] disabled:cursor-not-allowed disabled:opacity-60"
                         id={`time-${habit.id}`}
                         onChange={(event) => reminders.setReminderTime(habit.id, event.target.value)}
                         type="time"
@@ -228,21 +270,22 @@ export function ReminderSettingsPage({
                       />
                     </div>
 
-                    <div className="grid gap-5">
+                    <div className="grid gap-4">
                       <div className="grid gap-2">
                         <p className="text-sm font-semibold text-[var(--app-soft-text)]">Schedule type</p>
                         <div className="flex flex-wrap gap-2">
                           {scheduleOptions.map((option) => (
                             <button
-                              className={`rounded-full border px-4 py-2.5 text-sm font-semibold transition ${
+                              className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition ${
                                 habit.scheduleType === option.value
-                                  ? "border-emerald-500 bg-emerald-500 text-white"
+                                  ? "border-[var(--app-accent)] bg-[var(--app-accent)] text-white"
                                   : "border-[var(--app-soft-border)] bg-[var(--app-soft-surface-muted)] text-[var(--app-soft-muted)]"
                               } disabled:cursor-not-allowed disabled:border-[var(--app-soft-border)] disabled:bg-[var(--app-soft-surface-muted)] disabled:text-[var(--app-soft-muted)]`}
                               key={option.value}
                               onClick={() => reminders.setScheduleType(habit.id, option.value)}
                               type="button"
                             >
+                              <ScheduleIcon icon={option.icon} />
                               {option.label}
                             </button>
                           ))}
@@ -260,7 +303,7 @@ export function ReminderSettingsPage({
                                 <button
                                   className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${
                                     isSelected
-                                      ? "border-slate-950 bg-slate-950 text-white"
+                                      ? "border-[var(--app-accent)] bg-[var(--app-accent)] text-white"
                                       : "border-[var(--app-soft-border)] bg-[var(--app-soft-surface-muted)] text-[var(--app-soft-muted)]"
                                   } disabled:cursor-not-allowed disabled:border-[var(--app-soft-border)] disabled:bg-[var(--app-soft-surface-muted)] disabled:text-[var(--app-soft-muted)]`}
                                   key={weekday.value}
@@ -284,7 +327,7 @@ export function ReminderSettingsPage({
                             Send on this date
                           </label>
                           <input
-                            className="h-12 rounded-xl border border-[var(--app-soft-border)] bg-white px-3 text-base text-[var(--app-soft-text)] outline-none transition focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)] disabled:cursor-not-allowed disabled:opacity-60"
+                            className="h-11 rounded-xl border border-[var(--app-soft-border)] bg-white px-3 text-base text-[var(--app-soft-text)] outline-none transition focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)] disabled:cursor-not-allowed disabled:opacity-60"
                             id={`date-${habit.id}`}
                             onChange={(event) => reminders.setSpecificDate(habit.id, event.target.value)}
                             type="date"
@@ -295,7 +338,7 @@ export function ReminderSettingsPage({
                     </div>
                   </div>
                   ) : (
-                    <div className="rounded-2xl border border-dashed border-[var(--app-soft-border)] bg-[var(--app-soft-surface-muted)] px-4 py-4 text-sm text-[var(--app-soft-muted)]">
+                    <div className="rounded-2xl border border-dashed border-[var(--app-soft-border)] bg-[var(--app-soft-surface-muted)] px-4 py-3 text-sm text-[var(--app-soft-muted)]">
                       <p className="font-semibold text-[var(--app-soft-text)]">Reminder paused</p>
                       <p className="mt-1 leading-6">
                         The schedule is still saved as <span className="font-medium">{formatReminderSummary(habit)}</span>.
@@ -309,7 +352,7 @@ export function ReminderSettingsPage({
             ) : null}
           </section>
 
-          <aside className="xl:sticky xl:top-8 xl:self-start">
+          <aside className="order-first xl:order-2 xl:sticky xl:top-8 xl:self-start">
             <div className="app-soft-card rounded-[28px] border p-6">
               <div className="grid gap-2 border-b border-[var(--app-soft-border)] pb-5">
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#c46d8c]">Delivery settings</p>

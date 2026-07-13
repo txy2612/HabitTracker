@@ -9,8 +9,8 @@ export function ReminderToggle({ isEnabled, label, onToggle }: ReminderTogglePro
     <button
       aria-checked={isEnabled}
       aria-label={label}
-      className={`relative h-10 w-[4.5rem] shrink-0 rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
-        isEnabled ? "bg-emerald-500" : "bg-slate-300"
+      className={`relative h-10 w-[4.5rem] shrink-0 rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-accent)] focus-visible:ring-offset-2 ${
+        isEnabled ? "bg-[var(--app-accent)]" : "bg-slate-300"
       }`}
       onClick={() => onToggle(!isEnabled)}
       role="switch"

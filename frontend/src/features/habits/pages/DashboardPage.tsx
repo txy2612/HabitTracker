@@ -286,15 +286,15 @@ export function DashboardPage() {
                 <button
                   aria-expanded={isProfileMenuOpen}
                   aria-haspopup="menu"
-                  className="inline-flex h-12 items-center gap-3 rounded-full border border-[var(--app-border)] bg-[var(--app-control-surface)] px-3 pr-4 text-sm font-semibold text-[var(--app-text)] shadow-sm transition hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-accent)] focus-visible:ring-offset-2"
+                  className="app-soft-control inline-flex h-12 items-center gap-3 rounded-full border px-3 pr-4 text-sm font-semibold transition hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-accent)] focus-visible:ring-offset-2"
                   onClick={() => setIsProfileMenuOpen((currentValue) => !currentValue)}
                   type="button"
                 >
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--app-accent)] text-xs font-bold text-white">
                     {userInitials}
                   </span>
-                  <span className="hidden sm:inline">{userInitials}</span>
-                  <svg aria-hidden="true" className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24">
+                    <span className="hidden sm:inline">{userInitials}</span>
+                  <svg aria-hidden="true" className="h-4 w-4 text-[var(--app-soft-muted)]" fill="none" viewBox="0 0 24 24">
                     <path
                       d="m6 9 6 6 6-6"
                       stroke="currentColor"
@@ -316,7 +316,7 @@ export function DashboardPage() {
                     </div>
                     <div className="grid gap-1 px-2 py-2">
                       <button
-                        className="rounded-xl px-3 py-2 text-left text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-control-surface)]"
+                        className="rounded-xl px-3 py-2 text-left text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-soft-surface)] hover:text-[var(--app-soft-text)]"
                         onClick={handleOpenArchivedHabits}
                         type="button"
                       >
@@ -331,7 +331,7 @@ export function DashboardPage() {
                         <span className="text-xs font-medium uppercase tracking-[0.12em]">Later</span>
                       </button>
                       <button
-                        className="flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-control-surface)]"
+                        className="flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-soft-surface)] hover:text-[var(--app-soft-text)]"
                         onClick={handleOpenSettings}
                         type="button"
                       >

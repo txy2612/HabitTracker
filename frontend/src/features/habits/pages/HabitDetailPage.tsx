@@ -129,7 +129,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                 </div>
 
                 <button
-                  className="w-full rounded-2xl border border-[var(--app-border)] bg-[var(--app-control-surface)] px-5 py-3 text-sm font-semibold text-[var(--app-text)] shadow-sm transition hover:brightness-95"
+                  className="app-soft-control w-full rounded-2xl border px-5 py-3 text-sm font-semibold transition hover:brightness-105"
                   onClick={onClose}
                   type="button"
                 >
@@ -176,10 +176,10 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-[52px_1fr_52px] items-center gap-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-control-surface)] px-3 py-2 xl:mt-1">
+                <div className="app-soft-control grid grid-cols-[52px_1fr_52px] items-center gap-3 rounded-[22px] border px-3 py-2 xl:mt-1">
                   <button
                     aria-label="Previous month"
-                    className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-[var(--app-text)] transition hover:brightness-95"
+                    className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-[var(--app-soft-text)] transition hover:bg-[var(--app-soft-surface-muted)]"
                     onClick={() => setMonth((currentMonth) => shiftMonth(currentMonth, -1))}
                     type="button"
                   >
@@ -189,7 +189,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                     <button
                       aria-expanded={isYearMenuOpen}
                       aria-haspopup="menu"
-                      className="inline-flex items-center justify-center gap-1 rounded-full text-xs font-bold text-[var(--app-muted)] transition hover:text-[var(--app-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-accent)]"
+                      className="inline-flex items-center justify-center gap-1 rounded-full text-xs font-bold text-[var(--app-soft-muted)] transition hover:text-[var(--app-soft-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-accent)]"
                       onClick={() => setIsYearMenuOpen((currentValue) => !currentValue)}
                       type="button"
                     >
@@ -204,11 +204,11 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                         />
                       </svg>
                     </button>
-                    <p className="text-lg font-bold text-[var(--app-text)]">{formatMonthName(month)}</p>
+                    <p className="text-lg font-bold text-[var(--app-soft-text)]">{formatMonthName(month)}</p>
 
                     {isYearMenuOpen ? (
                       <div
-                        className="app-card-solid absolute left-1/2 top-[calc(100%+0.75rem)] z-20 min-w-[120px] -translate-x-1/2 overflow-hidden rounded-2xl border p-2"
+                        className="app-soft-card absolute left-1/2 top-[calc(100%+0.75rem)] z-20 min-w-[120px] -translate-x-1/2 overflow-hidden rounded-2xl border p-2"
                         role="menu"
                       >
                         {yearOptions.map((yearOption) => (
@@ -216,7 +216,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                             className={`block w-full rounded-xl px-3 py-2 text-left text-sm font-medium transition ${
                               yearOption === selectedYear
                                 ? "bg-[var(--app-accent-soft)] text-[var(--app-accent-strong)]"
-                                : "text-[var(--app-muted)] hover:bg-[var(--app-control-surface)]"
+                                : "text-[var(--app-soft-muted)] hover:bg-[var(--app-soft-surface-muted)]"
                             }`}
                             key={yearOption}
                             onClick={() => handleSelectYear(yearOption)}
@@ -233,7 +233,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                   ) : (
                     <button
                       aria-label="Next month"
-                      className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-[var(--app-text)] transition hover:brightness-95"
+                      className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-[var(--app-soft-text)] transition hover:bg-[var(--app-soft-surface-muted)]"
                       onClick={() => setMonth((currentMonthValue) => shiftMonth(currentMonthValue, 1))}
                       type="button"
                     >

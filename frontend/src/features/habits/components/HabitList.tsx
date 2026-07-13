@@ -73,7 +73,7 @@ export function HabitList({
         <label className="relative block w-full lg:max-w-lg">
           <span className="sr-only">Search habits</span>
           <input
-            className="h-11 w-full rounded-xl border border-[var(--app-border)] bg-[var(--app-control-surface)] px-4 pr-11 text-sm text-[var(--app-text)] outline-none transition placeholder:text-slate-400 focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)]"
+            className="app-soft-control h-11 w-full rounded-xl border px-4 pr-11 text-sm outline-none transition placeholder:text-[var(--app-soft-muted)] focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)]"
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search habits..."
             type="search"
@@ -81,7 +81,7 @@ export function HabitList({
           />
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400"
+            className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[var(--app-soft-muted)]"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24">
               <path
@@ -100,7 +100,7 @@ export function HabitList({
             <span className="text-sm font-medium text-[var(--app-muted)]">Sort</span>
             <span className="relative">
               <select
-                className="h-11 min-w-[190px] appearance-none rounded-xl border border-[var(--app-border)] bg-[var(--app-control-surface)] px-3 pr-10 text-sm text-[var(--app-text)] outline-none transition focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)]"
+                className="app-soft-control h-11 min-w-[190px] appearance-none rounded-xl border px-3 pr-10 text-sm outline-none transition focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)]"
                 onChange={(event) => setSortBy(event.target.value as HabitSortOption)}
                 value={sortBy}
               >
@@ -111,7 +111,7 @@ export function HabitList({
               </select>
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400"
+                className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[var(--app-soft-muted)]"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24">
                   <path
@@ -127,7 +127,7 @@ export function HabitList({
           </label>
 
           <Button
-            className="h-11 rounded-2xl px-5 text-sm font-semibold shadow-[0_10px_24px_color-mix(in_srgb,var(--app-accent)_14%,transparent)]"
+            className="app-soft-control h-11 rounded-2xl border px-5 text-sm font-semibold hover:brightness-105"
             onClick={onOpenReminders}
             type="button"
             variant="ghost"

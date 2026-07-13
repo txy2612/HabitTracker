@@ -126,6 +126,13 @@ body {
   box-shadow: 0 16px 35px var(--app-shadow);
 }
 
+.app-soft-control {
+  background: var(--app-soft-surface);
+  border-color: var(--app-soft-border);
+  color: var(--app-soft-text);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--app-shadow) 70%, transparent);
+}
+
 .app-accent-bg {
   background: var(--app-accent);
 }
