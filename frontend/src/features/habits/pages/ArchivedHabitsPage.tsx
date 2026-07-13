@@ -31,7 +31,7 @@ function ArchivedHabitsLoadingState() {
     <section className="grid gap-4 lg:grid-cols-2" aria-label="Loading archived habits">
       {[0, 1, 2, 3].map((item) => (
         <div
-          className="rounded-[24px] border border-slate-200 bg-white px-5 py-5 shadow-[0_12px_30px_rgba(15,23,42,0.06)]"
+          className="app-soft-card rounded-[24px] border px-5 py-5"
           key={item}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -110,11 +110,11 @@ export function ArchivedHabitsPage({
   return (
     <main className="app-shell min-h-screen px-6 py-8 lg:px-10">
       <div className="mx-auto w-full max-w-7xl">
-        <header className="mb-8 flex flex-col gap-5 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <header className="mb-8 flex flex-col gap-5 border-b border-[var(--app-border)] pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="grid gap-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Archive</p>
-            <h1 className="text-3xl font-semibold text-slate-950">Archived Habits</h1>
-            <p className="text-sm text-slate-500">Restore habits when you want them back in the main dashboard.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--app-secondary)]">Archive</p>
+            <h1 className="text-3xl font-semibold text-[var(--app-title)]">Archived Habits</h1>
+            <p className="text-sm text-[var(--app-muted)]">Restore habits when you want them back in the main dashboard.</p>
           </div>
           <Button className="self-start rounded-full px-5" onClick={onClose} type="button" variant="secondary">
             Back to habits
@@ -132,9 +132,9 @@ export function ArchivedHabitsPage({
         ) : null}
 
         {!isLoading && !error ? (
-          <div className="mb-5 rounded-[24px] border border-slate-200 bg-white px-5 py-4 text-sm text-slate-600 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+          <div className="app-soft-card mb-5 rounded-[24px] border px-5 py-4 text-sm text-[var(--app-soft-text)]">
             Archived habits are paused.
-            <span className="ml-1 text-slate-500">Restore one to edit reminders, logs, or habit details again.</span>
+            <span className="ml-1 text-[var(--app-soft-muted)]">Restore one to edit reminders, logs, or habit details again.</span>
           </div>
         ) : null}
 
@@ -148,13 +148,13 @@ export function ArchivedHabitsPage({
           <section className="grid gap-4 lg:grid-cols-2">
             {archivedHabits.map((habit) => (
               <article
-                className="rounded-[24px] border border-slate-200 bg-white px-5 py-5 shadow-[0_12px_30px_rgba(15,23,42,0.06)]"
+                className="app-soft-card rounded-[24px] border px-5 py-5"
                 key={habit.id}
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="grid gap-2">
-                    <h2 className="text-lg font-semibold text-slate-950">{habit.name}</h2>
-                    <p className="text-sm text-slate-500">Archived on {formatArchivedDate(habit.archivedAt)}</p>
+                    <h2 className="text-lg font-semibold text-[var(--app-soft-text)]">{habit.name}</h2>
+                    <p className="text-sm text-[var(--app-soft-muted)]">Archived on {formatArchivedDate(habit.archivedAt)}</p>
                   </div>
                   <Button
                     className="rounded-full px-4"

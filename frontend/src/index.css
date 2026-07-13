@@ -7,6 +7,11 @@
   --app-surface-solid: #ffffff;
   --app-modal-surface: #fbfcff;
   --app-control-surface: #f3f6ff;
+  --app-soft-surface: #f7f4fb;
+  --app-soft-surface-muted: #efebf6;
+  --app-soft-border: rgba(38, 52, 79, 0.12);
+  --app-soft-text: #26344f;
+  --app-soft-muted: #6f6a86;
   --app-accent: #22c7a9;
   --app-accent-strong: #13a58f;
   --app-accent-soft: rgba(34, 199, 169, 0.14);
@@ -48,6 +53,11 @@
   --app-surface-solid: linear-gradient(145deg, #362867 0%, #2b2058 100%);
   --app-modal-surface: #2f245d;
   --app-control-surface: linear-gradient(145deg, #3a2b70 0%, #2d235f 100%);
+  --app-soft-surface: #f7f4fb;
+  --app-soft-surface-muted: #efebf6;
+  --app-soft-border: rgba(38, 52, 79, 0.12);
+  --app-soft-text: #26344f;
+  --app-soft-muted: #6f6a86;
   --app-accent: #25c6d9;
   --app-accent-strong: #f0c38e;
   --app-accent-soft: rgba(37, 198, 217, 0.18);
@@ -107,6 +117,13 @@ body {
   background: var(--app-modal-surface);
   border-color: var(--app-border);
   color: var(--app-text);
+}
+
+.app-soft-card {
+  background: var(--app-soft-surface);
+  border-color: var(--app-soft-border);
+  color: var(--app-soft-text);
+  box-shadow: 0 16px 35px var(--app-shadow);
 }
 
 .app-accent-bg {

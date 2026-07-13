@@ -118,30 +118,30 @@ export function LogNoteEditor({
       title={date ? `Log ${formatLogDate(date)}` : "Log habit"}
     >
       <div className="grid gap-6 px-1 pb-1">
-        <div className="rounded-3xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-800">
+        <div className="rounded-3xl border border-[var(--app-border)] bg-[var(--app-accent-soft)] px-4 py-3 text-sm text-[var(--app-text)]">
           <p className="font-semibold">Choose what happened for this date</p>
           <p className="mt-1 leading-6">
             Tags and notes are optional. Use them when you want context, skip them when you just want to log quickly.
           </p>
         </div>
 
-        <section className="grid gap-5 rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+        <section className="grid gap-5 rounded-3xl border border-[var(--app-border)] bg-[var(--app-control-surface)] p-5">
           <div>
-            <h3 className="text-base font-semibold text-slate-950">
+            <h3 className="text-base font-semibold text-[var(--app-text)]">
               Details
-              <span className="ml-1 font-normal text-slate-500">
+              <span className="ml-1 font-normal text-[var(--app-muted)]">
                 (optional)
               </span>
             </h3>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[var(--app-muted)]">
               Pick quick tags, write a note, or leave this blank.
             </p>
           </div>
 
           {/* Positive tags */}
           <div className="grid gap-3">
-            <span className="text-sm font-semibold text-emerald-700">
+            <span className="text-sm font-semibold text-[var(--app-secondary)]">
               Helped
             </span>
 
@@ -170,7 +170,7 @@ export function LogNoteEditor({
 
           {/* Negative tags */}
           <div className="grid gap-3 border-t border-dashed border-slate-200 pt-4">
-            <span className="text-sm font-semibold text-rose-700">
+            <span className="text-sm font-semibold text-[var(--app-warm)]">
               Got in the way
             </span>
 
@@ -198,7 +198,7 @@ export function LogNoteEditor({
           </div>
 
           <label className="grid gap-2">
-            <span className="text-sm font-semibold text-slate-700">
+            <span className="text-sm font-semibold text-[var(--app-text)]">
               Additional notes
             </span>
 
@@ -208,12 +208,12 @@ export function LogNoteEditor({
                 setAdditionalNotes(event.target.value)
               }
               placeholder="Anything worth remembering?"
-              className="min-h-24 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              className="min-h-24 resize-none rounded-2xl border border-[var(--app-border)] bg-[var(--app-modal-surface)] px-4 py-3 text-sm text-[var(--app-text)] outline-none transition placeholder:text-[var(--app-muted)] focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)]"
             />
           </label>
 
           {selectedCount > 0 ? (
-            <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+            <p className="rounded-2xl bg-[var(--app-modal-surface)] px-4 py-3 text-sm text-[var(--app-muted)]">
               {selectedCount} tag{selectedCount === 1 ? "" : "s"} selected. Selected tags will be saved with this log.
             </p>
           ) : null}
@@ -224,7 +224,7 @@ export function LogNoteEditor({
             type="button"
             disabled={isSaving}
             onClick={() => handleSave("missed")}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-control-surface)] px-4 py-3 text-base font-semibold text-[var(--app-text)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSaving ? "Saving..." : "Save as missed"}
           </button>

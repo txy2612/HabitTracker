@@ -177,7 +177,7 @@ export function HabitCard({
           <form className="grid flex-1 gap-2" onClick={(event) => event.stopPropagation()} onSubmit={handleUpdateName}>
             <input
               aria-label="Habit name"
-              className="h-9 rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-950 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              className="h-9 rounded-md border border-[var(--app-border)] bg-[var(--app-modal-surface)] px-3 text-sm font-semibold text-[var(--app-text)] outline-none focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)]"
               disabled={isSavingName}
               onChange={(event) => setDraftName(event.target.value)}
               value={draftName}
@@ -191,7 +191,7 @@ export function HabitCard({
                 Save
               </button>
               <button
-                className="rounded-md px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-50"
+                className="rounded-md px-3 py-1.5 text-xs font-semibold text-[var(--app-muted)] hover:bg-[var(--app-control-surface)]"
                 disabled={isSavingName}
                 onClick={() => {
                   setDraftName(habit.name);
@@ -215,7 +215,7 @@ export function HabitCard({
         <div className="flex items-start gap-3">
           <button
             aria-label={`Open menu for ${habit.name}`}
-            className="-mt-1 rounded-full px-1 text-lg leading-none text-[#9ca3af] transition hover:text-slate-700"
+            className="-mt-1 rounded-full px-1 text-lg leading-none text-[#9ca3af] transition hover:text-[var(--app-text)]"
             onClick={(event) => {
               event.stopPropagation();
               setIsMenuOpen((currentValue) => !currentValue);

@@ -111,16 +111,16 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
 
   return (
     <main className="app-shell min-h-screen px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-      <div className="mx-auto w-full max-w-[1500px]">
-        <section className="app-card overflow-hidden rounded-[42px] border p-5 sm:p-7 lg:p-10">
-          <div className="grid gap-8 xl:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.35fr)]">
-            <aside className="grid gap-6 xl:sticky xl:top-8 xl:self-start">
+      <div className="mx-auto w-full max-w-[1420px]">
+        <section className="app-card overflow-hidden rounded-[42px] border p-5 sm:p-7 lg:p-8">
+          <div className="grid gap-8 xl:grid-cols-[minmax(280px,0.72fr)_minmax(0,1.45fr)] xl:gap-10">
+            <aside className="grid gap-5 xl:sticky xl:top-8 xl:self-start">
               <div className="grid gap-5">
                 <div className="grid gap-3">
                   <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--app-secondary)]">
                     Habit Tracker
                   </p>
-                  <h1 className="text-4xl font-bold leading-tight text-[var(--app-title)] sm:text-5xl">
+                  <h1 className="text-4xl font-bold leading-tight text-[var(--app-title)] sm:text-[2.8rem]">
                     {habit.name}
                   </h1>
                   <p className="max-w-xl text-base leading-8 text-[var(--app-muted)]">
@@ -137,7 +137,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                 </button>
               </div>
 
-              <section className="app-card-solid rounded-[30px] border p-5">
+              <section className="app-card-solid rounded-[30px] border p-5 xl:p-6">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
@@ -161,13 +161,13 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
             <section className="grid gap-6">
               <StreakStats error={streakError} isLoading={isStreakLoading} streak={streak} />
 
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
-                <div className="grid gap-2">
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+                <div className="grid gap-3">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
                     Details Progress
                   </p>
                   <h2 className="text-2xl font-bold text-[var(--app-title)]">Timeline Streaks</h2>
-                  <p className="max-w-xl text-sm leading-6 text-[var(--app-muted)]">
+                  <p className="max-w-2xl text-sm leading-6 text-[var(--app-muted)]">
                     This monthly calendar shows each day&apos;s log. Colored circles are completed days, muted circles are
                     missed or empty days, and the line connects consecutive completed days.
                   </p>
@@ -176,7 +176,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-[52px_1fr_52px] items-center gap-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-control-surface)] px-3 py-2">
+                <div className="grid grid-cols-[52px_1fr_52px] items-center gap-3 rounded-[22px] border border-[var(--app-border)] bg-[var(--app-control-surface)] px-3 py-2 xl:mt-1">
                   <button
                     aria-label="Previous month"
                     className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-[var(--app-text)] transition hover:brightness-95"
