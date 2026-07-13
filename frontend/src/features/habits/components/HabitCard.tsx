@@ -9,7 +9,10 @@ import {
 import { LogNoteEditor } from "../../habitLogs/components/LogNoteEditor";
 import { StreakDotsRow } from "../../habitLogs/components/StreakDotsRow";
 import { useHabitLogs } from "../../habitLogs/hooks/useHabitLogs";
-import { formatReminderCardSummary } from "../../reminders/reminderSummary";
+import {
+  formatReminderCardSummary,
+  hasSavedReminderSettings,
+} from "../../reminders/reminderSummary";
 
 // props AKA what the card receives 
 // parameters passed into a component
@@ -60,6 +63,24 @@ export function HabitCard({
     () => logs.find((log) => log.logDate === selectedDate),
     [logs, selectedDate],
   );
+  const recentLogs = useMemo(
+    () => weekDates.map((date) => logs.find((log) => log.logDate === date)),
+    [logs, weekDates],
+  );
+  const completedCount = recentLogs.filter((log) => log?.status === "done").length;
+  const missedCount = recentLogs.filter((log) => log?.status === "missed").length;
+  const reminderHasSavedSettings = hasSavedReminderSettings({
+    reminderTime: habit.reminderTime,
+    scheduleType: habit.reminderScheduleType,
+    weekdays: habit.reminderWeekdays,
+    specificDate: habit.reminderSpecificDate,
+  });
+  const reminderStateLabel = habit.reminderEnabled ? "Active" : reminderHasSavedSettings ? "Paused" : "Off";
+  const reminderStateClasses = habit.reminderEnabled
+    ? "bg-emerald-100 text-emerald-700"
+    : reminderHasSavedSettings
+      ? "bg-amber-100 text-amber-700"
+      : "bg-slate-100 text-slate-500";
 
   async function handleUpdateName(event: FormEvent<HTMLFormElement>) {
     // stop page refresh
@@ -145,7 +166,7 @@ export function HabitCard({
   return (
     <article
       aria-label={`Open monthly view for ${habit.name}`}
-      className="relative cursor-pointer rounded-[22px] bg-white px-5 py-6 shadow-[0_2px_10px_rgba(15,23,42,0.12)] transition hover:shadow-[0_4px_14px_rgba(15,23,42,0.14)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+      className="relative cursor-pointer rounded-[22px] bg-white px-5 py-6 shadow-[0_2px_10px_rgba(15,23,42,0.12)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(15,23,42,0.14)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
       onClick={() => onViewHabit(habit.id)}
       onKeyDown={handleCardKeyDown}
       role="button"
@@ -183,7 +204,13 @@ export function HabitCard({
             </div>
           </form>
         ) : (
-          <h2 className="text-[15px] font-semibold text-slate-950">{habit.name}</h2>
+          <div className="grid gap-1">
+            <h2 className="text-[15px] font-semibold text-slate-950">{habit.name}</h2>
+            <p className="text-xs font-medium text-slate-400">
+              Past 7 days: {completedCount} done
+              {missedCount > 0 ? `, ${missedCount} missed` : ""}
+            </p>
+          </div>
         )}
         <div className="flex items-start gap-3">
           <button
@@ -249,27 +276,33 @@ export function HabitCard({
       <div className="grid gap-3">
         <button
           aria-label={`Edit reminder for ${habit.name}`}
-          className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-left text-sm transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+          className="grid w-full gap-2 rounded-xl bg-slate-50 px-3 py-3 text-left text-sm transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 sm:grid-cols-[auto_1fr_auto] sm:items-center"
           onClick={(event) => {
             event.stopPropagation();
             onEditReminder(habit.id);
           }}
           type="button"
         >
-          <span className="font-medium text-slate-500">Reminder:</span>
-          <span className="truncate pl-3 text-right text-slate-700">{formatReminderCardSummary({
+          <span className="font-medium text-slate-500">Reminder</span>
+          <span className="min-w-0 text-slate-700 sm:truncate sm:text-right">{formatReminderCardSummary({
             reminderEnabled: habit.reminderEnabled,
             reminderTime: habit.reminderTime,
             scheduleType: habit.reminderScheduleType,
             weekdays: habit.reminderWeekdays,
             specificDate: habit.reminderSpecificDate,
           })}</span>
+          <span className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${reminderStateClasses}`}>
+            {reminderStateLabel}
+          </span>
         </button>
 
         <StreakDotsRow dates={weekDates} logs={logs} onSelectDate={setSelectedDate} />
+        <p className="text-xs leading-5 text-slate-400">Click any date to mark it done, missed, or add details.</p>
       </div>
 
-      {isLoading ? <p className="mt-3 text-xs text-slate-400">Loading logs...</p> : null}
+      {isLoading ? (
+        <div className="mt-3 h-3 w-28 animate-pulse rounded-full bg-slate-100" aria-label="Loading logs" />
+      ) : null}
       {error ? <p className="mt-3 text-xs text-red-500">{error}</p> : null}
 
       <LogNoteEditor

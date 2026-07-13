@@ -42,54 +42,56 @@ function getConnectorClasses(leftDate: string, rightDate: string, leftLog?: Habi
 
 export function StreakDotsRow({ dates, logs, onSelectDate }: StreakDotsRowProps) {
   return (
-    <div>
-      <div className="mb-2 flex items-center">
-        {dates.map((date, index) => (
-          <div className="flex items-center" key={`label-${date}`}>
-            <span className="block w-10 text-center text-[10px] font-medium text-[#9ca3af]">
-              {formatRecentDayLabel(date)}
-            </span>
-            {index < dates.length - 1 ? <span className="w-3 shrink-0" aria-hidden="true" /> : null}
-          </div>
-        ))}
-      </div>
-
-      <div className="flex items-center">
-        {dates.map((date, index) => {
-          const isFutureDate = date > todayString();
-          const log = getLogForDate(logs, date);
-          const nextDate = dates[index + 1];
-          const nextLog = nextDate ? getLogForDate(logs, nextDate) : undefined;
-
-          return (
-            <div className="flex items-center" key={date}>
-              <button
-                aria-label={`Edit log for ${date}`}
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[15px] font-semibold transition focus:outline-none ${
-                  isFutureDate ? "" : "hover:scale-105 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-                } ${getCircleClasses(date, log)}`}
-                disabled={isFutureDate}
-                onClick={(event) => {
-                  event.stopPropagation();
-
-                  if (!isFutureDate) {
-                    onSelectDate?.(date);
-                  }
-                }}
-                type="button"
-              >
-                {getDayNumber(date)}
-              </button>
-
-              {index < dates.length - 1 ? (
-                <span
-                  className={`h-0.5 w-3 shrink-0 ${nextDate ? getConnectorClasses(date, nextDate, log, nextLog) : "bg-transparent"}`}
-                  aria-hidden="true"
-                />
-              ) : null}
+    <div className="overflow-x-auto pb-1">
+      <div className="min-w-max">
+        <div className="mb-2 flex items-center">
+          {dates.map((date, index) => (
+            <div className="flex items-center" key={`label-${date}`}>
+              <span className="block w-10 text-center text-[10px] font-medium text-[#9ca3af]">
+                {formatRecentDayLabel(date)}
+              </span>
+              {index < dates.length - 1 ? <span className="w-3 shrink-0" aria-hidden="true" /> : null}
             </div>
-          );
-        })}
+          ))}
+        </div>
+
+        <div className="flex items-center">
+          {dates.map((date, index) => {
+            const isFutureDate = date > todayString();
+            const log = getLogForDate(logs, date);
+            const nextDate = dates[index + 1];
+            const nextLog = nextDate ? getLogForDate(logs, nextDate) : undefined;
+
+            return (
+              <div className="flex items-center" key={date}>
+                <button
+                  aria-label={`Edit log for ${date}`}
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[15px] font-semibold transition focus:outline-none ${
+                    isFutureDate ? "" : "hover:scale-105 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                  } ${getCircleClasses(date, log)}`}
+                  disabled={isFutureDate}
+                  onClick={(event) => {
+                    event.stopPropagation();
+
+                    if (!isFutureDate) {
+                      onSelectDate?.(date);
+                    }
+                  }}
+                  type="button"
+                >
+                  {getDayNumber(date)}
+                </button>
+
+                {index < dates.length - 1 ? (
+                  <span
+                    className={`h-0.5 w-3 shrink-0 ${nextDate ? getConnectorClasses(date, nextDate, log, nextLog) : "bg-transparent"}`}
+                    aria-hidden="true"
+                  />
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

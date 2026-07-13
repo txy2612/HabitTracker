@@ -14,13 +14,13 @@ export function Modal({ children, isOpen, title, onClose }: ModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-zinc-950/50 p-4"
+      className="fixed inset-0 z-50 grid place-items-end bg-zinc-950/50 p-3 sm:place-items-center sm:p-4"
       onClick={onClose}
       role="presentation"
     >
       <section
         aria-modal="true"
-        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-[28px] bg-white p-5 shadow-xl sm:rounded-2xl sm:p-6"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >

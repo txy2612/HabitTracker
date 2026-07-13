@@ -4,17 +4,24 @@ import type {
   HabitLog,
   HabitLogStatus,
 } from "../../../shared/types/api.types";
+import { formatRecentDayLabel } from "../../../shared/utils/dateUtils";
 
 const HELPED_TAGS = [
-  "Routine",
-  "Reminder",
+  "Had time",
   "Good mood",
+  "Reminder",
+  "Routine",
+  "Accountability",
 ];
 
 const BLOCKED_TAGS = [
-  "Busy",
   "Forgot",
+  "Busy",
   "Tired",
+  "Sick",
+  "No motivation",
+  "Schedule changed",
+  "Distracted",
 ];
 
 const STRUCTURED_NOTE_PREFIX = "habit-log-v1:";
@@ -48,6 +55,7 @@ export function LogNoteEditor({
   const [helpedTags, setHelpedTags] = useState<string[]>([]);
   const [blockedTags, setBlockedTags] = useState<string[]>([]);
   const [additionalNotes, setAdditionalNotes] = useState("");
+  const selectedCount = helpedTags.length + blockedTags.length;
 
   /*
    * Whenever a different date or log is opened,
@@ -107,21 +115,27 @@ export function LogNoteEditor({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={date ?? "Log habit"}
+      title={date ? `Log ${formatLogDate(date)}` : "Log habit"}
     >
       <div className="grid gap-6 px-1 pb-1">
-        {/* Optional notes section */}
+        <div className="rounded-3xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-800">
+          <p className="font-semibold">Choose what happened for this date</p>
+          <p className="mt-1 leading-6">
+            Tags and notes are optional. Use them when you want context, skip them when you just want to log quickly.
+          </p>
+        </div>
+
         <section className="grid gap-5 rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
           <div>
             <h3 className="text-base font-semibold text-slate-950">
-              Notes
+              Details
               <span className="ml-1 font-normal text-slate-500">
                 (optional)
               </span>
             </h3>
 
             <p className="mt-1 text-sm text-slate-500">
-              Add some quick context about today.
+              Pick quick tags, write a note, or leave this blank.
             </p>
           </div>
 
@@ -183,10 +197,9 @@ export function LogNoteEditor({
             </div>
           </div>
 
-          {/* Free-text notes */}
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-slate-700">
-              Anything worth remembering?
+              Additional notes
             </span>
 
             <textarea
@@ -194,35 +207,50 @@ export function LogNoteEditor({
               onChange={(event) =>
                 setAdditionalNotes(event.target.value)
               }
-              placeholder="Add a short note..."
+              placeholder="Anything worth remembering?"
               className="min-h-24 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
+
+          {selectedCount > 0 ? (
+            <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
+              {selectedCount} tag{selectedCount === 1 ? "" : "s"} selected. Selected tags will be saved with this log.
+            </p>
+          ) : null}
         </section>
 
-        {/* Save buttons */}
-        <div className="mt-3 flex items-center justify-center gap-12">
+        <div className="grid gap-3 sm:grid-cols-2">
           <button
             type="button"
             disabled={isSaving}
             onClick={() => handleSave("missed")}
-            className="text-xl font-semibold text-slate-500 transition hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Not done
+            {isSaving ? "Saving..." : "Save as missed"}
           </button>
 
           <button
             type="button"
             disabled={isSaving}
             onClick={() => handleSave("done")}
-            className="text-xl font-semibold text-emerald-500 transition hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-2xl bg-emerald-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Done
+            {isSaving ? "Saving..." : "Save as done"}
           </button>
         </div>
       </div>
     </Modal>
   );
+}
+
+function formatLogDate(date: string) {
+  const relativeLabel = formatRecentDayLabel(date);
+
+  if (relativeLabel === "Today") {
+    return "today";
+  }
+
+  return relativeLabel;
 }
 
 /*
