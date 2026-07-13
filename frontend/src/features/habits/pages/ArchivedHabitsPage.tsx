@@ -7,7 +7,9 @@ export type ArchivedHabitsPageProps = {
   archivedHabits: Habit[];
   error: string | null;
   isLoading: boolean;
+  successMessage?: string | null;
   onClose: () => void;
+  onDismissSuccess?: () => void;
   onRetry: () => void;
   onRestoreHabit: (habitId: string) => Promise<void>;
 };
@@ -61,11 +63,35 @@ function ArchivedHabitsErrorState({ message, onRetry }: { message: string; onRet
   );
 }
 
+function ArchivedHabitsSuccessState({ message, onDismiss }: { message: string; onDismiss?: () => void }) {
+  return (
+    <section className="mb-5 rounded-[24px] border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-semibold">Restored</p>
+          <p className="mt-1">{message}</p>
+        </div>
+        {onDismiss ? (
+          <button
+            className="self-start rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 transition hover:bg-emerald-100"
+            onClick={onDismiss}
+            type="button"
+          >
+            Dismiss
+          </button>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 export function ArchivedHabitsPage({
   archivedHabits,
   error,
   isLoading,
+  successMessage = null,
   onClose,
+  onDismissSuccess,
   onRetry,
   onRestoreHabit,
 }: ArchivedHabitsPageProps) {
@@ -99,6 +125,10 @@ export function ArchivedHabitsPage({
 
         {error ? (
           <ArchivedHabitsErrorState message={error} onRetry={onRetry} />
+        ) : null}
+
+        {successMessage && !error ? (
+          <ArchivedHabitsSuccessState message={successMessage} onDismiss={onDismissSuccess} />
         ) : null}
 
         {!isLoading && !error ? (

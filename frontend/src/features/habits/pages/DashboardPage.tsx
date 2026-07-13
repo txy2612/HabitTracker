@@ -47,6 +47,26 @@ function DashboardErrorState({ message, onRetry }: { message: string; onRetry: (
   );
 }
 
+function DashboardSuccessState({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+  return (
+    <section className="mb-5 rounded-[24px] border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-semibold">Saved</p>
+          <p className="mt-1">{message}</p>
+        </div>
+        <button
+          className="self-start rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 transition hover:bg-emerald-100"
+          onClick={onDismiss}
+          type="button"
+        >
+          Dismiss
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export function DashboardPage() {
   const { logout, user } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
@@ -77,6 +97,7 @@ export function DashboardPage() {
   const [isArchivedHabitsOpen, setIsArchivedHabitsOpen] = useState(false);
   const [focusedReminderHabitId, setFocusedReminderHabitId] = useState<string | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // selectedHabitId = null -> no habit is selected
   // these states will be passed to children component at the code at the bottom (child component receive it as props)
@@ -122,6 +143,10 @@ export function DashboardPage() {
     void fetchArchivedHabits();
   }
 
+  function showSuccessMessage(message: string) {
+    setSuccessMessage(message);
+  }
+
   useEffect(() => {
     if (!isProfileMenuOpen) {
       return;
@@ -148,14 +173,54 @@ export function DashboardPage() {
     };
   }, [isProfileMenuOpen]);
 
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccessMessage(null);
+    }, 4500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [successMessage]);
+
   // pass from input to useHabits
   async function handleCreateHabit(input: CreateHabitInput) {
     await createHabit(input);
   }
 
-  async function handleHabitCreated() {
+  function handleHabitCreated(habitName: string) {
     setIsAddHabitOpen(false);
-    await fetchHabits(); // reload habits from backend
+    showSuccessMessage(`"${habitName}" was added to your habits.`);
+  }
+
+  async function handleUpdateHabitName(habitId: string, name: string) {
+    await updateHabit(habitId, { name });
+    showSuccessMessage("Habit name updated.");
+  }
+
+  async function handleArchiveHabit(habitId: string) {
+    const habitName = habits.find((habit) => habit.id === habitId)?.name ?? "Habit";
+
+    await archiveHabit(habitId);
+    showSuccessMessage(`"${habitName}" moved to archived habits.`);
+  }
+
+  async function handleDeleteHabit(habitId: string) {
+    const habitName = habits.find((habit) => habit.id === habitId)?.name ?? "Habit";
+
+    await deleteHabit(habitId);
+    showSuccessMessage(`"${habitName}" was deleted.`);
+  }
+
+  async function handleRestoreHabit(habitId: string) {
+    const habitName = archivedHabits.find((habit) => habit.id === habitId)?.name ?? "Habit";
+
+    await restoreHabit(habitId);
+    showSuccessMessage(`"${habitName}" restored to your dashboard.`);
   }
 
   if (selectedHabit) {
@@ -169,8 +234,10 @@ export function DashboardPage() {
         error={archivedError}
         isLoading={isArchivedLoading}
         onClose={handleCloseArchivedHabits}
+        onDismissSuccess={() => setSuccessMessage(null)}
         onRetry={() => void fetchArchivedHabits()}
-        onRestoreHabit={restoreHabit}
+        onRestoreHabit={handleRestoreHabit}
+        successMessage={successMessage}
       />
     );
   }
@@ -284,6 +351,10 @@ export function DashboardPage() {
           <DashboardErrorState message={error} onRetry={() => void fetchHabits()} />
         ) : null}
 
+        {successMessage && !error ? (
+          <DashboardSuccessState message={successMessage} onDismiss={() => setSuccessMessage(null)} />
+        ) : null}
+
          {/* Only show habit list after loading is done. */}
          {/* Props passed to HabitList: */}
          {/* 1)the data: habits */}
@@ -292,11 +363,11 @@ export function DashboardPage() {
           <HabitList
             habits={habits}
             onAddHabit={() => setIsAddHabitOpen(true)}
-            onArchiveHabit={archiveHabit}
-            onDeleteHabit={deleteHabit}
+            onArchiveHabit={handleArchiveHabit}
+            onDeleteHabit={handleDeleteHabit}
             onEditReminder={handleEditHabitReminder}
             onOpenReminders={handleOpenReminderCenter}
-            onUpdateHabit={(habitId, name) => updateHabit(habitId, { name })}
+            onUpdateHabit={handleUpdateHabitName}
             onViewHabit={handleViewHabit}
           />
         ) : null}
