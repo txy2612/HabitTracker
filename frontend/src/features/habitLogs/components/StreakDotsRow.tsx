@@ -16,13 +16,15 @@ const doneCircleClasses = [
   "bg-[var(--app-calendar-done-2)] text-white",
   "bg-[var(--app-calendar-done-3)] text-white",
   "bg-[var(--app-calendar-done-4)] text-white",
+  "bg-[var(--app-calendar-done-5)] text-white",
 ];
 
 const doneConnectorClasses = [
-  "bg-[var(--app-calendar-done-1)]",
-  "bg-[var(--app-calendar-done-2)]",
-  "bg-[var(--app-calendar-done-3)]",
-  "bg-[var(--app-calendar-done-4)]",
+  "bg-[var(--app-calendar-line-1)]",
+  "bg-[var(--app-calendar-line-2)]",
+  "bg-[var(--app-calendar-line-3)]",
+  "bg-[var(--app-calendar-line-4)]",
+  "bg-[var(--app-calendar-line-5)]",
 ];
 
 function getDoneCircleClasses(date: string) {
