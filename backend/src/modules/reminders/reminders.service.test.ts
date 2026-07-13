@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   getReminderClock,
+  getRetryDelayMs,
   isReminderDue,
   shouldDeactivateReminderAfterSend,
   type ReminderClock,
@@ -91,4 +92,12 @@ test("shouldDeactivateReminderAfterSend only marks one-time reminders for deacti
     ),
     true,
   );
+});
+
+test("getRetryDelayMs returns the first retry delay for the first failure", () => {
+  assert.equal(getRetryDelayMs(0), 60_000);
+});
+
+test("getRetryDelayMs caps at the final configured retry delay", () => {
+  assert.equal(getRetryDelayMs(99), 60 * 60_000);
 });

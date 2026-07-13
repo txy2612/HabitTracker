@@ -1,15 +1,19 @@
-﻿import type { ReminderChannel, ReminderLog, ReminderWeekday } from "../../shared/types.js";
+import type { ReminderChannel, ReminderLog, ReminderWeekday } from "../../shared/types.js";
 import {
+  claimReadyReminderDeliveries,
   deactivateSpecificDateReminder,
+  enqueueReminderDelivery,
   findEmailReminderCandidates,
   findReminderLog,
   findUserSettings,
   insertReminderLog,
+  markReminderDeliverySent,
+  rescheduleReminderDelivery,
+  failReminderDelivery,
   type EmailReminderCandidate,
 } from "./reminders.repository.js";
 import { isEmailConfigured, sendHabitReminderEmail } from "./email.service.js";
 
-// types that define data shapes (not expect nor receive props)
 export type ReminderClock = {
   date: string;
   time: string;
@@ -28,11 +32,19 @@ export type ReminderProcessingFailure = {
 
 export type ReminderProcessingSummary = {
   checked: number;
+  queued: number;
+  claimed: number;
   sent: number;
+  retried: number;
+  permanentlyFailed: number;
   skippedAlreadySent: number;
   skippedEmailNotConfigured: boolean;
+  avgSendLatencyMs: number;
   failures: ReminderProcessingFailure[];
 };
+
+const RETRY_DELAYS_MS = [60_000, 5 * 60_000, 15 * 60_000, 60 * 60_000];
+const DELIVERY_CLAIM_LIMIT = 50;
 
 export async function getReminderSettings(userId: string) {
   void userId;
@@ -58,7 +70,6 @@ function toReminderWeekday(weekday: string): ReminderWeekday {
   return weekdayMap[weekday] ?? 0;
 }
 
-// Purpose: convert NOW into user's local timezone
 export function getReminderClock(timezone: string, now = new Date()): ReminderClock {
   const parts = new Intl.DateTimeFormat("en-CA", {
     day: "2-digit",
@@ -77,25 +88,21 @@ export function getReminderClock(timezone: string, now = new Date()): ReminderCl
   return {
     date: `${partMap.get("year")}-${partMap.get("month")}-${partMap.get("day")}`,
     time: `${partMap.get("hour")}:${partMap.get("minute")}`,
-    weekday: toReminderWeekday(partMap.get("weekday") ?? "Sun"),// converts  Sun -> 0, MOn -> 1, Tue -> 2, ...
+    weekday: toReminderWeekday(partMap.get("weekday") ?? "Sun"),
   };
 }
 
 export function isReminderDue(candidate: EmailReminderCandidate, clock: ReminderClock): boolean {
-  // compare current time with reminder time 
-  // candidate.reminder_time = "20:00:00"
-  // clock.time = "20:00"
   if (candidate.reminder_time.slice(0, 5) !== clock.time) {
-    return false;// if does not match -> stop
+    return false;
   }
 
-  // else, if time match: continue
   if (candidate.schedule_type === "daily") {
-    return true;// time match -> send reminder
+    return true;
   }
 
   if (candidate.schedule_type === "weekly") {
-    return candidate.weekdays.includes(clock.weekday);// clock.weekday = 3
+    return candidate.weekdays.includes(clock.weekday);
   }
 
   if (candidate.schedule_type === "specific_date") {
@@ -106,7 +113,6 @@ export function isReminderDue(candidate: EmailReminderCandidate, clock: Reminder
 }
 
 export async function getDueEmailReminders(now = new Date()): Promise<EmailReminder[]> {
-  //  gets all reminder-enabled habits
   const candidates = await findEmailReminderCandidates();
 
   return candidates.filter((candidate) => {
@@ -121,11 +127,9 @@ export async function wasReminderSent(input: {
   channel: ReminderChannel;
 }): Promise<boolean> {
   const reminderLog = await findReminderLog(input);
-
   return reminderLog !== null;
 }
 
-// save successful reminders to prevent resending
 export async function recordReminderSent(input: {
   habitId: string;
   sentForDate: string;
@@ -134,8 +138,19 @@ export async function recordReminderSent(input: {
   return insertReminderLog(input);
 }
 
-// clean-up code
-// so it doesnt stay after reminder checked for one-time reminder
+export function getRetryDelayMs(attemptCount: number) {
+  // Backoff grows with each failed attempt, then stays at the final delay.
+  return RETRY_DELAYS_MS[Math.min(attemptCount, RETRY_DELAYS_MS.length - 1)];
+}
+
+function getNextRetryAt(now: Date, attemptCount: number) {
+  return new Date(now.getTime() + getRetryDelayMs(attemptCount)).toISOString();
+}
+
+function getFailureMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Failed to send reminder email.";
+}
+
 export function shouldDeactivateReminderAfterSend(reminder: EmailReminderCandidate): boolean {
   return reminder.schedule_type === "specific_date";
 }
@@ -148,35 +163,33 @@ export async function finalizeReminderAfterSend(reminder: EmailReminderCandidate
   await deactivateSpecificDateReminder(reminder.habit_id);
 }
 
-// Main reminder workflow
 export async function processDueEmailReminders(now = new Date()): Promise<ReminderProcessingSummary> {
-  // 1. Create summary
   const summary: ReminderProcessingSummary = {
     checked: 0,
-    sent: 0,//sent
-    skippedAlreadySent: 0,//skipped
+    queued: 0,
+    claimed: 0,
+    sent: 0,
+    retried: 0,
+    permanentlyFailed: 0,
+    skippedAlreadySent: 0,
     skippedEmailNotConfigured: false,
-    failures: [],//failed
+    avgSendLatencyMs: 0,
+    failures: [],
   };
 
-  //2. check set up
   if (!isEmailConfigured()) {
-    // if not set up, stop immediately & return summary
     summary.skippedEmailNotConfigured = true;
     return summary;
   }
 
-  //3. find reminders due now
-  // Result [Jogging]
   const dueReminders = await getDueEmailReminders(now);
   summary.checked = dueReminders.length;
 
-  //4. for each reminder
+  // First pass: convert due reminders into delivery jobs.
+  // This makes cron safe to run every minute because duplicates collapse
+  // into the unique queue row instead of sending immediately.
   for (const reminder of dueReminders) {
     const clock = getReminderClock(reminder.timezone, now);
-
-    //5. check duplicate
-    // if alr sent tdy, skip
     const alreadySent = await wasReminderSent({
       habitId: reminder.habit_id,
       sentForDate: clock.date,
@@ -184,13 +197,51 @@ export async function processDueEmailReminders(now = new Date()): Promise<Remind
     });
 
     if (alreadySent) {
-      // and +1
       summary.skippedAlreadySent += 1;
       continue;
     }
 
+    const wasQueued = await enqueueReminderDelivery({
+      habitId: reminder.habit_id,
+      sentForDate: clock.date,
+      channel: "email",
+    });
+
+    if (wasQueued) {
+      summary.queued += 1;
+    }
+  }
+
+  const claimedReminders = await claimReadyReminderDeliveries({
+    workerId: "pid-" + process.pid,
+    limit: DELIVERY_CLAIM_LIMIT,
+  });
+
+  summary.claimed = claimedReminders.length;
+
+  let totalLatencyMs = 0;
+
+  // Second pass: only claimed jobs are allowed to send emails.
+  // This is the boundary that protects against duplicate sends across workers.
+  for (const reminder of claimedReminders) {
+    const alreadySent = await wasReminderSent({
+      habitId: reminder.habit_id,
+      sentForDate: reminder.scheduled_for_date,
+      channel: "email",
+    });
+
+    if (alreadySent) {
+      await markReminderDeliverySent({
+        deliveryJobId: reminder.delivery_job_id,
+      });
+
+      summary.skippedAlreadySent += 1;
+      continue;
+    }
+
+    const startedAt = Date.now();
+
     try {
-       //6. send email
       await sendHabitReminderEmail({
         to: reminder.reminder_email,
         habitName: reminder.habit_name,
@@ -198,28 +249,53 @@ export async function processDueEmailReminders(now = new Date()): Promise<Remind
         timezone: reminder.timezone,
       });
 
-      //7. save reminder log, so future checks know
       await recordReminderSent({
         habitId: reminder.habit_id,
-        sentForDate: clock.date,
+        sentForDate: reminder.scheduled_for_date,
         channel: "email",
+      });
+
+      await markReminderDeliverySent({
+        deliveryJobId: reminder.delivery_job_id,
       });
 
       await finalizeReminderAfterSend(reminder);
 
-      //8. count success
       summary.sent += 1;
+      totalLatencyMs += Date.now() - startedAt;
     } catch (error) {
-      //9. handle failure
+      const message = getFailureMessage(error);
+
       summary.failures.push({
         habitId: reminder.habit_id,
         habitName: reminder.habit_name,
-        message: error instanceof Error ? error.message : "Failed to send reminder email.",
+        message,
       });
+
+      if (reminder.attempt_count + 1 >= reminder.max_attempts) {
+        // After the last allowed attempt, preserve the error and stop retrying.
+        await failReminderDelivery({
+          deliveryJobId: reminder.delivery_job_id,
+          lastError: message,
+        });
+
+        summary.permanentlyFailed += 1;
+        continue;
+      }
+
+      await rescheduleReminderDelivery({
+        deliveryJobId: reminder.delivery_job_id,
+        nextRetryAt: getNextRetryAt(now, reminder.attempt_count),
+        lastError: message,
+      });
+
+      summary.retried += 1;
     }
   }
 
-  // return summary (to reminderCron.ts -> which called processDueEmailReminders())
-  // Why return summary? -> not just "Some emails failed" OR "Sent 3 emails"
+  if (summary.sent > 0) {
+    summary.avgSendLatencyMs = Math.round(totalLatencyMs / summary.sent);
+  }
+
   return summary;
 }

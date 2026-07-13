@@ -39,16 +39,16 @@ CREATE TABLE IF NOT EXISTS user_settings (
     small int -> smaler range , big int -> wasteful
     CHECK (id = 1) -> id = 2 is not acceptable
   */
-  id SMALLINT PRIMARY KEY DEFAULT 1 CHECK (id = 1), 
+  id SMALLINT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
 
   -- where reminder shud be sent
-  reminder_email TEXT, 
+  reminder_email TEXT,
 
   -- local time zone
-  timezone TEXT NOT NULL DEFAULT 'UTC', 
-  
+  timezone TEXT NOT NULL DEFAULT 'UTC',
+
   --timestamp -> NOW()
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW() 
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 /* seed for ini settings
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
 */
 INSERT INTO user_settings (id)
 VALUES (1)
-ON CONFLICT (id) DO NOTHING; 
+ON CONFLICT (id) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS habit_reminder_schedules (
   id BIGSERIAL PRIMARY KEY,
@@ -97,9 +97,9 @@ CREATE TABLE IF NOT EXISTS reminder_logs (
   /* Links reminder to habit
      If habit deleted, all reminder logs automatically removed (DELETE FROM Habits were id = 5)
   */
-  habit_id BIGINT NOT NULL REFERENCES habits(id) 
+  habit_id BIGINT NOT NULL REFERENCES habits(id)
   ON DELETE CASCADE,
-  
+
   -- etc: Reminder was sent for June 2
   sent_for_date DATE NOT NULL,
 
@@ -123,6 +123,34 @@ CREATE INDEX IF NOT EXISTS idx_habits_enabled_reminders
 CREATE INDEX IF NOT EXISTS idx_reminder_logs_habit_date_channel
   ON reminder_logs (habit_id, sent_for_date, channel);
 
+-- Retryable email work queue.
+-- reminder_logs is still the success history; this table tracks pending,
+-- in-progress, retrying, and permanently failed delivery attempts.
+CREATE TABLE IF NOT EXISTS reminder_delivery_jobs (
+  id BIGSERIAL PRIMARY KEY,
+  habit_id BIGINT NOT NULL REFERENCES habits(id) ON DELETE CASCADE,
+  channel TEXT NOT NULL,
+  scheduled_for_date DATE NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'processing', 'sent', 'failed')),
+  attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
+  max_attempts INTEGER NOT NULL DEFAULT 5 CHECK (max_attempts > 0),
+  next_retry_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  claimed_at TIMESTAMPTZ NULL,
+  claimed_by TEXT NULL,
+  last_error TEXT NULL,
+  sent_at TIMESTAMPTZ NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (habit_id, scheduled_for_date, channel)
+);
+
+-- Cron looks for jobs whose retry time has arrived.
+-- Keep processing rows in this index because expired claims can be reclaimed.
+CREATE INDEX IF NOT EXISTS idx_reminder_delivery_jobs_ready
+  ON reminder_delivery_jobs (next_retry_at)
+  WHERE status IN ('pending', 'processing');
+
 --  creates reusable logic: NEW.updated_at = NOW()
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
@@ -137,10 +165,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS habit_logs_set_updated_at ON habit_logs;
-CREATE TRIGGER habit_logs_set_updated_at 
-/* when updates a log, trigger is fired 
-  -> updated_at = NOW(); 
-  w/o TRIGGER, updated_at would stay old forever 
+CREATE TRIGGER habit_logs_set_updated_at
+/* when updates a log, trigger is fired
+  -> updated_at = NOW();
+  w/o TRIGGER, updated_at would stay old forever
 */
 BEFORE UPDATE ON habit_logs
 FOR EACH ROW
@@ -155,6 +183,12 @@ EXECUTE FUNCTION set_updated_at();
 DROP TRIGGER IF EXISTS habit_reminder_schedules_set_updated_at ON habit_reminder_schedules;
 CREATE TRIGGER habit_reminder_schedules_set_updated_at
 BEFORE UPDATE ON habit_reminder_schedules
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS reminder_delivery_jobs_set_updated_at ON reminder_delivery_jobs;
+CREATE TRIGGER reminder_delivery_jobs_set_updated_at
+BEFORE UPDATE ON reminder_delivery_jobs
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
