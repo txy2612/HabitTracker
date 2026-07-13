@@ -1,6 +1,6 @@
 // useReminders = hook = brain/controller
 // RemindersPage = UI 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "../../api/apiClient";
 import type {
   Habit,
@@ -61,6 +61,28 @@ function createDrafts(habits: Habit[]): ReminderDraft[] {
   }));
 }
 
+function areWeekdaysEqual(leftWeekdays: ReminderWeekday[], rightWeekdays: ReminderWeekday[]) {
+  if (leftWeekdays.length !== rightWeekdays.length) {
+    return false;
+  }
+
+  return leftWeekdays.every((weekday, index) => weekday === rightWeekdays[index]);
+}
+
+function isReminderDraftChanged(currentDraft: ReminderDraft, initialDraft: ReminderDraft | undefined) {
+  if (!initialDraft) {
+    return true;
+  }
+
+  return (
+    currentDraft.reminderEnabled !== initialDraft.reminderEnabled ||
+    currentDraft.reminderTime !== initialDraft.reminderTime ||
+    currentDraft.scheduleType !== initialDraft.scheduleType ||
+    currentDraft.specificDate !== initialDraft.specificDate ||
+    !areWeekdaysEqual(currentDraft.weekdays, initialDraft.weekdays)
+  );
+}
+
 // state : when they change, React re-renders the page
 export function useReminders(habits: Habit[]): UseRemindersResult {
 
@@ -74,6 +96,15 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  // iniDrafts = backend ori val; draft = current edited value
+  //  Why useMemo()? only update when habits is changed, not on every render
+  const initialDrafts = useMemo(() => createDrafts(habits), [habits]);
+
+  // lookup map ( like hashmap, faster instead of looping thru habits)
+  const initialDraftsById = useMemo(
+    () => new Map(initialDrafts.map((draft) => [draft.id, draft])),
+    [initialDrafts],
+  );
 
   /* useMemo:
       Calculate timezone once.
@@ -84,8 +115,8 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
    */
   // whenever habits change, re-create the drafts
   useEffect(() => {
-    setDrafts(createDrafts(habits));
-  }, [habits]);
+    setDrafts(initialDrafts);
+  }, [initialDrafts]);
 
   useEffect(() => {
     let isActive = true;
@@ -214,10 +245,15 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
       setSavedMessage(null);
 
       const trimmedEmail = email.trim();
+      // BUG FIX:
+      // filter b4 saving
+      // keeps only when isReminderDraftChanged return true
+      const changedReminders = drafts.filter((draft) => isReminderDraftChanged(draft, initialDraftsById.get(draft.id)));
       const habits = await apiClient.saveHabitReminders({
         reminderEmail: trimmedEmail === "" ? null : trimmedEmail,
         timezone,
-        reminders: drafts.map(({ id, reminderEnabled, reminderTime, scheduleType, weekdays, specificDate }) => ({
+        // send ONLY CHANGED reminders (dont include overdue reminders -> prevent backend error)
+        reminders: changedReminders.map(({ id, reminderEnabled, reminderTime, scheduleType, weekdays, specificDate }) => ({
           id,
           reminderEnabled,
           reminderTime: reminderTime ?? DEFAULT_REMINDER_TIME,
