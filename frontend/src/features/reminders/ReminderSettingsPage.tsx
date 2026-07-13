@@ -89,6 +89,20 @@ function ScheduleIcon({ icon }: { icon: "daily" | "weekly" | "date" }) {
   );
 }
 
+function ClockIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M12 7v5l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 function ReminderPageSkeleton() {
   return (
     <div className="grid gap-5" aria-label="Loading reminder settings">
@@ -258,7 +272,11 @@ export function ReminderSettingsPage({
                   {habit.reminderEnabled ?(
                   <div className="grid gap-4 xl:grid-cols-[250px_minmax(0,1fr)] xl:items-start">
                     <div className="grid gap-2 xl:row-start-1">
-                      <label className="text-sm font-semibold text-[var(--app-soft-text)]" htmlFor={`time-${habit.id}`}>
+                      <label
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--app-soft-text)]"
+                        htmlFor={`time-${habit.id}`}
+                      >
+                        <ClockIcon />
                         Reminder time
                       </label>
                       <input
@@ -295,7 +313,10 @@ export function ReminderSettingsPage({
 
                     {habit.scheduleType === "weekly" ? (
                       <div className="grid gap-3 xl:col-start-2">
-                        <p className="text-sm font-semibold text-[var(--app-soft-text)]">Send on these weekdays</p>
+                        <p className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--app-soft-text)]">
+                          <ScheduleIcon icon="weekly" />
+                          Send on these weekdays
+                        </p>
                         <div className="flex flex-wrap gap-2">
                           {weekdayOptions.map((weekday) => {
                             const isSelected = habit.weekdays.includes(weekday.value);
@@ -324,7 +345,11 @@ export function ReminderSettingsPage({
 
                     {habit.scheduleType === "specific_date" ? (
                       <div className="grid max-w-[325px] gap-2 xl:col-start-2">
-                        <label className="text-sm font-semibold text-[var(--app-soft-text)]" htmlFor={`date-${habit.id}`}>
+                        <label
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--app-soft-text)]"
+                          htmlFor={`date-${habit.id}`}
+                        >
+                          <ScheduleIcon icon="date" />
                           Send on this date
                         </label>
                         <input

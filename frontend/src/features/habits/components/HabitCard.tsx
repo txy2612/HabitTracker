@@ -32,6 +32,30 @@ export type HabitCardProps = {
   onEditReminder: (habitId: string) => void;
 };
 
+function CardIcon({ type }: { type: "archive" | "clock" | "edit" | "trash" }) {
+  const paths = {
+    archive:
+      "M4.5 7.5h15m-13 0V18A2.5 2.5 0 0 0 9 20.5h6A2.5 2.5 0 0 0 17.5 18V7.5M8 7.5V5.75A2.25 2.25 0 0 1 10.25 3.5h3.5A2.25 2.25 0 0 1 16 5.75V7.5M10 12h4",
+    clock: "M12 7v5l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+    edit:
+      "m5 18.5 4.1-.8 9.2-9.2a2.1 2.1 0 0 0-3-3L6.1 14.7 5 18.5ZM13.5 6.5l4 4",
+    trash:
+      "M4.5 7h15M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7m2.5 0-.7 11.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6.5 7M10 11v5m4-5v5",
+  };
+
+  return (
+    <svg aria-hidden="true" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24">
+      <path
+        d={paths[type]}
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 // equi:
 // export function HabitCard(props: HabitCardProps){}
 export function HabitCard({
@@ -205,7 +229,7 @@ export function HabitCard({
           </form>
         ) : (
           <div className="grid gap-1">
-            <h2 className="text-[15px] font-semibold text-[var(--app-text)]">{habit.name}</h2>
+            <h2 className="text-xl font-bold leading-tight text-[var(--app-text)]">{habit.name}</h2>
             <p className="text-xs font-medium text-[var(--app-muted)]">
               Past 7 days: {completedCount} done
               {missedCount > 0 ? `, ${missedCount} missed` : ""}
@@ -233,7 +257,7 @@ export function HabitCard({
           onClick={(event) => event.stopPropagation()}
         >
           <button
-            className="block w-full px-3 py-2 text-left text-[var(--app-text)] hover:bg-[var(--app-control-surface)]"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-[var(--app-text)] hover:bg-[var(--app-control-surface)]"
             onClick={() => {
               setDraftName(habit.name);
               setIsEditingName(true);
@@ -241,10 +265,11 @@ export function HabitCard({
             }}
             type="button"
           >
+            <CardIcon type="edit" />
             Edit name
           </button>
           <button
-            className="block w-full px-3 py-2 text-left text-amber-700 hover:bg-amber-50 disabled:text-amber-400"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-amber-700 hover:bg-amber-50 disabled:text-amber-400"
             disabled={isArchiving}
             onClick={() => {
               void handleArchiveHabit();
@@ -252,6 +277,7 @@ export function HabitCard({
             }}
             type="button"
           >
+            <CardIcon type="archive" />
             {isArchiving ? "Archiving..." : "Archive habit"}
           </button>
           
@@ -260,7 +286,7 @@ export function HabitCard({
           button disabled to prevent: delete delete delete delete
           */}
           <button
-            className="block w-full px-3 py-2 text-left text-red-500 hover:bg-red-50"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-red-500 hover:bg-red-50"
             disabled={isDeleting}
             onClick={() => {
               void handleDeleteHabit();
@@ -268,6 +294,7 @@ export function HabitCard({
             }}
             type="button"
           >
+            <CardIcon type="trash" />
             Delete habit
           </button>
         </div>
@@ -283,7 +310,10 @@ export function HabitCard({
           }}
           type="button"
         >
-          <span className="font-semibold text-[var(--app-muted)]">Reminder</span>
+          <span className="inline-flex items-center gap-2 font-semibold text-[var(--app-muted)]">
+            <CardIcon type="clock" />
+            Reminder
+          </span>
           <span className="min-w-0 font-semibold text-[var(--app-text)] sm:truncate sm:text-right">{formatReminderCardSummary({
             reminderEnabled: habit.reminderEnabled,
             reminderTime: habit.reminderTime,

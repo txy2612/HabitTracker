@@ -15,6 +15,20 @@ export type HabitDetailPageProps = {
   onClose: () => void;// the function used when user clicks Close
 };
 
+function ProgressLensIcon() {
+  return (
+    <svg aria-hidden="true" className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Zm5-1.5L20 20M18 4.5v3m1.5-1.5h-3M5 18v2m1-1H4"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
   const yearMenuRef = useRef<HTMLDivElement | null>(null);
   const [month, setMonth] = useState(currentMonthString());// stores the current viewed month
@@ -238,7 +252,10 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
                   Insights
                 </p>
-                <h2 className="mt-2 text-2xl font-bold text-[var(--app-title)]">Progress Lens</h2>
+                <h2 className="mt-2 inline-flex items-center gap-2 text-2xl font-bold text-[var(--app-title)]">
+                  <ProgressLensIcon />
+                  Progress Lens
+                </h2>
                 <p className="mt-3 text-sm leading-6 text-[var(--app-muted)]">
                   Cool colors mean steady progress. Warm colors mean stronger streak momentum.
                 </p>

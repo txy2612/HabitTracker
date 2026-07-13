@@ -132,7 +132,18 @@ export function HabitList({
             type="button"
             variant="ghost"
           >
-            Reminders
+            <span className="inline-flex items-center gap-2">
+              <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <path
+                  d="M7 10a5 5 0 0 1 10 0v3.6l1.4 2.2A1.4 1.4 0 0 1 17.2 18H6.8a1.4 1.4 0 0 1-1.2-2.2L7 13.6V10Zm3 8a2 2 0 0 0 4 0"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.8"
+                />
+              </svg>
+              Reminders
+            </span>
           </Button>
         </div>
       </div>
