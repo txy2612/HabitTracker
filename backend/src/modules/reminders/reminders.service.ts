@@ -1,4 +1,4 @@
-import type { ReminderChannel, ReminderLog, ReminderWeekday } from "../../shared/types.js";
+﻿import type { ReminderChannel, ReminderLog, ReminderWeekday } from "../../shared/types.js";
 import {
   deactivateSpecificDateReminder,
   findEmailReminderCandidates,
