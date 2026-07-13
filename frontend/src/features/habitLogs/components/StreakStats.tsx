@@ -46,7 +46,7 @@ export function StreakStats({ streak, error = null, isLoading = false }: StreakS
           Longest Streak
         </p>
         <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <strong className="text-xl font-bold text-[var(--app-data)]">
+          <strong className="text-xl font-bold text-[var(--app-data)] [font-family:var(--font-data)]">
             {streak?.highestStreak ?? 0} {dayLabel(streak?.highestStreak ?? 0)}
           </strong>
           <span className="text-sm font-medium text-[var(--app-muted)]">
@@ -61,7 +61,7 @@ export function StreakStats({ streak, error = null, isLoading = false }: StreakS
           Current
         </p>
         <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <strong className="text-xl font-bold text-[var(--app-data)]">
+          <strong className="text-xl font-bold text-[var(--app-data)] [font-family:var(--font-data)]">
             {streak?.currentStreak ?? 0} {dayLabel(streak?.currentStreak ?? 0)}
           </strong>
           <span className="text-sm font-medium text-[var(--app-muted)]">

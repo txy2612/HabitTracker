@@ -1,6 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
 @import "tailwindcss";
 
 :root {
+  --font-body: "Inter", "Segoe UI", sans-serif;
+  --font-heading: "Playfair Display", Georgia, serif;
+  --font-data: "Space Grotesk", "Inter", sans-serif;
   --app-bg: radial-gradient(circle at 86% 10%, rgba(216, 214, 255, 0.46), transparent 31%),
     radial-gradient(circle at 12% 78%, rgba(193, 248, 237, 0.34), transparent 34%),
     linear-gradient(135deg, #fffaff 0%, #f5f9ff 48%, #ece7ff 100%);
@@ -99,11 +103,30 @@
 
 body {
   background: var(--app-bg);
+  color: var(--app-text);
+  font-family: var(--font-body);
+  font-feature-settings: "ss01" 1, "cv05" 1;
+  text-rendering: optimizeLegibility;
 }
 
 .app-shell {
   background: var(--app-bg);
   color: var(--app-text);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+  text-wrap: balance;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-body);
 }
 
 .app-card {
