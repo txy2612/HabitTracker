@@ -113,70 +113,46 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
     <main className="app-shell min-h-screen px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
       <div className="mx-auto w-full max-w-[1420px]">
         <section className="app-card overflow-hidden rounded-[42px] border p-5 sm:p-7 lg:p-8">
-          <div className="grid gap-8 xl:grid-cols-[minmax(280px,0.72fr)_minmax(0,1.45fr)] xl:gap-10">
-            <aside className="grid gap-5 xl:sticky xl:top-8 xl:self-start">
-              <div className="grid gap-5">
-                <div className="grid gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--app-secondary)]">
-                    Habit Tracker
-                  </p>
-                  <h1 className="text-4xl font-bold leading-tight text-[var(--app-title)] sm:text-[2.8rem]">
-                    {habit.name}
-                  </h1>
-                  <p className="max-w-xl text-base leading-8 text-[var(--app-muted)]">
-                    Review streak progress and update daily results from a full calendar workspace.
-                  </p>
-                </div>
-
-                <button
-                  className="app-soft-control w-full rounded-2xl border px-5 py-3 text-sm font-semibold transition hover:brightness-105"
-                  onClick={onClose}
-                  type="button"
-                >
-                  Back to habits
-                </button>
+          <div className="grid gap-6 lg:grid-cols-[minmax(260px,0.85fr)_minmax(0,1.35fr)] lg:items-end">
+            <header className="grid gap-4">
+              <div className="grid gap-3">
+                <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--app-secondary)]">
+                  Habit Tracker
+                </p>
+                <h1 className="text-4xl font-bold leading-tight text-[var(--app-title)] sm:text-[2.8rem]">
+                  {habit.name}
+                </h1>
+                <p className="max-w-xl text-base leading-7 text-[var(--app-muted)]">
+                  Review progress and update daily results.
+                </p>
               </div>
 
-              <section className="app-card-solid rounded-[30px] border p-5 xl:p-6">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
-                      Insights
-                    </p>
-                    <h2 className="mt-2 text-2xl font-bold text-[var(--app-title)]">Progress Lens</h2>
-                  </div>
-                </div>
-                <p className="mt-4 text-sm leading-7 text-[var(--app-muted)]">
-                  A quick color summary of your streak mood: cool tones show steadier progress, while warmer tones highlight
-                  stronger streak momentum.
-                </p>
-                <div className="mt-6 overflow-hidden rounded-[26px] border border-[var(--app-border)] bg-[var(--app-palette-card)] p-6">
-                  <div className="mx-auto grid h-56 max-h-[42vw] min-h-48 w-56 max-w-[42vw] min-w-48 place-items-center rounded-[30px] bg-[radial-gradient(circle_at_50%_50%,var(--app-palette-card)_0_20%,transparent_21%),conic-gradient(from_150deg,var(--app-calendar-done-3),var(--app-calendar-done-4),var(--app-calendar-done-1),var(--app-calendar-done-5),var(--app-calendar-done-3))] shadow-[0_0_46px_color-mix(in_srgb,var(--app-calendar-done-3)_34%,transparent)]">
-                    <div className="h-16 w-16 rounded-full border-[10px] border-[var(--app-modal-surface)] bg-[var(--app-palette-card)] shadow-inner" />
-                  </div>
-                </div>
-              </section>
-            </aside>
+              <button
+                className="app-soft-control w-full max-w-sm rounded-2xl border px-5 py-3 text-sm font-semibold transition hover:brightness-105"
+                onClick={onClose}
+                type="button"
+              >
+                Back to habits
+              </button>
+            </header>
 
-            <section className="grid gap-6">
-              <StreakStats error={streakError} isLoading={isStreakLoading} streak={streak} />
+            <StreakStats error={streakError} isLoading={isStreakLoading} streak={streak} />
+          </div>
 
-              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
-                <div className="grid gap-3">
+          <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.55fr)] xl:items-start">
+            <section className="grid gap-5">
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-center">
+                <div className="grid gap-2">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
-                    Details Progress
+                    Daily Log
                   </p>
-                  <h2 className="text-2xl font-bold text-[var(--app-title)]">Timeline Streaks</h2>
-                  <p className="max-w-2xl text-sm leading-6 text-[var(--app-muted)]">
-                    This monthly calendar shows each day&apos;s log. Colored circles are completed days, muted circles are
-                    missed or empty days, and the line connects consecutive completed days.
+                  <h2 className="text-2xl font-bold text-[var(--app-title)]">Monthly Progress</h2>
+                  <p className="max-w-xl text-sm leading-6 text-[var(--app-muted)]">
+                    Click a date to mark it done, missed, or add details.
                   </p>
-                  <div className="mt-1 h-1.5 max-w-xs overflow-hidden rounded-full bg-[var(--app-control-surface)]">
-                    <span className="block h-full w-1/3 rounded-full bg-gradient-to-r from-[var(--app-accent)] to-[var(--app-warm)]" />
-                  </div>
                 </div>
 
-                <div className="app-soft-control grid grid-cols-[52px_1fr_52px] items-center gap-3 rounded-[22px] border px-3 py-2 xl:mt-1">
+                <div className="app-soft-control grid grid-cols-[52px_1fr_52px] items-center gap-3 rounded-[22px] border px-3 py-2">
                   <button
                     aria-label="Previous month"
                     className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-[var(--app-soft-text)] transition hover:bg-[var(--app-soft-surface-muted)]"
@@ -246,17 +222,32 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
               <section className="app-card-solid rounded-[32px] border p-5 sm:p-7">
                 <div className="mb-7 flex flex-col gap-3 border-b border-[var(--app-border)] pb-5 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm font-semibold text-[var(--app-muted)]">Calendar</p>
-                  <p className="text-sm font-medium text-[var(--app-muted)]">Click a date to update its log.</p>
+                  <p className="text-sm font-medium text-[var(--app-muted)]">Colored dates are completed days.</p>
                 </div>
 
                 <MonthlyCalendar highlightedDate={highlightedDate} logs={logs} month={month} onSelectDate={setSelectedDate} />
               </section>
             </section>
 
+            <aside className="app-card-solid rounded-[30px] border p-5 xl:p-6">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
+                Insights
+              </p>
+              <h2 className="mt-2 text-2xl font-bold text-[var(--app-title)]">Progress Lens</h2>
+              <p className="mt-3 text-sm leading-6 text-[var(--app-muted)]">
+                Cool colors mean steady progress. Warm colors mean stronger streak momentum.
+              </p>
+              <div className="mt-5 overflow-hidden rounded-[26px] border border-[var(--app-border)] bg-[var(--app-palette-card)] p-5">
+                <div className="mx-auto grid h-64 max-h-[58vw] min-h-52 w-full max-w-72 place-items-center rounded-[30px] bg-[radial-gradient(circle_at_50%_50%,var(--app-palette-card)_0_20%,transparent_21%),conic-gradient(from_150deg,var(--app-calendar-done-3),var(--app-calendar-done-4),var(--app-calendar-done-1),var(--app-calendar-done-5),var(--app-calendar-done-3))] shadow-[0_0_46px_color-mix(in_srgb,var(--app-calendar-done-3)_34%,transparent)]">
+                  <div className="h-16 w-16 rounded-full border-[10px] border-[var(--app-modal-surface)] bg-[var(--app-palette-card)] shadow-inner" />
+                </div>
+              </div>
+            </aside>
+
             {isLoading ? <p className="mt-4 text-sm text-slate-400">Loading logs...</p> : null}
             {error ? <p className="mt-4 text-sm text-red-500">{error}</p> : null}
           </div>
-          </section>
+        </section>
 
         {/*HabitDetailPage pass selectedLog (prop) -> LogNoteEditor */}
         {/* In LogNoteEditor , see export ... log on top, means:

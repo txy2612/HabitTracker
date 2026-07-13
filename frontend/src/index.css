@@ -49,10 +49,10 @@
     radial-gradient(circle at 18% 82%, rgba(232, 83, 160, 0.18), transparent 32%),
     radial-gradient(circle at 58% 48%, rgba(86, 55, 154, 0.54), transparent 42%),
     linear-gradient(145deg, #100d32 0%, #1d1647 48%, #33205d 100%);
-  --app-surface: linear-gradient(145deg, #322663 0%, #241b4e 100%);
-  --app-surface-solid: linear-gradient(145deg, #362867 0%, #2b2058 100%);
-  --app-modal-surface: #2f245d;
-  --app-control-surface: linear-gradient(145deg, #3a2b70 0%, #2d235f 100%);
+  --app-surface: linear-gradient(145deg, #413276 0%, #2e245f 46%, #1f1848 100%);
+  --app-surface-solid: linear-gradient(145deg, #46357d 0%, #342767 50%, #261d52 100%);
+  --app-modal-surface: #352a65;
+  --app-control-surface: linear-gradient(145deg, #4a3980 0%, #352969 48%, #271f58 100%);
   --app-soft-surface: #f7f4fb;
   --app-soft-surface-muted: #efebf6;
   --app-soft-border: rgba(38, 52, 79, 0.12);
@@ -61,20 +61,20 @@
   --app-accent: #25c6d9;
   --app-accent-strong: #f0c38e;
   --app-accent-soft: rgba(37, 198, 217, 0.18);
-  --app-border: rgba(195, 191, 217, 0.14);
+  --app-border: rgba(216, 211, 238, 0.18);
   --app-muted: #c3bfd9;
   --app-secondary: #c46d8c;
-  --app-shadow: rgba(8, 6, 30, 0.52);
+  --app-shadow: rgba(8, 6, 30, 0.58);
   --app-text: #ffffff;
   --app-title: #ffffff;
   --app-data: #ffffff;
   --app-warm: #ff8f73;
   --app-warm-soft: rgba(255, 143, 115, 0.2);
-  --app-streak-card: linear-gradient(145deg, #573061 0%, #6d3a63 100%);
-  --app-streak-card-end: #6d3a63;
-  --app-current-card: linear-gradient(145deg, #263b68 0%, #29305f 100%);
+  --app-streak-card: linear-gradient(145deg, #743a69 0%, #5b3065 48%, #3a285b 100%);
+  --app-streak-card-end: #743a69;
+  --app-current-card: linear-gradient(145deg, #235d79 0%, #2f4775 48%, #2a2a61 100%);
   --app-current: #25c6d9;
-  --app-palette-card: #352660;
+  --app-palette-card: #40306f;
   --app-calendar-idle: #463372;
   --app-calendar-idle-text: #c3bfd9;
   --app-calendar-missed: #352b60;
@@ -131,6 +131,21 @@ body {
   border-color: var(--app-soft-border);
   color: var(--app-soft-text);
   box-shadow: 0 10px 24px color-mix(in srgb, var(--app-shadow) 70%, transparent);
+}
+
+:root[data-theme="dark"] .app-card,
+:root[data-theme="dark"] .app-card-solid,
+:root[data-theme="dark"] .app-solid-surface {
+  border-color: rgba(225, 218, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 60px var(--app-shadow);
+}
+
+:root[data-theme="dark"] .app-card-solid {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 18px 42px var(--app-shadow);
 }
 
 .app-accent-bg {

@@ -16,7 +16,7 @@ function dayLabel(count: number): string {
 export function StreakStats({ streak, error = null, isLoading = false }: StreakStatsProps) {
   return (
     <section className="grid gap-3 sm:grid-cols-2">
-      <article className="rounded-[22px] border border-[var(--app-border)] bg-[var(--app-streak-card)] px-5 py-4 shadow-[0_14px_32px_var(--app-shadow)]">
+      <article className="rounded-[22px] border border-[var(--app-border)] bg-[var(--app-streak-card)] px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_40px_var(--app-shadow)]">
         <p className="text-sm font-bold text-[var(--app-warm)]">Longest Streak</p>
         <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <strong className="text-xl font-bold text-[var(--app-data)]">
@@ -28,7 +28,7 @@ export function StreakStats({ streak, error = null, isLoading = false }: StreakS
         </div>
       </article>
 
-      <article className="rounded-[22px] border border-[var(--app-border)] bg-[var(--app-current-card)] px-5 py-4 shadow-[0_14px_32px_var(--app-shadow)]">
+      <article className="rounded-[22px] border border-[var(--app-border)] bg-[var(--app-current-card)] px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_40px_var(--app-shadow)]">
         <p className="text-sm font-bold text-[var(--app-current)]">Current</p>
         <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <strong className="text-xl font-bold text-[var(--app-data)]">
