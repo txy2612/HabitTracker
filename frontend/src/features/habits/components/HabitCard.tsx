@@ -291,9 +291,11 @@ export function HabitCard({
             weekdays: habit.reminderWeekdays,
             specificDate: habit.reminderSpecificDate,
           })}</span>
-          <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${reminderStateClasses}`}>
-            {reminderStateLabel}
-          </span>
+          {reminderStateLabel !== "Off" ? (
+            <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${reminderStateClasses}`}>
+              {reminderStateLabel}
+            </span>
+          ) : null}
         </button>
 
         <StreakDotsRow dates={weekDates} logs={logs} onSelectDate={setSelectedDate} />

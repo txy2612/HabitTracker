@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { HabitLog } from "../../../shared/types/api.types";
 import { formatRecentDayLabel, getDayNumber, todayString } from "../../../shared/utils/dateUtils";
 
@@ -19,22 +20,23 @@ const doneCircleClasses = [
   "bg-[var(--app-calendar-done-5)] text-white",
 ];
 
-const doneConnectorClasses = [
-  "bg-[var(--app-calendar-line-1)]",
-  "bg-[var(--app-calendar-line-2)]",
-  "bg-[var(--app-calendar-line-3)]",
-  "bg-[var(--app-calendar-line-4)]",
-  "bg-[var(--app-calendar-line-5)]",
-];
-
 function getDoneCircleClasses(date: string) {
   const dayNumber = Number(date.slice(-2));
   return doneCircleClasses[dayNumber % doneCircleClasses.length];
 }
 
-function getDoneConnectorClasses(date: string) {
+function getDoneColorIndex(date: string) {
   const dayNumber = Number(date.slice(-2));
-  return doneConnectorClasses[dayNumber % doneConnectorClasses.length];
+  return (dayNumber % doneCircleClasses.length) + 1;
+}
+
+function getDoneConnectorStyle(leftDate: string, rightDate: string): CSSProperties {
+  const leftColor = `var(--app-calendar-line-${getDoneColorIndex(leftDate)})`;
+  const rightColor = `var(--app-calendar-line-${getDoneColorIndex(rightDate)})`;
+
+  return {
+    background: `linear-gradient(90deg, ${leftColor}, ${rightColor})`,
+  };
 }
 
 function getCircleClasses(date: string, log?: HabitLog) {
@@ -58,16 +60,16 @@ function getCircleClasses(date: string, log?: HabitLog) {
     : "bg-[var(--app-calendar-idle)] text-[var(--app-calendar-idle-text)]";
 }
 
-function getConnectorClasses(leftDate: string, rightDate: string, leftLog?: HabitLog, rightLog?: HabitLog) {
+function getConnectorStyle(leftDate: string, rightDate: string, leftLog?: HabitLog, rightLog?: HabitLog) {
   const today = todayString();
 
   if (leftDate > today || rightDate > today || !leftLog || !rightLog) {
-    return "bg-transparent";
+    return undefined;
   }
 
   return leftLog.status === "done" && rightLog.status === "done"
-    ? getDoneConnectorClasses(leftDate)
-    : "bg-transparent";
+    ? getDoneConnectorStyle(leftDate, rightDate)
+    : undefined;
 }
 
 export function StreakDotsRow({ dates, logs, onSelectDate }: StreakDotsRowProps) {
@@ -91,6 +93,7 @@ export function StreakDotsRow({ dates, logs, onSelectDate }: StreakDotsRowProps)
             const log = getLogForDate(logs, date);
             const nextDate = dates[index + 1];
             const nextLog = nextDate ? getLogForDate(logs, nextDate) : undefined;
+            const connectorStyle = nextDate ? getConnectorStyle(date, nextDate, log, nextLog) : undefined;
 
             return (
               <div className="flex items-center" key={date}>
@@ -114,7 +117,8 @@ export function StreakDotsRow({ dates, logs, onSelectDate }: StreakDotsRowProps)
 
                 {index < dates.length - 1 ? (
                   <span
-                    className={`h-0.5 w-3 shrink-0 ${nextDate ? getConnectorClasses(date, nextDate, log, nextLog) : "bg-transparent"}`}
+                    className={`h-0.5 w-3 shrink-0 ${connectorStyle ? "" : "bg-transparent"}`}
+                    style={connectorStyle}
                     aria-hidden="true"
                   />
                 ) : null}

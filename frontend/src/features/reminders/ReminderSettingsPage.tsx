@@ -256,8 +256,8 @@ export function ReminderSettingsPage({
                   </div>
                   
                   {habit.reminderEnabled ?(
-                  <div className="grid gap-4 xl:grid-cols-[200px_minmax(0,1fr)]">
-                    <div className="grid gap-2">
+                  <div className="grid gap-4 xl:grid-cols-[250px_minmax(0,1fr)] xl:items-start">
+                    <div className="grid gap-2 xl:row-start-1">
                       <label className="text-sm font-semibold text-[var(--app-soft-text)]" htmlFor={`time-${habit.id}`}>
                         Reminder time
                       </label>
@@ -270,7 +270,7 @@ export function ReminderSettingsPage({
                       />
                     </div>
 
-                    <div className="grid gap-4">
+                    <div className="grid gap-4 xl:row-start-1">
                       <div className="grid gap-2">
                         <p className="text-sm font-semibold text-[var(--app-soft-text)]">Schedule type</p>
                         <div className="flex flex-wrap gap-2">
@@ -291,51 +291,51 @@ export function ReminderSettingsPage({
                           ))}
                         </div>
                       </div>
-
-                      {habit.scheduleType === "weekly" ? (
-                        <div className="grid gap-3">
-                          <p className="text-sm font-semibold text-[var(--app-soft-text)]">Send on these weekdays</p>
-                          <div className="flex flex-wrap gap-2">
-                            {weekdayOptions.map((weekday) => {
-                              const isSelected = habit.weekdays.includes(weekday.value);
-
-                              return (
-                                <button
-                                  className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${
-                                    isSelected
-                                      ? "border-[var(--app-accent)] bg-[var(--app-accent)] text-white"
-                                      : "border-[var(--app-soft-border)] bg-[var(--app-soft-surface-muted)] text-[var(--app-soft-muted)]"
-                                  } disabled:cursor-not-allowed disabled:border-[var(--app-soft-border)] disabled:bg-[var(--app-soft-surface-muted)] disabled:text-[var(--app-soft-muted)]`}
-                                  key={weekday.value}
-                                  onClick={() => reminders.toggleWeekday(habit.id, weekday.value)}
-                                  type="button"
-                                >
-                                  {weekday.label}
-                                </button>
-                              );
-                            })}
-                          </div>
-                          {habit.reminderEnabled && habit.weekdays.length === 0 ? (
-                            <p className="text-xs text-amber-600">Choose at least one weekday for this schedule.</p>
-                          ) : null}
-                        </div>
-                      ) : null}
-
-                      {habit.scheduleType === "specific_date" ? (
-                        <div className="grid gap-2 max-w-[260px]">
-                          <label className="text-sm font-semibold text-[var(--app-soft-text)]" htmlFor={`date-${habit.id}`}>
-                            Send on this date
-                          </label>
-                          <input
-                            className="h-11 rounded-xl border border-[var(--app-soft-border)] bg-white px-3 text-base text-[var(--app-soft-text)] outline-none transition focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)] disabled:cursor-not-allowed disabled:opacity-60"
-                            id={`date-${habit.id}`}
-                            onChange={(event) => reminders.setSpecificDate(habit.id, event.target.value)}
-                            type="date"
-                            value={habit.specificDate ?? ""}
-                          />
-                        </div>
-                      ) : null}
                     </div>
+
+                    {habit.scheduleType === "weekly" ? (
+                      <div className="grid gap-3 xl:col-start-2">
+                        <p className="text-sm font-semibold text-[var(--app-soft-text)]">Send on these weekdays</p>
+                        <div className="flex flex-wrap gap-2">
+                          {weekdayOptions.map((weekday) => {
+                            const isSelected = habit.weekdays.includes(weekday.value);
+
+                            return (
+                              <button
+                                className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${
+                                  isSelected
+                                    ? "border-[var(--app-accent)] bg-[var(--app-accent)] text-white"
+                                    : "border-[var(--app-soft-border)] bg-[var(--app-soft-surface-muted)] text-[var(--app-soft-muted)]"
+                                } disabled:cursor-not-allowed disabled:border-[var(--app-soft-border)] disabled:bg-[var(--app-soft-surface-muted)] disabled:text-[var(--app-soft-muted)]`}
+                                key={weekday.value}
+                                onClick={() => reminders.toggleWeekday(habit.id, weekday.value)}
+                                type="button"
+                              >
+                                {weekday.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {habit.reminderEnabled && habit.weekdays.length === 0 ? (
+                          <p className="text-xs text-amber-600">Choose at least one weekday for this schedule.</p>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {habit.scheduleType === "specific_date" ? (
+                      <div className="grid max-w-[325px] gap-2 xl:col-start-2">
+                        <label className="text-sm font-semibold text-[var(--app-soft-text)]" htmlFor={`date-${habit.id}`}>
+                          Send on this date
+                        </label>
+                        <input
+                          className="h-11 rounded-xl border border-[var(--app-soft-border)] bg-white px-3 text-base text-[var(--app-soft-text)] outline-none transition focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)] disabled:cursor-not-allowed disabled:opacity-60"
+                          id={`date-${habit.id}`}
+                          onChange={(event) => reminders.setSpecificDate(habit.id, event.target.value)}
+                          type="date"
+                          value={habit.specificDate ?? ""}
+                        />
+                      </div>
+                    ) : null}
                   </div>
                   ) : (
                     <div className="rounded-2xl border border-dashed border-[var(--app-soft-border)] bg-[var(--app-soft-surface-muted)] px-4 py-3 text-sm text-[var(--app-soft-muted)]">

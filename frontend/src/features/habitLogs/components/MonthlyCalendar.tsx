@@ -1,6 +1,7 @@
 // HabitDetailPage = parent/container (also a component)
 // MonthlyCalender = UI child component
     // draws the month calendar circles and connecting lines
+import type { CSSProperties } from "react";
 import type { HabitLog } from "../../../shared/types/api.types";
 import { getDayNumber, getMonthCalendarDates, todayString } from "../../../shared/utils/dateUtils";
 
@@ -27,22 +28,25 @@ const doneCircleClasses = [
   "bg-[var(--app-calendar-done-5)] text-white shadow-[0_0_22px_color-mix(in_srgb,var(--app-calendar-done-5)_38%,transparent)]",
 ];
 
-const doneConnectorClasses = [
-  "bg-[var(--app-calendar-line-1)]",
-  "bg-[var(--app-calendar-line-2)]",
-  "bg-[var(--app-calendar-line-3)]",
-  "bg-[var(--app-calendar-line-4)]",
-  "bg-[var(--app-calendar-line-5)]",
-];
-
 function getDoneCircleClass(date: string) {
   const dayNumber = Number(date.slice(-2));
   return doneCircleClasses[dayNumber % doneCircleClasses.length];
 }
 
-function getDoneConnectorClass(date: string) {
+function getDoneColorIndex(date: string) {
   const dayNumber = Number(date.slice(-2));
-  return doneConnectorClasses[dayNumber % doneConnectorClasses.length];
+  return (dayNumber % doneCircleClasses.length) + 1;
+}
+
+function getDoneConnectorStyle(leftDate: string, rightDate: string, half: "first" | "second"): CSSProperties {
+  const leftColor = `var(--app-calendar-line-${getDoneColorIndex(leftDate)})`;
+  const rightColor = `var(--app-calendar-line-${getDoneColorIndex(rightDate)})`;
+
+  return {
+    background: `linear-gradient(90deg, ${leftColor}, ${rightColor})`,
+    backgroundPosition: half === "first" ? "left center" : "right center",
+    backgroundSize: "200% 100%",
+  };
 }
 
 export function MonthlyCalendar({ month, logs, highlightedDate = null, onSelectDate }: MonthlyCalendarProps) {
@@ -72,19 +76,21 @@ export function MonthlyCalendar({ month, logs, highlightedDate = null, onSelectD
     return Boolean(log && log.status !== "skipped");
   }
 
-  function segmentClass(leftDate: string, rightDate: string) {
+  function segmentStyle(leftDate: string, rightDate: string, half: "first" | "second") {
     if (leftDate > today || rightDate > today) {
-      return "";
+      return undefined;
     }
 
     const leftLog = getLog(leftDate);
     const rightLog = getLog(rightDate);
 
     if (!leftLog || !rightLog || leftLog.status === "skipped" || rightLog.status === "skipped") {
-      return "";
+      return undefined;
     }
 
-    return leftLog.status === "done" && rightLog.status === "done" ? getDoneConnectorClass(leftDate) : "";
+    return leftLog.status === "done" && rightLog.status === "done"
+      ? getDoneConnectorStyle(leftDate, rightDate, half)
+      : undefined;
   }
 
   // -- Circle color logic --
@@ -127,17 +133,23 @@ export function MonthlyCalendar({ month, logs, highlightedDate = null, onSelectD
           const isWeekStart = index % 7 === 0;
           const isWeekEnd = index % 7 === 6;
           const leftSegment =
-            previousDate && !isWeekStart && canConnect(date) ? segmentClass(previousDate, date) : "";
+            previousDate && !isWeekStart && canConnect(date) ? segmentStyle(previousDate, date, "second") : undefined;
           const rightSegment =
-            nextDate && !isWeekEnd && canConnect(date) ? segmentClass(date, nextDate) : "";
+            nextDate && !isWeekEnd && canConnect(date) ? segmentStyle(date, nextDate, "first") : undefined;
 
           return (
             <div className="relative flex h-12 items-center justify-center" key={date}>
               {leftSegment ? (
-                <span className={`absolute left-0 top-1/2 h-1 w-1/2 -translate-y-1/2 transition-all duration-500 ${leftSegment}`} />
+                <span
+                  className="absolute left-0 top-1/2 h-1 w-1/2 -translate-y-1/2 transition-all duration-500"
+                  style={leftSegment}
+                />
               ) : null}
               {rightSegment ? (
-                <span className={`absolute right-0 top-1/2 h-1 w-1/2 -translate-y-1/2 transition-all duration-500 ${rightSegment}`} />
+                <span
+                  className="absolute right-0 top-1/2 h-1 w-1/2 -translate-y-1/2 transition-all duration-500"
+                  style={rightSegment}
+                />
               ) : null}
               <button
                 className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold transition duration-300 ${
