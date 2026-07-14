@@ -43,6 +43,24 @@ A full-stack habit tracking application built with React, TypeScript, Express, a
 ## Setup
 
 ```bash
+docker compose up --build
+```
+
+Open:
+
+```bash
+http://127.0.0.1:5173
+```
+
+API health:
+
+```bash
+http://127.0.0.1:4000/api/health
+```
+
+## Local development without Docker
+
+```bash
 # Frontend
 cd frontend
 npm install
@@ -50,39 +68,21 @@ npm install
 # Backend
 cd ../backend
 npm install
-```
 
-Create environment file:
-
-```bash
-cd backend
+# Create environment file
 copy .env.example .env
-```
 
-Start PostgreSQL:
+# Start PostgreSQL only
+cd ..
+docker compose up -d postgres
 
-```bash
-docker compose up -d
-```
-
-Start backend:
-
-```bash
+# Start backend
 cd backend
 npm run dev
-```
 
-Start frontend:
-
-```bash
-cd frontend
+# Start frontend
+cd ../frontend
 npm run dev
-```
-
-Open:
-
-```text
-http://127.0.0.1:5173
 ```
 
 

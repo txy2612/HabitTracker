@@ -1,17 +1,65 @@
-# starts the database
-# Docker -> Postgres container -> DB name, username, password, posrt, runs backend/db/schema.sql on first creation
+# evth inside "services" bcms a container:
+# postgres, backend, frontend - separate containers (just like we always npm run on diff terminals - they are separated)
 services:
   postgres:
+    #
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: habit_tracker
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    # localhost port=5432 : container port=5432
+    # if we use 5000 : 4000 
+    # app still listens on 4000, while my pc uses 5000
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d habit_tracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     volumes:
       - habit_tracker_data:/var/lib/postgresql/data
-      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro #run on first creation of PostgreSQL container, it auto uses schema.sql to create tables
+      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
 
+  backend:
+    build:
+      context: ./backend
+    # depends_on = start Postgre SQL first
+    # =/ PostgreSQL necc healthy -> unless we do health check
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      LOG_LEVEL: info
+      LOG_PRETTY: "false"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/habit_tracker
+      CORS_ORIGIN: http://localhost:5173
+      SMTP_HOST: smtp.example.com
+      SMTP_PORT: 587
+      SMTP_SECURE: "false"
+      SMTP_USER: ""
+      SMTP_PASS: ""
+      SMTP_FROM: Habit Tracker <reminders@example.com>
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:4000
+      VITE_DEV_HOST: 0.0.0.0
+    ports:
+      - "5173:5173"
+
+# deleting a container -> deltes the db
+# with this line, deleting container -> keeps db ,bcz db lives inside container. Just like deleting a folder 
+# but volume lives outside container 
+# folder called habit_tracker_data, ins sync with the container
 volumes:
   habit_tracker_data:
