@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { HabitAnalytics } from "../components/HabitAnalytics";
 import { LogNoteEditor } from "../components/LogNoteEditor";
 import { MonthlyCalendar } from "../components/MonthlyCalendar";
-import { ProgressLensStats } from "../components/ProgressLensStats";
-import { StreakStats } from "../components/StreakStats";
-import { useCompletionStats } from "../hooks/useCompletionStats";
+import { useHabitAnalytics } from "../hooks/useHabitAnalytics";
 import { useHabitLogs } from "../hooks/useHabitLogs";
-import { useStreak } from "../hooks/useStreak";
 import type { Habit, HabitLogStatus } from "../../../shared/types/api.types";
 import { currentMonthString, formatMonthName, shiftMonth } from "../../../shared/utils/dateUtils";
 
@@ -33,37 +31,31 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
     const error = returnedObject.error;
    */
   const {
-    streak,
-    isLoading: isStreakLoading,
-    error: streakError,
-    fetchStreak,
-  } = useStreak(); // the hook that handle streak data
-
-  const {
     lastSevenDays,
     lastThirtyDays,
-    isLoading: isCompletionStatsLoading,
-    // RENAME isLoading to isCompletionStatsLoading (avoid duplicate naming)
-    // later, better readibility: <ProgressLensStats isLoading={isCompletionSTatsLoading} />
-    error: completionStatsError,//RENAME to completionStatsError
-    refresh: refreshCompletionStats,//RENAME
-  } = useCompletionStats(habit.id); // hook handle completion data
+    completionIsLoading,
+    completionError,
+    streak,
+    streakIsLoading,
+    streakError,
+    refreshAnalytics,
+  } = useHabitAnalytics(habit.id); 
   /* suppose habit ={
       id: "habit-123",
       name: "Read 22 pages",
       } 
       
-      useCompletionStats("habit-123")
-      -> fetch & cal completion stats for this statictics
+      useHabitAnalytics("habit-123")
+      -> fetch & cal completion + streak stats for this statictics
 
       Because the hook alr contains useEffect, we DO NOT need another:
       useEffect(() = {
-        refreshCompletionStats()
+        refreshAnalytics()
       },[habit.id]);
 
       That would duplicate fetching
   */
- // w/o destructuring: const refreshCmompletionStats = completionStats.refresh;
+ // w/o destructuring: const refreshAnalytics = habitAnalytics.refreshAnalytics;
 
   const selectedLog = selectedDate ? logs.find((log) => log.logDate === selectedDate) : undefined;// if a date selected -> find the log for that date, if found, pass to LogNoteEditor (bottom of this file)
   const currentMonth = currentMonthString();
@@ -81,10 +73,6 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
 
     return years;
   }, [createdYear, currentYear, selectedYear]);
-
-  useEffect(() => {
-    void fetchStreak(habit.id);
-  }, [fetchStreak, habit.id]);
 
   useEffect(() => {
     if (!isYearMenuOpen) {
@@ -127,12 +115,9 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
         status: input.status,
         note: input.note,
       });
-      await Promise.all([
-        // Why refresh with fetch streak? Bcz a save log can affect the completion stats
-        // Common mistake: call refresh b4 saving log
-        fetchStreak(habit.id),
-        refreshCompletionStats(),
-      ]);
+      // Why refresh both? Bcz a save log can affect completion + streak stats
+      // Common mistake: call refresh b4 saving log
+      await refreshAnalytics();
       setHighlightedDate(input.status === "done" ? selectedDate : null);
       setSelectedDate(null);
     } finally {
@@ -255,13 +240,15 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
               </section>
 
               <aside aria-label="Habit statistics" className="grid min-w-0 gap-4">
-                <ProgressLensStats
-                  error={completionStatsError}
-                  isLoading={isCompletionStatsLoading}
+                <HabitAnalytics
+                  completionError={completionError}
+                  completionIsLoading={completionIsLoading}
                   lastSevenDays={lastSevenDays}
                   lastThirtyDays={lastThirtyDays}
+                  streak={streak}
+                  streakError={streakError}
+                  streakIsLoading={streakIsLoading}
                 />
-                <StreakStats error={streakError} isLoading={isStreakLoading} streak={streak} />
               </aside>
 
               {isLoading ? <p className="mt-4 text-sm text-slate-400">Loading logs...</p> : null}

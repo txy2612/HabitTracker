@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiClient } from "../../../api/apiClient";
-import type { HabitLog } from "../../../shared/types/api.types";
+import type { HabitLog, StreakSummary } from "../../../shared/types/api.types";
 import { getRecentDays } from "../../../shared/utils/dateUtils";
 
 //eg: completedDays: 5, totlaDays: 7, percentage: 71
@@ -22,20 +22,24 @@ export type CompletionStats = {
 
 // & = add new fields
 // UseCompletionStatsResult CONTAINS: last7days, last30days, isLoading, error, refresh
+// This is now part of UseHabitAnalyticsResult after merging the analytics hooks.
 // using & AVOID REPEATING first two properties
-/* WHY SEPARATE CompletionStats and UseCompletionStatsResult?
+/* WHY SEPARATE CompletionStats and UseHabitAnalyticsResult?
 - CS : the analytics data
-- UCSR: ana data + REQUEST STATE [req still running? did req fail? can data be fetched again?]
+- UHAR: ana data + REQUEST STATE [req still running? did req fail? can data be fetched again?]
  */
-export type UseCompletionStatsResult = CompletionStats & {
-    isLoading: boolean;
-    error: string | null;
+export type UseHabitAnalyticsResult = CompletionStats & {
+    completionIsLoading: boolean;
+    completionError: string | null;
     // null = NO error
     // const [error, setError] = useState<string | null>(null);
-    refresh: () => Promise<void>;
+    streak: StreakSummary | null;
+    streakIsLoading: boolean;
+    streakError: string | null;
+    refreshAnalytics: () => Promise<void>;
     // function name, no para, takes time + return no useful data
-    // we call it 'await refresh()'
-    // instead of receiving result 'const stats = await refresh();'
+    // we call it 'await refreshAnalytics()'
+    // instead of receiving result 'const stats = await refreshAnalytics();'
 };
 
 // const EMPTY_COMPLETION_STATS: CompletionStats
@@ -89,23 +93,32 @@ function calculateCompletionPeriod(
     };
 }
 
-// why start w 'use'? -> every hook shud start w 'use' useState(), useEffect(), useCompletionStats(), useReminder()
-export function useCompletionStats(habitId: string): UseCompletionStatsResult {
+/*Flow:
+  1. HabitDetailPage[waiter] calls the hook
+      const { streak, streakIsLoading, streakError, refreshAnalytics, } = useHabitAnalytics(habit.id);
+  2. React executes useHabitAnalytics() [hook = kitchen]
+  3. Hook creates state (as below) -> completion stats, streak, load, error, refresh
+*/
+// why start w 'use'? -> every hook shud start w 'use' useState(), useEffect(), useHabitAnalytics(), useReminder()
+export function useHabitAnalytics(habitId: string): UseHabitAnalyticsResult {
     // use... = React hooks
     // [stats, setStates] -> js array DESTRCTURING
     const [stats, setStats] = useState<CompletionStats>(EMPTY_COMPLETION_STATS);
     // Typescript looks at 'false' -> infer it as boolean
-    const [isLoading, setIsLoading] = useState(false);
+    const [completionIsLoading, setCompletionIsLoading] = useState(false);
     // Why specify type here? 
     // if we do useState(null) -> later cant do setError("Network error")
-    const [error, setError] = useState<string | null>(null);
+    const [completionError, setCompletionError] = useState<string | null>(null);
+    const [streak, setStreak] = useState<StreakSummary | null>(null);
+    const [streakIsLoading, setStreakIsLoading] = useState(false);
+    const [streakError, setStreakError] = useState<string | null>(null);
     // useRef = rmb btwn renders 
     // eg: use as counter
     // Why not use useState? -> re-renders and update UI
     const requestIdRef = useRef(0);
 
-    // function that fetches & recalculate analytics
-    const refresh = useCallback(async () => {
+    // function that fetches & recalculate completion analytics
+    const fetchCompletionStats = useCallback(async () => {
         // create new req id
         const requestId = requestIdRef.current + 1;
         //stores in ref
@@ -118,7 +131,7 @@ export function useCompletionStats(habitId: string): UseCompletionStatsResult {
             Request 2 might finish first
             Req 1 that fin later overwite the page
 
-            Now the page says Habit B, but shows Habit A’s analytics.
+            Now the page says Habit B, but shows Habit Aâ€™s analytics.
         */
 
         /* try {
@@ -130,8 +143,8 @@ export function useCompletionStats(habitId: string): UseCompletionStatsResult {
         }
         */
         try {
-            setIsLoading(true);
-            setError(null);
+            setCompletionIsLoading(true);
+            setCompletionError(null);
 
             const lastThirtyDates = getRecentDays(30);
             const lastSevenDates = lastThirtyDates.slice(-7);
@@ -151,7 +164,7 @@ export function useCompletionStats(habitId: string): UseCompletionStatsResult {
             });
         } catch (fetchError) {
             if (requestId === requestIdRef.current) {
-                setError(
+                setCompletionError(
                 fetchError instanceof Error
                     ? fetchError.message
                     : "Failed to load completion statistics.",
@@ -159,23 +172,55 @@ export function useCompletionStats(habitId: string): UseCompletionStatsResult {
         }
         } finally {
             if (requestId === requestIdRef.current) {
-                setIsLoading(false);
+                setCompletionIsLoading(false);
             }
         }
     }, [habitId]);//dependency of useCallback -> only refresh when habitId changes
 
+    const fetchStreak = useCallback(async () => {
+      try {
+        setStreakIsLoading(true);
+        setStreakError(null);
+
+        //6. Call backend + backend returns streak
+        const data = await apiClient.getStreak(habitId);
+        //7. Save into state -> React sees state changed
+        setStreak(data);
+      } catch (fetchError) {
+        setStreakError(fetchError instanceof Error ? fetchError.message : "Failed to load streak.");
+      } finally {
+        // 8. Stop loading
+        setStreakIsLoading(false);
+
+        // 9. HabitDetailedPage receives updated streak:
+            // const { streak } = useHabitAnalytics(habit.id)
+        //10. Pass to HabitAnalytics
+            // <HabitAnalytics streak={streak} />
+      }
+    }, [habitId]);
+
+    const refreshAnalytics = useCallback(async () => {
+      await Promise.all([fetchCompletionStats(), fetchStreak()]);
+    }, [fetchCompletionStats, fetchStreak]);
+
     useEffect(() =>{
-        void refresh();
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- load analytics when the selected habit changes
+        void refreshAnalytics();
 
         return () =>{
             requestIdRef.current += 1;
         };
-    }, [refresh]);
+    }, [refreshAnalytics]);
 
+    // 4. Hook return tools
+    // 5. useEffect above loads both analytics groups for HabitDetailPage
     return {
         ...stats,
-        isLoading,
-        error,
-        refresh,
+        completionIsLoading,
+        completionError,
+        streak,
+        streakIsLoading,
+        streakError,
+        refreshAnalytics,
     };
 }

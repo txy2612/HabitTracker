@@ -1,13 +1,15 @@
 // each habit card
 
-import { type FormEvent, type KeyboardEvent, useMemo, useState } from "react";
-import type { Habit, HabitLogStatus } from "../../../shared/types/api.types";
+import { type CSSProperties, type FormEvent, type KeyboardEvent, useMemo, useState } from "react";
+import type { Habit, HabitLog, HabitLogStatus } from "../../../shared/types/api.types";
 import {
   currentMonthString,
+  formatRecentDayLabel,
+  getDayNumber,
   getRecentSevenDays,
+  todayString,
 } from "../../../shared/utils/dateUtils";
 import { LogNoteEditor } from "./LogNoteEditor";
-import { StreakDotsRow } from "./StreakDotsRow";
 import { useHabitLogs } from "../hooks/useHabitLogs";
 import {
   formatReminderCardSummary,
@@ -32,6 +34,135 @@ export type HabitCardProps = {
   onUpdateHabit: (habitId: string, name: string) => Promise<void>; // receives HabitId, takes time (call backend) + returns ntg
   onEditReminder: (habitId: string) => void;
 };
+
+type StreakDotsRowProps = {
+  dates: string[];
+  logs: HabitLog[];
+  onSelectDate?: (date: string) => void;
+};
+
+function getLogForDate(logs: HabitLog[], date: string) {
+  return logs.find((log) => log.logDate === date);
+}
+
+const doneCircleClasses = [
+  "bg-[var(--app-calendar-done-1)] text-white",
+  "bg-[var(--app-calendar-done-2)] text-white",
+  "bg-[var(--app-calendar-done-3)] text-white",
+  "bg-[var(--app-calendar-done-4)] text-white",
+  "bg-[var(--app-calendar-done-5)] text-white",
+];
+
+function getDoneCircleClasses(date: string) {
+  const dayNumber = Number(date.slice(-2));
+  return doneCircleClasses[dayNumber % doneCircleClasses.length];
+}
+
+function getDoneColorIndex(date: string) {
+  const dayNumber = Number(date.slice(-2));
+  return (dayNumber % doneCircleClasses.length) + 1;
+}
+
+function getDoneConnectorStyle(leftDate: string, rightDate: string): CSSProperties {
+  const leftColor = `var(--app-calendar-line-${getDoneColorIndex(leftDate)})`;
+  const rightColor = `var(--app-calendar-line-${getDoneColorIndex(rightDate)})`;
+
+  return {
+    background: `linear-gradient(90deg, ${leftColor}, ${rightColor})`,
+  };
+}
+
+function getCircleClasses(date: string, log?: HabitLog) {
+  const today = todayString();
+  const isToday = date === today;
+
+  if (date > today) {
+    return "cursor-not-allowed bg-[var(--app-control-surface)] text-[var(--app-muted)] opacity-50";
+  }
+
+  if (log?.status === "done") {
+    return getDoneCircleClasses(date);
+  }
+
+  if (log?.status === "missed") {
+    return "bg-[var(--app-calendar-missed)] text-[var(--app-calendar-missed-text)]";
+  }
+
+  return isToday
+    ? "bg-[var(--app-calendar-missed)] text-[var(--app-calendar-missed-text)]"
+    : "bg-[var(--app-calendar-idle)] text-[var(--app-calendar-idle-text)]";
+}
+
+function getConnectorStyle(leftDate: string, rightDate: string, leftLog?: HabitLog, rightLog?: HabitLog) {
+  const today = todayString();
+
+  if (leftDate > today || rightDate > today || !leftLog || !rightLog) {
+    return undefined;
+  }
+
+  return leftLog.status === "done" && rightLog.status === "done"
+    ? getDoneConnectorStyle(leftDate, rightDate)
+    : undefined;
+}
+
+function StreakDotsRow({ dates, logs, onSelectDate }: StreakDotsRowProps) {
+  return (
+    <div className="overflow-x-auto pb-1">
+      <div className="min-w-max">
+        <div className="mb-2 flex items-center">
+          {dates.map((date, index) => (
+            <div className="flex items-center" key={`label-${date}`}>
+              <span className="block w-10 text-center text-[10px] font-medium text-[var(--app-muted)]">
+                {formatRecentDayLabel(date)}
+              </span>
+              {index < dates.length - 1 ? <span className="w-3 shrink-0" aria-hidden="true" /> : null}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center">
+          {dates.map((date, index) => {
+            const isFutureDate = date > todayString();
+            const log = getLogForDate(logs, date);
+            const nextDate = dates[index + 1];
+            const nextLog = nextDate ? getLogForDate(logs, nextDate) : undefined;
+            const connectorStyle = nextDate ? getConnectorStyle(date, nextDate, log, nextLog) : undefined;
+
+            return (
+              <div className="flex items-center" key={date}>
+                <button
+                  aria-label={`Edit log for ${date}`}
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[15px] font-semibold transition focus:outline-none ${
+                    isFutureDate ? "" : "hover:scale-105 focus-visible:ring-2 focus-visible:ring-[var(--app-accent)] focus-visible:ring-offset-2"
+                  } ${getCircleClasses(date, log)}`}
+                  disabled={isFutureDate}
+                  onClick={(event) => {
+                    event.stopPropagation();
+
+                    if (!isFutureDate) {
+                      onSelectDate?.(date);
+                    }
+                  }}
+                  type="button"
+                >
+                  {getDayNumber(date)}
+                </button>
+
+                {index < dates.length - 1 ? (
+                  <span
+                    className={`h-0.5 w-3 shrink-0 ${connectorStyle ? "" : "bg-transparent"}`}
+                    style={connectorStyle}
+                    aria-hidden="true"
+                  />
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function CardIcon({ type }: { type: "archive" | "clock" | "edit" | "trash" }) {
   const paths = {
