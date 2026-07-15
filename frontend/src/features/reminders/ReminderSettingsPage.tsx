@@ -4,7 +4,7 @@ import { Button } from "../../shared/components/Button";
 import { EmptyState } from "../../shared/components/EmptyState";
 import { useReminders, type ReminderDraft } from "./useReminders";
 import { formatReminderSchedule } from "./reminderSummary";
-import { ReminderToggle } from "./components/ReminderToggle";
+import { ReminderToggle } from "./components/ReminderControls";
 
 /*ReminderSettingsPage.tsx = UI / screen
 

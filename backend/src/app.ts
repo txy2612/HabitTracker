@@ -3,7 +3,7 @@ import express from "express";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { checkDatabaseHealth } from "./db/health.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
-import habitsRouter from "./routes.js";
+import { habitsRoutes } from "./modules/habits/habits.routes.js";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFoundHandler } from "./middleware/notFoundHandler.js";
@@ -31,7 +31,7 @@ app.get("/api/health/db", requireAuth, async (_request, response) => {
 });
 
 app.use("/api/auth", authRoutes);
-app.use("/api/habits", requireAuth, habitsRouter);
+app.use("/api/habits", requireAuth, habitsRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

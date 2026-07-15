@@ -1,6 +1,6 @@
 import type { HabitLog, HabitLogStatus } from "../../shared/types.js";
 import { monthRange, todayString } from "../../shared/utils/dates.js";
-import { HttpError } from "../../shared/httpError.js";
+import { HttpError } from "../../shared/httpErrors.js";
 import { deleteHabitLogByDate, findHabitLogsForRange, upsertHabitLog } from "./habitLogs.repository.js";
 
 export async function saveHabitLog(input: {

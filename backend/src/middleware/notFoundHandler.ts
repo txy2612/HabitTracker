@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { problemDetails } from "../shared/problemDetails.js";
+import { problemDetails } from "../shared/httpErrors.js";
 
 export const notFoundHandler: RequestHandler = (request, response) => {
   response

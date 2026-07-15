@@ -1,6 +1,6 @@
 import type { Habit } from "../../shared/types.js";
 import type { HabitBody, UpdateHabitRemindersRequest } from "./habits.schema.js";
-import { HttpError } from "../../shared/httpError.js";
+import { HttpError } from "../../shared/httpErrors.js";
 import {
   archiveHabitById,
   deleteHabitById,

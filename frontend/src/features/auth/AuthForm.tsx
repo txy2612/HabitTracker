@@ -1,6 +1,6 @@
 import type { FormEvent } from "react";
-import { Button } from "../../../shared/components/Button";
-import { Input } from "../../../shared/components/Input";
+import { Button } from "../../shared/components/Button";
+import { Input } from "../../shared/components/Input";
 
 export type AuthFormValues = {
   name: string;
@@ -25,7 +25,6 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
     ? "Start tracking habits with your own account and keep your reminders private."
     : "Sign in to continue with your saved habits, logs, and reminders.";
   const submitLabel = isRegisterMode ? "Create account" : "Sign in";
-  const googleLabel = isRegisterMode ? "Sign up with Google" : "Sign in with Google";
   const togglePrompt = isRegisterMode ? "Already have an account?" : "Need an account?";
   const toggleLabel = isRegisterMode ? "Sign in instead" : "Create one";
 
@@ -42,8 +41,7 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
                   {isRegisterMode ? "Build routines that stay yours." : "Your habits are ready when you are."}
                 </h1>
                 <p className="max-w-lg text-base leading-7 text-emerald-50/85 sm:text-lg">
-                  Multi-user habits, progress logs, and reminders all live in one private workspace. Google sign-in
-                  is planned for a later step.
+                  Multi-user habits, progress logs, and reminders all live in one private workspace.
                 </p>
               </div>
             </div>
@@ -56,9 +54,9 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
                 </p>
               </div>
               <div className="rounded-3xl border border-white/15 bg-white/10 px-5 py-5 backdrop-blur">
-                <p className="font-semibold text-white">Ready for more sign-in options</p>
+                <p className="font-semibold text-white">Secure access</p>
                 <p className="mt-2 leading-6">
-                  Email and password work first. A Google sign-in path can plug into this same auth flow later.
+                  Your account is protected with an email address and password.
                 </p>
               </div>
             </div>
@@ -110,19 +108,6 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
                 {isSubmitting ? "Please wait..." : submitLabel}
               </Button>
             </form>
-
-            <div className="my-6 flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-              <span className="h-px flex-1 bg-slate-200" />
-              <span>Or</span>
-              <span className="h-px flex-1 bg-slate-200" />
-            </div>
-
-            <div className="grid gap-3">
-              <Button className="h-12 rounded-xl text-base" disabled type="button" variant="secondary">
-                {googleLabel}
-              </Button>
-              <p className="text-sm text-slate-500">Google sign-in will be added in a later step.</p>
-            </div>
 
             {onToggleMode ? (
               <div className="mt-8 flex flex-wrap items-center gap-2 text-sm text-slate-500">

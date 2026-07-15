@@ -1,69 +1,39 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken"; // used to create login tokens
-import type { LoginInput, RegisterInput } from "./auth.schema.js";
-import { createUser, findUserByEmail } from "./auth.repository.js";// connects service to db 
+import jwt from "jsonwebtoken";
+import { HttpError } from "../../shared/httpErrors.js";
+import { createUser, findUserByEmail, type UserRow } from "./auth.repository.js";
 
-// if .env contains JWT_SECRET -> use it
-// ?? : if left = null OR undefined -> used right
 const JWT_SECRET = process.env.JWT_SECRET ?? "dev_secret_change_me";
 
-// Purpose: generate JWT token
-function signToken(userId: string) {
-  return jwt.sign({ userId }, JWT_SECRET, {
-    // sign = create a token
-    expiresIn: "7d",
-  });
+export type RegisterInput = { name: string; email: string; password: string };
+export type LoginInput = { email: string; password: string };
+
+function toAuthResult(user: UserRow) {
+  return {
+    token: jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" }),
+    user: { id: user.id, name: user.name, email: user.email },
+  };
 }
 
 export async function registerUser(input: RegisterInput) {
-// Ask repo: "Can you find someone with this email?"
-// Possible res = UserRow OR null
-  const existingUser = await findUserByEmail(input.email);
-
-  // don't allow duplicate emails
-  if (existingUser) {
-    // create error object
-    const error = new Error("Email already registered");
-    // attach code to the error: error.statusCode = 409 (JS format)
-    (error as Error & { statusCode?: number }).statusCode = 409;
-    throw error;// stop evth -> jump to controller 'catch(error)' -> controller: next(error) -> msg: "Email alr registered"
+  if (await findUserByEmail(input.email)) {
+    throw new HttpError(409, "Email already registered");
   }
 
-  const passwordHash = await bcrypt.hash(input.password, 10);
   const user = await createUser({
     name: input.name,
     email: input.email,
-    passwordHash,
+    passwordHash: await bcrypt.hash(input.password, 10),
   });
-
-  // return response to Controller 
-  return {
-    token: signToken(user.id),// frontend needs JWT after registration
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    },
-  };
+  return toAuthResult(user);
 }
 
 export async function loginUser(input: LoginInput) {
   const user = await findUserByEmail(input.email);
-
   const passwordMatches = user ? await bcrypt.compare(input.password, user.password_hash) : false;
 
   if (!user || !passwordMatches) {
-    const error = new Error("Invalid email or password");
-    (error as Error & { statusCode?: number }).statusCode = 401;
-    throw error;
+    throw new HttpError(401, "Invalid email or password");
   }
-
-  return {
-    token: signToken(user.id),
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    },
-  };
+  return toAuthResult(user);
 }

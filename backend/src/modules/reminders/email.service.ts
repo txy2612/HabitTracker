@@ -1,6 +1,6 @@
 import nodemailer, { type Transporter } from "nodemailer";
 import { env } from "../../config/env.js";
-import { HttpError } from "../../shared/httpError.js";
+import { HttpError } from "../../shared/httpErrors.js";
 
 export type HabitReminderEmailInput = {
   to: string;

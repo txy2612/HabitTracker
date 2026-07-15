@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LogNoteEditor } from "../../habitLogs/components/LogNoteEditor";
-import { MonthlyCalendar } from "../../habitLogs/components/MonthlyCalendar";
-import { StreakStats } from "../../habitLogs/components/StreakStats";
-import { useHabitLogs } from "../../habitLogs/hooks/useHabitLogs";
-import { useStreak } from "../../habitLogs/hooks/useStreak";
+import { LogNoteEditor } from "../components/LogNoteEditor";
+import { MonthlyCalendar } from "../components/MonthlyCalendar";
+import { StreakStats } from "../components/StreakStats";
+import { useHabitLogs } from "../hooks/useHabitLogs";
+import { useStreak } from "../hooks/useStreak";
 import type { Habit, HabitLogStatus } from "../../../shared/types/api.types";
 import { currentMonthString, formatMonthName, shiftMonth } from "../../../shared/utils/dateUtils";
 

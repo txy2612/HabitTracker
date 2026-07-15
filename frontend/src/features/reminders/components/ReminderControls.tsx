@@ -25,3 +25,21 @@ export function ReminderToggle({ isEnabled, label, onToggle }: ReminderTogglePro
     </button>
   );
 }
+
+export type NotificationPermissionBannerProps = {
+  permission: NotificationPermission | "unsupported";
+  onEnable: () => Promise<void>;
+};
+
+export function NotificationPermissionBanner({ permission, onEnable }: NotificationPermissionBannerProps) {
+  if (permission === "unsupported" || permission === "granted") return null;
+
+  return (
+    <section className="app-soft-card flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-4">
+      <p className="text-sm text-[var(--app-soft-muted)]">Allow browser notifications to receive reminders while this app is open.</p>
+      <button className="font-semibold text-[var(--app-accent-strong)]" onClick={() => void onEnable()} type="button">
+        Enable notifications
+      </button>
+    </section>
+  );
+}

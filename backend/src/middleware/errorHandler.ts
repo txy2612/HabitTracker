@@ -1,6 +1,6 @@
 import type { ErrorRequestHandler } from "express";
 import { ZodError } from "zod";
-import { problemDetails, type ProblemDetailsErrors } from "../shared/problemDetails.js";
+import { problemDetails, type ProblemDetailsErrors } from "../shared/httpErrors.js";
 
 type ErrorLike = {
   code?: unknown;

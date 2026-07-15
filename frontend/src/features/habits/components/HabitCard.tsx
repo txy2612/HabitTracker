@@ -6,9 +6,9 @@ import {
   currentMonthString,
   getRecentSevenDays,
 } from "../../../shared/utils/dateUtils";
-import { LogNoteEditor } from "../../habitLogs/components/LogNoteEditor";
-import { StreakDotsRow } from "../../habitLogs/components/StreakDotsRow";
-import { useHabitLogs } from "../../habitLogs/hooks/useHabitLogs";
+import { LogNoteEditor } from "./LogNoteEditor";
+import { StreakDotsRow } from "./StreakDotsRow";
+import { useHabitLogs } from "../hooks/useHabitLogs";
 import {
   formatReminderCardSummary,
   hasSavedReminderSettings,
