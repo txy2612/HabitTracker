@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LogNoteEditor } from "../components/LogNoteEditor";
 import { MonthlyCalendar } from "../components/MonthlyCalendar";
+import { ProgressLensStats } from "../components/ProgressLensStats";
 import { StreakStats } from "../components/StreakStats";
+import { useCompletionStats } from "../hooks/useCompletionStats";
 import { useHabitLogs } from "../hooks/useHabitLogs";
 import { useStreak } from "../hooks/useStreak";
 import type { Habit, HabitLogStatus } from "../../../shared/types/api.types";
@@ -14,20 +16,6 @@ export type HabitDetailPageProps = {
   habit: Habit;// the habit being viewed
   onClose: () => void;// the function used when user clicks Close
 };
-
-function ProgressLensIcon() {
-  return (
-    <svg aria-hidden="true" className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24">
-      <path
-        d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Zm5-1.5L20 20M18 4.5v3m1.5-1.5h-3M5 18v2m1-1H4"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
 
 export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
   const yearMenuRef = useRef<HTMLDivElement | null>(null);
@@ -43,6 +31,13 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
     error: streakError,
     fetchStreak,
   } = useStreak(); // the hook that handle streak data
+  const {
+    lastSevenDays,
+    lastThirtyDays,
+    isLoading: isCompletionStatsLoading,
+    error: completionStatsError,
+    refresh: refreshCompletionStats,
+  } = useCompletionStats(habit.id); // hook handle completion data
   const selectedLog = selectedDate ? logs.find((log) => log.logDate === selectedDate) : undefined;// if a date selected -> find the log for that date, if found, pass to LogNoteEditor (bottom of this file)
   const currentMonth = currentMonthString();
   const [currentYear, currentMonthNumber] = currentMonth.split("-").map(Number);
@@ -105,7 +100,12 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
         status: input.status,
         note: input.note,
       });
-      await fetchStreak(habit.id);
+      await Promise.all([
+        // Why refresh with fetch streak? Bcz a save log can affect the completion stats
+        // Common mistake: call refresh b4 saving log
+        fetchStreak(habit.id),
+        refreshCompletionStats(),
+      ]);
       setHighlightedDate(input.status === "done" ? selectedDate : null);
       setSelectedDate(null);
     } finally {
@@ -248,22 +248,13 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                 <MonthlyCalendar highlightedDate={highlightedDate} logs={logs} month={month} onSelectDate={setSelectedDate} />
               </section>
 
-              <aside className="app-card-solid rounded-[30px] border p-5 xl:p-6">
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
-                  Insights
-                </p>
-                <h2 className="mt-2 inline-flex items-center gap-2 text-2xl font-bold text-[var(--app-warm)]">
-                  <ProgressLensIcon />
-                  Progress Lens
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-[var(--app-muted)]">
-                  Cool colors mean steady progress. Warm colors mean stronger streak momentum.
-                </p>
-                <div className="mt-5 overflow-hidden rounded-[26px] border border-[var(--app-border)] bg-[var(--app-palette-card)] p-5">
-                  <div className="mx-auto grid h-64 max-h-[58vw] min-h-52 w-full max-w-72 place-items-center rounded-[30px] bg-[radial-gradient(circle_at_50%_50%,var(--app-palette-card)_0_20%,transparent_21%),conic-gradient(from_150deg,var(--app-calendar-done-3),var(--app-calendar-done-4),var(--app-calendar-done-1),var(--app-calendar-done-5),var(--app-calendar-done-3))] shadow-[0_0_46px_color-mix(in_srgb,var(--app-calendar-done-3)_34%,transparent)]">
-                    <div className="h-16 w-16 rounded-full border-[10px] border-[var(--app-modal-surface)] bg-[var(--app-palette-card)] shadow-inner" />
-                  </div>
-                </div>
+              <aside aria-label="Completion statistics" className="min-w-0">
+                <ProgressLensStats
+                  error={completionStatsError}
+                  isLoading={isCompletionStatsLoading}
+                  lastSevenDays={lastSevenDays}
+                  lastThirtyDays={lastThirtyDays}
+                />
               </aside>
 
               {isLoading ? <p className="mt-4 text-sm text-slate-400">Loading logs...</p> : null}

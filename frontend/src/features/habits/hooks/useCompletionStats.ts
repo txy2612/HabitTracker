@@ -99,47 +99,70 @@ export function useCompletionStats(habitId: string): UseCompletionStatsResult {
     // Why specify type here? 
     // if we do useState(null) -> later cant do setError("Network error")
     const [error, setError] = useState<string | null>(null);
-    // useRef
+    // useRef = rmb btwn renders 
+    // eg: use as counter
+    // Why not use useState? -> re-renders and update UI
     const requestIdRef = useRef(0);
 
+    // function that fetches & recalculate analytics
     const refresh = useCallback(async () => {
+        // create new req id
         const requestId = requestIdRef.current + 1;
+        //stores in ref
         requestIdRef.current = requestId;
+        // each refresh gets an id, +1 upon request
+        /* Why ev req need an ID?
+            Request 1: fetch logs for Habit A
+            Request 2: fetch logs for Habit B
 
-        try {
-        setIsLoading(true);
-        setError(null);
+            Request 2 might finish first
+            Req 1 that fin later overwite the page
 
-        const lastThirtyDates = getRecentDays(30);
-        const lastSevenDates = lastThirtyDates.slice(-7);
-        const months = [...new Set(lastThirtyDates.map((date) => date.slice(0, 7)))];
-        const monthlyLogs = await Promise.all(
-            months.map((month) => apiClient.getLogs(habitId, month)),
-        );
+            Now the page says Habit B, but shows Habit A’s analytics.
+        */
 
-        if (requestId !== requestIdRef.current) {
-            return;
+        /* try {
+            // attempt request
+        } catch (error) {
+            // handle failure
+        } finally {
+            // always run cleanup
         }
+        */
+        try {
+            setIsLoading(true);
+            setError(null);
 
-        const logs = monthlyLogs.flat();
-        setStats({
-            lastSevenDays: calculateCompletionPeriod(logs, lastSevenDates),
-            lastThirtyDays: calculateCompletionPeriod(logs, lastThirtyDates),
-        });
-        } catch (fetchError) {
-        if (requestId === requestIdRef.current) {
-            setError(
-            fetchError instanceof Error
-                ? fetchError.message
-                : "Failed to load completion statistics.",
+            const lastThirtyDates = getRecentDays(30);
+            const lastSevenDates = lastThirtyDates.slice(-7);
+            const months = [...new Set(lastThirtyDates.map((date) => date.slice(0, 7)))];
+            const monthlyLogs = await Promise.all(
+                months.map((month) => apiClient.getLogs(habitId, month)),
             );
+
+            if (requestId !== requestIdRef.current) {
+                return;
+            }
+
+            const logs = monthlyLogs.flat();
+            setStats({
+                lastSevenDays: calculateCompletionPeriod(logs, lastSevenDates),
+                lastThirtyDays: calculateCompletionPeriod(logs, lastThirtyDates),
+            });
+        } catch (fetchError) {
+            if (requestId === requestIdRef.current) {
+                setError(
+                fetchError instanceof Error
+                    ? fetchError.message
+                    : "Failed to load completion statistics.",
+                );
         }
         } finally {
-        if (requestId === requestIdRef.current) {
-            setIsLoading(false);
+            if (requestId === requestIdRef.current) {
+                setIsLoading(false);
+            }
         }
-        }
-    }, [habitId]);
+    }, [habitId]);//dependency of useCallback -> only refresh when habitId changes
 
     useEffect(() =>{
         void refresh();
