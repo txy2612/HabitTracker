@@ -36,6 +36,28 @@ export async function deleteUserByEmail(email: string): Promise<void> {
   );
 }
 
+export async function findTestUserByEmail(email: string): Promise<{
+  name: string;
+  email: string;
+  passwordHash: string;
+} | null> {
+  const result = await pool.query<{
+    name: string;
+    email: string;
+    password_hash: string;
+  }>(
+    `SELECT name, email, password_hash
+     FROM users
+     WHERE email = $1`,
+    [email],
+  );
+
+  const user = result.rows[0];
+  return user
+    ? { name: user.name, email: user.email, passwordHash: user.password_hash }
+    : null;
+}
+
 async function closeServer(server: Server): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     server.close((error) => {

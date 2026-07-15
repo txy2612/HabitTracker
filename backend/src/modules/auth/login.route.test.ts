@@ -27,7 +27,8 @@ test("POST /api/auth/login returns 200 and the logged in user payload", async ()
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          // intentionally make it messy to check if the input is later normalized
+          email: `  ${email.toUpperCase()}  `,
           password: "secret123",
         }),
       });

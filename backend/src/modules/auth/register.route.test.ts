@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createTestEmail, deleteUserByEmail, withTestServer } from "./auth.test.helpers.js";
+import bcrypt from "bcrypt";
+import { createTestEmail, deleteUserByEmail, findTestUserByEmail, withTestServer } from "./auth.test.helpers.js";
 
 test("POST /api/auth/register returns 201 and the registered user payload", async () => {
   const email = createTestEmail("register-success");
+  const submittedEmail = `  ${email.toUpperCase()}  `;
 
   await withTestServer(async (baseUrl) => {
     try {
@@ -13,8 +15,8 @@ test("POST /api/auth/register returns 201 and the registered user payload", asyn
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: "Alicia",
-          email,
+          name: "  Alicia  ",
+          email: submittedEmail,
           password: "secret123",
         }),
       });
@@ -39,6 +41,13 @@ test("POST /api/auth/register returns 201 and the registered user payload", asyn
       assert.match(body.data.user.id, /^\d+$/);
       assert.equal(body.data.user.name, "Alicia");
       assert.equal(body.data.user.email, email);
+
+      const storedUser = await findTestUserByEmail(email);
+      assert.ok(storedUser);
+      assert.equal(storedUser.name, "Alicia");
+      assert.equal(storedUser.email, email);
+      assert.notEqual(storedUser.passwordHash, "secret123");
+      assert.equal(await bcrypt.compare("secret123", storedUser.passwordHash), true);
     } finally {
       await deleteUserByEmail(email);
     }
