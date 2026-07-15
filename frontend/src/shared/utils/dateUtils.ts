@@ -14,14 +14,26 @@ export function todayString(): string {
   return getTodayIsoDate();
 }
 
-export function getRecentSevenDays(): string[] {
+export function getRecentDays(dayCount: number): string[] {
+  if (!Number.isInteger(dayCount) || dayCount < 1) {
+    throw new RangeError("dayCount must be a positive integer.");
+  }
+
   const today = new Date();
 
-  return Array.from({ length: 7 }, (_, index) => {
+  // common mistake: using toISOSTring() might shuft date because it cconverts to UTC
+  return Array.from({ length: dayCount }, (_, index) => {
     const date = new Date(today);
-    date.setDate(today.getDate() - 6 + index);
+    // final item in returned array = today; 1st item = dayCount-1 days ago
+    date.setDate(today.getDate() - (dayCount - 1) + index);
+
+    // toDateSTring() defines YYYY-MM-DD format
     return toDateString(date);
   });
+}
+
+export function getRecentSevenDays(): string[] {
+  return getRecentDays(7);
 }
 
 export function getDayNumber(dateString: string): string {
