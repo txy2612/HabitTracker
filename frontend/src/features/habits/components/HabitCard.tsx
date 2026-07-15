@@ -242,14 +242,14 @@ export function HabitCard({
         <div className="flex items-start gap-3">
           <button
             aria-label={`Open menu for ${habit.name}`}
-            className="-mt-1 rounded-full px-1 text-lg leading-none text-[#9ca3af] transition hover:text-[var(--app-text)]"
+            className="-mr-1 -mt-1 flex h-9 w-9 items-center justify-center rounded-full text-xl leading-none text-[#9ca3af] transition hover:bg-[var(--app-control-surface)] hover:text-[var(--app-text)]"
             onClick={(event) => {
               event.stopPropagation();
               setIsMenuOpen((currentValue) => !currentValue);
             }}
             type="button"
           >
-            ...
+            <span aria-hidden="true">...</span>
           </button>
         </div>
       </div>

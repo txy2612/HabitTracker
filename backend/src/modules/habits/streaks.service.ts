@@ -20,6 +20,7 @@ function calculateStreak(logs: HabitLog[]): StreakSummary {
       highestStreak: 0,
       highestStartDate: null,
       highestEndDate: null,
+      lastCompletedDate: null,
     };
   }
 
@@ -71,5 +72,6 @@ function calculateStreak(logs: HabitLog[]): StreakSummary {
     highestStreak,
     highestStartDate,
     highestEndDate,
+    lastCompletedDate: doneDates[doneDates.length - 1],
   };
 }

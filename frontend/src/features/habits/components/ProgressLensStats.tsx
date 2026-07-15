@@ -15,8 +15,13 @@ type CompletionRateCardProps = {
 };
 
 function PeriodIcon({ type }: { type: "week" | "month" }) {
+  const toneClass =
+    type === "week"
+      ? "bg-[var(--app-accent-soft)] text-[var(--app-current)]"
+      : "bg-[var(--app-warm-soft)] text-[var(--app-warm)]";
+
   return (
-    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--app-accent-soft)] text-[var(--app-current)]">
+    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${toneClass}`}>
       <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
         {type === "week" ? (
           <path
@@ -42,13 +47,15 @@ function PeriodIcon({ type }: { type: "week" | "month" }) {
 
 function CompletionRateCard({ label, period, icon, isLoading }: CompletionRateCardProps) {
   const safePercentage = Math.min(100, Math.max(0, period.percentage));
+  const surfaceClass = icon === "week" ? "bg-[var(--app-current-card)]" : "bg-[var(--app-streak-card)]";
+  const metricClass = icon === "week" ? "text-[var(--app-current)]" : "text-[var(--app-warm)]";
 
   return (
-    <article className="min-w-0 rounded-[26px] border border-[var(--app-border)] bg-[var(--app-current-card)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_40px_var(--app-shadow)]">
+    <article className={`min-w-0 rounded-[22px] border border-[var(--app-border)] px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_12px_28px_var(--app-shadow)] ${surfaceClass}`}>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex min-w-0 items-center gap-3">
           <PeriodIcon type={icon} />
-          <h3 className="text-xl font-bold leading-tight text-[var(--app-title)]">{label}</h3>
+          <h3 className="text-lg font-bold leading-tight text-[var(--app-title)]">{label}</h3>
         </div>
         <span className="whitespace-nowrap text-xs font-semibold text-[var(--app-muted)] [font-family:var(--font-data)]">
           {isLoading ? `— of ${period.totalDays} days` : `${period.completedDays} of ${period.totalDays} days`}
@@ -66,11 +73,11 @@ function CompletionRateCard({ label, period, icon, isLoading }: CompletionRateCa
           role="progressbar"
         >
           <div
-            className="h-full rounded-full bg-[linear-gradient(90deg,var(--app-calendar-done-1),var(--app-calendar-done-2))] transition-[width] duration-500 ease-out"
+            className="h-full rounded-full bg-[linear-gradient(90deg,var(--app-accent),var(--app-current))] transition-[width] duration-500 ease-out"
             style={{ width: `${isLoading ? 0 : safePercentage}%` }}
           />
         </div>
-        <strong className="w-10 shrink-0 text-right text-sm font-bold text-[var(--app-current)] [font-family:var(--font-data)]">
+        <strong className={`w-10 shrink-0 text-right text-sm font-bold [font-family:var(--font-data)] ${metricClass}`}>
           {isLoading ? "—" : `${safePercentage}%`}
         </strong>
       </div>

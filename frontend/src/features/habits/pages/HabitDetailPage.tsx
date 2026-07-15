@@ -25,19 +25,46 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isYearMenuOpen, setIsYearMenuOpen] = useState(false);
   const { logs, isLoading, error, saveLog } = useHabitLogs(habit.id, month);
+
+  // destructuring
+  /* w/o destructuring:
+    const streak = returnedObject.streak;
+    const isLoading = returnedObject.isLoading;
+    const error = returnedObject.error;
+   */
   const {
     streak,
     isLoading: isStreakLoading,
     error: streakError,
     fetchStreak,
   } = useStreak(); // the hook that handle streak data
+
   const {
     lastSevenDays,
     lastThirtyDays,
     isLoading: isCompletionStatsLoading,
-    error: completionStatsError,
-    refresh: refreshCompletionStats,
+    // RENAME isLoading to isCompletionStatsLoading (avoid duplicate naming)
+    // later, better readibility: <ProgressLensStats isLoading={isCompletionSTatsLoading} />
+    error: completionStatsError,//RENAME to completionStatsError
+    refresh: refreshCompletionStats,//RENAME
   } = useCompletionStats(habit.id); // hook handle completion data
+  /* suppose habit ={
+      id: "habit-123",
+      name: "Read 22 pages",
+      } 
+      
+      useCompletionStats("habit-123")
+      -> fetch & cal completion stats for this statictics
+
+      Because the hook alr contains useEffect, we DO NOT need another:
+      useEffect(() = {
+        refreshCompletionStats()
+      },[habit.id]);
+
+      That would duplicate fetching
+  */
+ // w/o destructuring: const refreshCmompletionStats = completionStats.refresh;
+
   const selectedLog = selectedDate ? logs.find((log) => log.logDate === selectedDate) : undefined;// if a date selected -> find the log for that date, if found, pass to LogNoteEditor (bottom of this file)
   const currentMonth = currentMonthString();
   const [currentYear, currentMonthNumber] = currentMonth.split("-").map(Number);
@@ -127,48 +154,38 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
     <main className="app-shell min-h-screen px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
       <div className="mx-auto w-full max-w-[1420px]">
         <section className="app-card overflow-hidden rounded-[42px] border p-5 sm:p-7 lg:p-8">
-          <div className="grid gap-6 lg:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.4fr)] lg:items-start">
-            <header className="grid gap-3">
-              <div className="grid gap-3">
-                <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--app-secondary)]">
-                  Habit Tracker
-                </p>
-                <h1 className="text-4xl font-bold leading-tight text-[var(--app-title)] sm:text-[2.8rem]">
-                  {habit.name}
-                </h1>
-                <p className="max-w-xl text-base leading-7 text-[var(--app-muted)]">
-                  Review progress and update daily results.
-                </p>
-              </div>
-            </header>
-
-            <div className="grid gap-4">
-              <StreakStats error={streakError} isLoading={isStreakLoading} streak={streak} />
-
-              <button
-                className="app-soft-control w-full rounded-2xl border px-5 py-3 text-sm font-semibold transition hover:brightness-105"
-                onClick={onClose}
-                type="button"
-              >
-                Back to habits
-              </button>
-            </div>
-          </div>
+          <header className="mx-auto grid w-full max-w-3xl justify-items-center gap-3 text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--app-secondary)]">
+              Habit Tracker
+            </p>
+            <h1 className="text-4xl font-bold leading-tight text-[var(--app-title)] sm:text-[2.8rem]">
+              {habit.name}
+            </h1>
+            <button
+              className="app-soft-control w-full rounded-2xl border px-5 py-3 text-sm font-semibold transition hover:brightness-105"
+              onClick={onClose}
+              type="button"
+            >
+              Back to habits
+            </button>
+          </header>
 
           <div className="mt-8 grid gap-5">
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.55fr)] xl:items-end">
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
-                <div className="grid gap-2">
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
-                    Daily Log
-                  </p>
-                  <h2 className="text-2xl font-bold text-[var(--app-title)]">Monthly Progress</h2>
-                  <p className="max-w-xl text-sm leading-6 text-[var(--app-muted)]">
-                    Click a date to mark it done, missed, or add details.
-                  </p>
-                </div>
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.55fr)]">
+              <div className="grid gap-2">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--app-secondary)]">
+                  Daily Log
+                </p>
+                <h2 className="text-2xl font-bold text-[var(--app-title)]">Monthly Progress</h2>
+                <p className="max-w-xl text-sm leading-6 text-[var(--app-muted)]">
+                  Click a date to mark it done, missed, or add details.
+                </p>
+              </div>
+            </div>
 
-                <div className="app-soft-control grid w-full grid-cols-[52px_1fr_52px] items-center gap-3 rounded-[22px] border px-3 py-2 lg:justify-self-end">
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.55fr)] xl:items-start">
+              <section className="app-card-solid rounded-[32px] border p-5 sm:p-7">
+                <div className="app-soft-control relative mb-7 grid w-full grid-cols-[52px_1fr_52px] items-center gap-3 rounded-[22px] border px-3 py-2">
                   <button
                     aria-label="Previous month"
                     className="flex h-12 w-12 items-center justify-center rounded-full text-2xl font-semibold text-[var(--app-soft-text)] transition hover:bg-[var(--app-soft-surface-muted)]"
@@ -233,28 +250,18 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
                     </button>
                   )}
                 </div>
-              </div>
-            </div>
-
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.55fr)] xl:items-start">
-              <section className="app-card-solid rounded-[32px] border p-5 sm:p-7">
-                <div className="mb-7 border-b border-[var(--app-border)] pb-5">
-                  <div>
-                    <p className="text-sm font-semibold text-[var(--app-current)]">Calendar</p>
-                    <p className="mt-1 text-sm font-medium text-[var(--app-muted)]">Colored dates are completed days.</p>
-                  </div>
-                </div>
 
                 <MonthlyCalendar highlightedDate={highlightedDate} logs={logs} month={month} onSelectDate={setSelectedDate} />
               </section>
 
-              <aside aria-label="Completion statistics" className="min-w-0">
+              <aside aria-label="Habit statistics" className="grid min-w-0 gap-4">
                 <ProgressLensStats
                   error={completionStatsError}
                   isLoading={isCompletionStatsLoading}
                   lastSevenDays={lastSevenDays}
                   lastThirtyDays={lastThirtyDays}
                 />
+                <StreakStats error={streakError} isLoading={isStreakLoading} streak={streak} />
               </aside>
 
               {isLoading ? <p className="mt-4 text-sm text-slate-400">Loading logs...</p> : null}

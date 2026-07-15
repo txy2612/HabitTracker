@@ -70,6 +70,7 @@ export type StreakSummary = {
   highestStreak: number;
   highestStartDate: string | null;
   highestEndDate: string | null;
+  lastCompletedDate: string | null;
 };
 
 // describe what a loggedin user looks in frontend

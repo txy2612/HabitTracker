@@ -64,4 +64,5 @@ export type StreakSummary = {
   highestStreak: number;
   highestStartDate: string | null;
   highestEndDate: string | null;
+  lastCompletedDate: string | null;
 };
