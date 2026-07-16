@@ -1,4 +1,7 @@
+import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
+
+// Modal protects ev modal from parent layout/stacking issues by rendering directly into 'document.body'
 
 export type ModalProps = {
   children: ReactNode;
@@ -12,7 +15,9 @@ export function Modal({ children, isOpen, title, onClose }: ModalProps) {
     return null;
   }
 
-  return (
+  {/* createPortal(..., document.body) */}
+  {/* makes modal render at top of the page */}
+    return createPortal(
     <div
       className="fixed inset-0 z-50 grid place-items-end bg-zinc-950/50 p-3 sm:place-items-center sm:p-4"
       onClick={(event) => {
@@ -40,6 +45,8 @@ export function Modal({ children, isOpen, title, onClose }: ModalProps) {
         </div>
         {children}
       </section>
-    </div>
+    </div>,
+    document.body, 
   );
+  
 }
