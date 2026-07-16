@@ -107,7 +107,10 @@ export function DashboardPage() {
   // these states will be passed to children component at the code at the bottom (child component receive it as props)
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null); 
 
-  // 
+  // [state, updateFunction]
+  // useState = react rmb this value btwn renders
+  // this state named habitsortBy can only be HabitSortOption values
+  // dropdown default = "newest"
   const [ habitSortBy, setHabitSortBy ] = useState<HabitSortOption>("newest");
 
   // the user stays stable as they navigate with < > in monthly view
@@ -176,10 +179,16 @@ export function DashboardPage() {
     return source.slice(0, 2).toUpperCase();
   }, [user?.email, user?.name]);
 
+  // <HabitList onViewHabit={handleViewHabit}
+  // in HabitList:  onViewHabit: (habitId: string) => void;
+  // onViewHabit is not a function written in one place. It's a prop name that carries a real function from parent to child
   function handleViewHabit(habitId: string, ) {
     setSelectedHabitId(habitId);
   }
 
+  // onOpenReminders={handleOpenReminderCenter}
+  // in child: onOpenReminders: () => void;
+  // onOpenReminderCenter = a prop name that carries a function from parent to child. Not an actual function
   function handleOpenReminderCenter() {
     setFocusedReminderHabitId(null);
     setIsReminderCenterOpen(true);

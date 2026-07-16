@@ -4,6 +4,17 @@ import { EmptyState } from "../../../shared/components/EmptyState";
 import { Button } from "../../../shared/components/Button";
 import { HabitCard } from "./HabitCard";
 
+/* Parent-child flow:
+    Part 1. child says what she/he expcects (export type)
+    onSortChange: (sortBy: HabitSortOption) => void;
+
+    Part 2. gets the star shape carrot from parent
+    (destructuring) onSortChange
+
+    Part 3. eat the star
+    value={sortBy}
+ */
+
 // HabitSortOption is used in both DashboardPage and HabitList
 // common mistake: create another in DashBoardPage
 // long-term - need to update both/forgot to update one of them
@@ -14,6 +25,10 @@ export type HabitSortOption =
   | "alphabetical-asc"
   | "alphabetical-desc";
 
+
+// Part 1: contract/shape
+// does not take values from parent yet
+// Imagine: kid says, i want the carrot to be in star shape
 export type HabitListProps = {
   habits: Habit[];
   /* common mistake:
@@ -24,6 +39,8 @@ export type HabitListProps = {
   onSortChange: (sortBy: HabitSortOption) => void;
   onAddHabit: () => void;
   onViewHabit: (habitId: string) => void;
+  // call it with function onViewHabit(habitId: string
+  // onViewHabit("habit-123")
   onArchiveHabit: (habitId: string) => Promise<void>;
   onDeleteHabit: (habitId: string) => Promise<void>;
   onUpdateHabit: (habitId: string, name: string) => Promise<void>;
@@ -31,6 +48,8 @@ export type HabitListProps = {
   onOpenReminders: () => void;
 };
 
+// Part 2: takes the value
+// Imagine: Mami feed kid
 // W/o destructuring: function HabitList(props: HabitListProps) { props.habits, props.onArchiveHabit, props.blabla }
 export function HabitList({
   habits,
@@ -48,6 +67,7 @@ export function HabitList({
   // Bug: 
   //const [sortBy, setSortBy] = useState<HabitSortOption>("newest");
 
+  // Purpose: displayedHabits control visual dashboard order
   //displayedHabits is calculated using:
   // - search query
   // - selected sorting nethod
@@ -59,6 +79,15 @@ export function HabitList({
       : habits;
 
     return [...filteredHabits].sort((leftHabit, rightHabit) => {
+      /* sortBy function (anonymous, not named like function sortBy() )
+
+      Why make it anonymous?
+      - won't be reused elsewhere
+      */
+      // owns by DashBoard : const [ habitSortBy , setHabitSortBy ] = useState
+      // imagine a mom feeding 'carrot', but cut into a 'star' shape -> tell the kid to eat star
+      // mom owns the value of carrot
+      // star = sortBy; carrot = habitSortBy
       switch (sortBy) {
         case "oldest":
           return leftHabit.createdAt.localeCompare(rightHabit.createdAt);
@@ -146,7 +175,8 @@ export function HabitList({
               </span>
             </span>
           </label>
-
+          
+          {/* Part 3: kid eats the carrot */}
           <Button
             className="app-secondary-control h-11 rounded-2xl border px-5 text-sm font-semibold hover:brightness-105"
             onClick={onOpenReminders}
@@ -171,7 +201,7 @@ export function HabitList({
 
       {/* Ternarary operator */}
       {/* If there are no habits to display: EmptyState */}
-      {/* Otherwise: */}
+      {/* Otherwise: each habit has ... */}
       {displayedHabits.length === 0 ? (
         <EmptyState title="No matching habits">
           <p>Try another habit name.</p>
