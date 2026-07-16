@@ -4,7 +4,7 @@ import type { CreateHabitInput } from "../../../shared/types/api.types";
 import { Button } from "../../../shared/components/Button";
 import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
 import { AddHabitModal } from "../components/AddHabitModal";
-import { HabitList } from "../components/HabitList";
+import { HabitList, type HabitSortOption } from "../components/HabitList";
 import { useHabits } from "../hooks/useHabits";
 import { ArchivedHabitsPage } from "./ArchivedHabitsPage";
 import { HabitDetailPage } from "./HabitDetailPage";
@@ -106,7 +106,65 @@ export function DashboardPage() {
   // selectedHabitId = null -> no habit is selected
   // these states will be passed to children component at the code at the bottom (child component receive it as props)
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null); 
-  const selectedHabit = habits.find((habit) => habit.id === selectedHabitId);
+
+  // 
+  const [ habitSortBy, setHabitSortBy ] = useState<HabitSortOption>("newest");
+
+  // the user stays stable as they navigate with < > in monthly view
+    const habitNavigationIds = useMemo(() => {
+      return [...habits].sort((leftHabit, rightHabit) => {
+        switch (habitSortBy) {
+          case "oldest":
+            return leftHabit.createdAt.localeCompare(rightHabit.createdAt);
+          case "alphabetical-asc":
+            return leftHabit.name.localeCompare(rightHabit.name, undefined, { sensitivity: "base" });
+          case "alphabetical-desc":
+            return rightHabit.name.localeCompare(leftHabit.name, undefined, { sensitivity: "base" });
+          case "newest":
+          default:
+            return rightHabit.createdAt.localeCompare(leftHabit.createdAt);
+        }
+      }).map((habit) => habit.id);
+    }, [habits, habitSortBy]);
+
+  const selectedHabit = habits.find(
+    (habit) => habit.id === selectedHabitId,
+  );
+
+  // Normal if else (ternerary operator)
+    /*
+  let previousHabitId;
+
+  if (selectedHabitIndex > 0){
+    previousHabitId = habitNavigationIds[selectedHabitIndex - 1];
+  }else{
+    previousHabitId = -1;
+  }
+   */
+   const selectedHabitIndex = selectedHabitId
+  ? habitNavigationIds.indexOf(selectedHabitId)
+  : -1;
+
+  /* let previousHabitId;
+
+    if (selectedHabitIndex > 0){
+      previousHabitId = habitNavigationIds[selectedHabitIndex - 1]
+    }else{
+      previousHabitId = undefined;
+    }
+   */
+  const previousHabitId =
+    selectedHabitIndex > 0
+      ? habitNavigationIds[selectedHabitIndex - 1]
+      : undefined;
+
+  const nextHabitId =
+    selectedHabitIndex >= 0 &&
+    selectedHabitIndex < habitNavigationIds.length - 1
+      ? habitNavigationIds[selectedHabitIndex + 1]
+      : undefined;
+
+    
   const userInitials = useMemo(() => {
     const source = user?.name?.trim() || user?.email?.trim() || "User";
     const parts = source.split(/\s+/).filter(Boolean);
@@ -118,7 +176,7 @@ export function DashboardPage() {
     return source.slice(0, 2).toUpperCase();
   }, [user?.email, user?.name]);
 
-  function handleViewHabit(habitId: string) {
+  function handleViewHabit(habitId: string, ) {
     setSelectedHabitId(habitId);
   }
 
@@ -243,7 +301,25 @@ export function DashboardPage() {
   }
 
   if (selectedHabit) {
-    return <HabitDetailPage habit={selectedHabit} onClose={() => setSelectedHabitId(null)} />;
+    return (
+      <HabitDetailPage
+      // Why key={selctedHabit.id}
+      // remounting it prevents the state from prev habit briefly appearing in screen
+        key={selectedHabit.id}
+        habit={selectedHabit}
+        onClose={() => setSelectedHabitId(null)}
+        onPreviousHabit={
+          previousHabitId
+            ? () => setSelectedHabitId(previousHabitId)
+            : undefined
+        }
+        onNextHabit={
+          nextHabitId
+            ? () => setSelectedHabitId(nextHabitId)
+            : undefined
+        }
+      />
+    );
   }
 
   if (isArchivedHabitsOpen) {
@@ -384,6 +460,8 @@ export function DashboardPage() {
         {!isLoading && !error ? (
           <HabitList
             habits={habits}
+            sortBy={habitSortBy}
+            onSortChange={setHabitSortBy}
             onAddHabit={() => setIsAddHabitOpen(true)}
             onArchiveHabit={handleArchiveHabit}
             onDeleteHabit={handleDeleteHabit}

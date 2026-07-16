@@ -1,6 +1,8 @@
 // define frontend <-> backend contracts
 // frontend promise to send data in this shape
 // backend promises to send data in this shape
+
+//both backend & frontend must include the field, otherwise, frontend fails type-checking / rely on undocumented response (no type check?)
 export type Habit = {
   id: string;
   name: string;
@@ -70,7 +72,7 @@ export type StreakSummary = {
   highestStreak: number;
   highestStartDate: string | null;
   highestEndDate: string | null;
-  lastCompletedDate: string | null;
+  lastCompletedDate: string | null;// diff from current & longest streak
 };
 
 // describe what a loggedin user looks in frontend

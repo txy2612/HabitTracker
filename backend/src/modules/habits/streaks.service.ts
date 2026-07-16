@@ -10,8 +10,12 @@ export async function getStreak(userId: string, habitId: string): Promise<Streak
 }
 
 function calculateStreak(logs: HabitLog[]): StreakSummary {
+  //filter to get 'done' logs
+  //get their dates and remove duplicates using Set
+  // & sort
   const doneDates = [...new Set(logs.filter((log) => log.status === "done").map((log) => log.log_date))].sort();
 
+  // when there are no completions, return 
   if (doneDates.length === 0) {
     return {
       currentStreak: 0,
@@ -72,6 +76,7 @@ function calculateStreak(logs: HabitLog[]): StreakSummary {
     highestStreak,
     highestStartDate,
     highestEndDate,
+    // for habuts with completions, this line selects the final sorted date
     lastCompletedDate: doneDates[doneDates.length - 1],
   };
 }

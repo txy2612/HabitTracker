@@ -13,9 +13,17 @@ import { currentMonthString, formatMonthName, shiftMonth } from "../../../shared
 export type HabitDetailPageProps = {
   habit: Habit;// the habit being viewed
   onClose: () => void;// the function used when user clicks Close
+  // ? = optional bcz first habit has no prev,last habit no next
+  onPreviousHabit?: () => void;
+  onNextHabit?: () => void;
 };
 
-export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
+export function HabitDetailPage({ 
+  habit, 
+  onClose,
+  onPreviousHabit,
+  onNextHabit,
+ }: HabitDetailPageProps) {
   const yearMenuRef = useRef<HTMLDivElement | null>(null);
   const [month, setMonth] = useState(currentMonthString());// stores the current viewed month
   const [selectedDate, setSelectedDate] = useState<string | null>(null);// stores the date user clicked -> controls whether the modal popup/close
@@ -109,6 +117,7 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
       setIsSaving(true);
 
       // save to backend
+      // after a og is saved, refresh streak response
       await saveLog(habit.id, 
         {
         logDate: selectedDate,
@@ -143,9 +152,37 @@ export function HabitDetailPage({ habit, onClose }: HabitDetailPageProps) {
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--app-secondary)]">
               Habit Tracker
             </p>
-            <h1 className="text-4xl font-bold leading-tight text-[var(--app-title)] sm:text-[2.8rem]">
-              {habit.name}
-            </h1>
+            <div className="grid w-full grid-cols-[48px_minmax(0,1fr)_48px] items-center gap-3">
+              {onPreviousHabit ? (
+                <button
+                  aria-label="View previous habit"
+                  className="app-soft-control flex h-12 w-12 items-center justify-center rounded-full border text-2xl font-semibold transition hover:brightness-105"
+                  onClick={onPreviousHabit}
+                  type="button"
+                >
+                  {"<"}
+                </button>
+              ) : (
+                <span aria-hidden="true" className="block h-12 w-12" />
+              )}
+
+              <h1 className="min-w-0 text-4xl font-bold leading-tight text-[var(--app-title)] sm:text-[2.8rem]">
+                {habit.name}
+              </h1>
+
+              {onNextHabit ? (
+                <button
+                  aria-label="View next habit"
+                  className="app-soft-control flex h-12 w-12 items-center justify-center rounded-full border text-2xl font-semibold transition hover:brightness-105"
+                  onClick={onNextHabit}
+                  type="button"
+                >
+                  {">"}
+                </button>
+              ) : (
+                <span aria-hidden="true" className="block h-12 w-12" />
+              )}
+            </div>
             <button
               className="app-soft-control w-full rounded-2xl border px-5 py-3 text-sm font-semibold transition hover:brightness-105"
               onClick={onClose}

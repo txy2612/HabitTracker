@@ -4,7 +4,11 @@ import { EmptyState } from "../../../shared/components/EmptyState";
 import { Button } from "../../../shared/components/Button";
 import { HabitCard } from "./HabitCard";
 
-type HabitSortOption =
+// HabitSortOption is used in both DashboardPage and HabitList
+// common mistake: create another in DashBoardPage
+// long-term - need to update both/forgot to update one of them
+// | union = OR
+export type HabitSortOption =
   | "newest"
   | "oldest"
   | "alphabetical-asc"
@@ -12,6 +16,12 @@ type HabitSortOption =
 
 export type HabitListProps = {
   habits: Habit[];
+  /* common mistake:
+     passing only sortBy but not onSortCahnge
+     dropdown visually controlled but cant update
+  */
+  sortBy: HabitSortOption;
+  onSortChange: (sortBy: HabitSortOption) => void;
   onAddHabit: () => void;
   onViewHabit: (habitId: string) => void;
   onArchiveHabit: (habitId: string) => Promise<void>;
@@ -24,6 +34,8 @@ export type HabitListProps = {
 // W/o destructuring: function HabitList(props: HabitListProps) { props.habits, props.onArchiveHabit, props.blabla }
 export function HabitList({
   habits,
+  sortBy,
+  onSortChange,
   onAddHabit,
   onViewHabit,
   onArchiveHabit,
@@ -33,8 +45,13 @@ export function HabitList({
   onOpenReminders,
 }: HabitListProps) {// destructuring
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<HabitSortOption>("newest");
+  // Bug: 
+  //const [sortBy, setSortBy] = useState<HabitSortOption>("newest");
 
+  //displayedHabits is calculated using:
+  // - search query
+  // - selected sorting nethod
+  // - current habits
   const displayedHabits = useMemo(() => {
     const trimmedQuery = searchQuery.trim().toLowerCase();
     const filteredHabits = trimmedQuery
@@ -99,9 +116,13 @@ export function HabitList({
           <label className="flex items-center gap-2">
             <span className="text-sm font-medium text-[var(--app-muted)]">Sort</span>
             <span className="relative">
+              {/* change setSortBy to onSortChange . WHy?
+              - onSortChange updates the parent state as well
+              - when dropdown changes, both the list & month arrwos stays sync
+              */}
               <select
                 className="app-soft-control h-11 min-w-[190px] appearance-none rounded-xl border px-3 pr-10 text-sm outline-none transition focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)]"
-                onChange={(event) => setSortBy(event.target.value as HabitSortOption)}
+                onChange={(event) => onSortChange(event.target.value as HabitSortOption)}
                 value={sortBy}
               >
                 <option value="newest">Newest first</option>
@@ -148,11 +169,14 @@ export function HabitList({
         </div>
       </div>
 
+      {/* Ternarary operator */}
+      {/* If there are no habits to display: EmptyState */}
+      {/* Otherwise: */}
       {displayedHabits.length === 0 ? (
         <EmptyState title="No matching habits">
           <p>Try another habit name.</p>
-        </EmptyState>
-      ) : (
+        </EmptyState> 
+      ) : ( 
         <div className="grid gap-6 lg:grid-cols-2">
           {displayedHabits.map((habit) => (
             <HabitCard
