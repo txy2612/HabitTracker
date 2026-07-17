@@ -38,6 +38,8 @@ export async function renameHabit(
 ): Promise<Habit> {
   const habit = await updateHabitName(userId, id, input.name);
 
+  // Why service still need HttpError when we alr have error handlers?
+  // errorHandlers dk business rules
   if (!habit) {
     throw new HttpError(404, "Habit not found.", {
       title: "Habit not found",
@@ -55,6 +57,9 @@ export async function renameHabit(
 export async function deleteHabit(userId: string, id: string): Promise<void> {
   const wasDeleted = await deleteHabitById(userId, id);
 
+  // Why service still need HttpError when we alr have error handlers?
+  // ErrorHandlers dk business rules
+  // business rules are only in services
   if (!wasDeleted) {
     throw new HttpError(404, "Habit not found.", {
       title: "Habit not found",

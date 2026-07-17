@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
-import type { z } from "zod";
+import type { z } from "zod";// allow us to define schema shape
+
 
 declare global {
   namespace Express {

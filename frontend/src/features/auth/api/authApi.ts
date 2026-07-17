@@ -1,4 +1,22 @@
-import type { AuthResult, LoginInput, RegisterInput } from "../../shared/types/api.types";
+import type { AuthResult, LoginInput, RegisterInput } from "../../../shared/types/api.types";
+
+// this file SENDS req to backend
+// Why not use apiClient?
+// bcz current apiClinet is designed for ALREADY_AUTHENTICATED APP
+/*
+   const token = getAuthStoredSession
+ */
+
+/**
+ authApi = unauthenticated requests
+ - "Get me a session"
+ - login/register
+
+ apiClient = authenticated requests
+ - "Use my current session to access app data"
+ - can access: getHabits, createHabit, saveLog, getStreak
+
+*/
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
@@ -23,17 +41,28 @@ function getFriendlyAuthMessage(response: Response, fallbackMessage?: string) {
   return fallbackMessage ?? "Request failed. Please try again.";
 }
 
+// Purpose: requestAuth() sends 
+//1) POST /auth/register
+//2) POST /auth/login
+// w/o depend on stored auth state
 async function requestAuth(path: string, body: LoginInput | RegisterInput): Promise<AuthEnvelope> {
   // centralize fetch request
+  // send request to backend + wait
+  // backend register endpoint:
+  // router.post("/auth/login", loginHandler)
+  // to listen for the request sent by authApi
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
+    // PROVIDES request body (route file READS request body)⭐
     body: JSON.stringify(body),
   });
 
   // check if res succeed
+  // backend check: business rules related error
+  // frontend mainly: network/HTTP response error
   if (!response.ok) {
     // parse JSON
     const error = await response.json().catch(() => ({ detail: "Request failed." }));
@@ -45,12 +74,15 @@ async function requestAuth(path: string, body: LoginInput | RegisterInput): Prom
   return response.json() as Promise<AuthEnvelope>;
 }
 
+// API service/client object
+// endpoint wrapper
 // elsewhere can simply do: 
 // 1) await authApi.login({ email, password});
 // 2) await authApi.register({name, email, password});
 // instead of fetch(...)
 export const authApi = {
-  register(input: RegisterInput): Promise<AuthEnvelope> {
+  // endpoint wrappers
+  register(input: RegisterInput): Promise<AuthEnvelope> {// Promise<return AuthEnvelope when finishes>
     return requestAuth("/auth/register", input);
   },
 
@@ -58,3 +90,4 @@ export const authApi = {
     return requestAuth("/auth/login", input);
   },
 };
+

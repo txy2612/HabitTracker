@@ -1,6 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { useAuth } from "./AuthContext";
-import { AuthForm, type AuthFormValues } from "./AuthForm";
+import { useAuth } from "./context/AuthContext";
+import { AuthForm, type AuthFormValues } from "./components/AuthForm";
 
 const initialValues: AuthFormValues = { name: "", email: "", password: "" };
 

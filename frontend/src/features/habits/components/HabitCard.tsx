@@ -14,7 +14,7 @@ import { useHabitLogs } from "../hooks/useHabitLogs";
 import {
   formatReminderCardSummary,
   hasSavedReminderSettings,
-} from "../../reminders/reminderSummary";
+} from "../../reminders/utils/reminderSummary";
 import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
 
 // props AKA what the card receives 

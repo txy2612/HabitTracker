@@ -1,4 +1,4 @@
-import type { ReminderScheduleType, ReminderWeekday } from "../../shared/types/api.types";
+import type { ReminderScheduleType, ReminderWeekday } from "../../../shared/types/api.types";
 
 const DEFAULT_REMINDER_TIME = "09:00";
 

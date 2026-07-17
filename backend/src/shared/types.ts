@@ -1,3 +1,9 @@
+// Why have types.ts when we alr have schema and validate()?
+// - for Typescript compile-time understanding
+// - helps compiler know A habit has a name, id, ...
+// Typescript disappears when the app runs. It does not protect real incoming request
+// Schemas -> runtime validation (check real user input)
+// Compile-error detection helps reduce runtime error + more scalable bcz the structure are consistent across files
 export type Habit = {
   id: string;
   name: string;

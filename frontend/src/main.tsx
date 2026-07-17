@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { AuthProvider } from './features/auth/AuthContext.tsx'
+import { AuthProvider } from './features/auth/context/AuthContext.tsx'
 import { ThemeProvider } from './features/theme/ThemeContext.tsx'
 
 // starts React & renders app

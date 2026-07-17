@@ -1,13 +1,13 @@
 // useReminders = hook = brain/controller
 // RemindersPage = UI 
 import { useEffect, useMemo, useState } from "react";
-import { apiClient } from "../../api/apiClient";
+import { apiClient } from "../../../api/apiClient";
 import type {
   Habit,
   HabitReminderInput,
   ReminderScheduleType,
   ReminderWeekday,
-} from "../../shared/types/api.types";
+} from "../../../shared/types/api.types";
 
 /*
 useReminders.ts = brain / controller

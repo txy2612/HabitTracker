@@ -9,8 +9,14 @@ import type {
   LoginInput,
   RegisterInput,
   StoredAuthSession,
-} from "../../shared/types/api.types";
-import { authService } from "./authService";
+} from "../../../shared/types/api.types";
+import { authService } from "../services/authService";
+
+/* Purpose of Context:
+   - authenticated data is used evwhere in the app
+   - instead of prop drilling
+   - create a shared storage (context) where they can access data more easily
+ */
 
 // Purpose: desc info AuthContext provides
 // when they call const auth = useAuth() -> they get this object
@@ -48,9 +54,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return nextSession;
   }
 
+  // auth.register comes from:
+  /* This does 2 things:
+    1) ask authService to register with backend
+    2) Save returned session into React state
+  */
   async function register(input: RegisterInput) {
     const nextSession = await authService.register(input);
-    setSession(nextSession);
+    setSession(nextSession);//make the app becomes logged in
 
     return nextSession;
   }

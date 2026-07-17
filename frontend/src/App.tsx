@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { LoginPage, RegisterPage } from "./features/auth/AuthEntryPages";
-import { useAuth } from "./features/auth/AuthContext";
+import { useAuth } from "./features/auth/context/AuthContext";
 import { DashboardPage } from "./features/habits/pages/DashboardPage";
 
 function App() {

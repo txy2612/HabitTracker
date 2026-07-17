@@ -1,6 +1,6 @@
 // frontend gateway to backend
 // frontend use apiClient(helper) to talk to backend
-import { getStoredAuthToken } from "../features/auth/authStorage";
+import { authService } from "../features/auth/services/authService";
 import type {
   CreateHabitInput,
   CreateHabitLogInput,
@@ -130,11 +130,16 @@ function getFriendlyRequestMessage(response: Response, fallbackMessage?: string)
 // so dh to repeat fetch(...), error, parse json
 // knows how to deliver food
 async function request<T>(path: string, options: RequestInit = {}) {
-  const token = getStoredAuthToken();
+  const token = authService.getToken();
   const headers = new Headers(options.headers);
   headers.set("Content-Type", "application/json");
 
-  if (token) {
+  //assumes user alr has a token, if yes, attach it
+  // Frontend sends smtg like
+  // Authorization: Bearer abc.def.ghi
+  // "I am carrying this token"
+  // "If the token is valid, treat me as a logged-in user."
+  if (token){
     headers.set("Authorization", `Bearer ${token}`);
   }
 

@@ -32,11 +32,17 @@ Promise<UserRow | null> {
 // create user in db
 // 1 object -> cleaner when many fields
 // input must have these properties
+/* Export an async funtion named createUser.
+   Accepts object called input, with name,email 
+   Inserts thats user into database
+   Return the created database user row
+
+ */
 export async function createUser(input: {
   name: string;
   email: string;
   passwordHash: string;// repo nvr receive raw pw
-}): Promise<UserRow> {
+}): Promise<UserRow> { //Promise<return UserRow> later
   const result = await pool.query<UserRow>(
     `INSERT INTO users (name, email, password_hash)
      VALUES ($1, $2, $3)

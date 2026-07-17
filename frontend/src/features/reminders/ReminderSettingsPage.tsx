@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import type { Habit, ReminderScheduleType, ReminderWeekday } from "../../shared/types/api.types";
 import { Button } from "../../shared/components/Button";
 import { EmptyState } from "../../shared/components/EmptyState";
-import { useReminders, type ReminderDraft } from "./useReminders";
-import { formatReminderSchedule } from "./reminderSummary";
+import { useReminders, type ReminderDraft } from "./hooks/useReminders";
+import { formatReminderSchedule } from "./utils/reminderSummary";
 import { ReminderToggle } from "./components/ReminderControls";
 
 /*ReminderSettingsPage.tsx = UI / screen
