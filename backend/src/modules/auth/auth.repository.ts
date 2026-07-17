@@ -7,6 +7,7 @@ export type UserRow = {
   name: string;
   email: string;
   password_hash: string;
+  google_sub: string | null;
   created_at: string;
 };
 
@@ -20,6 +21,7 @@ Promise<UserRow | null> {
        name,
        email,
        password_hash,
+       google_sub,
        created_at::text AS created_at
      FROM users
      WHERE email = $1`,
@@ -27,6 +29,56 @@ Promise<UserRow | null> {
   );
 
   return result.rows[0] ?? null;
+}
+
+// Purpose: returns the matching user if they have used Google before
+export async function findUserByGoogleSub(
+  googleSub: string,
+): Promise<UserRow | null> {
+  const result = await pool.query<UserRow>(
+    `SELECT
+       id::text AS id,
+       name,
+       email,
+       password_hash,
+       google_sub,
+       created_at::text AS created_at
+     FROM users
+     WHERE google_sub = $1`,
+    [googleSub],
+  );
+
+  return result.rows[0] ?? null;
+}
+
+export async function createGoogleUser(input: {
+  name: string;
+  email: string;
+  googleSub: string;
+}): Promise<UserRow> {
+  const result = await pool.query<UserRow>(
+    `INSERT INTO users (
+       name,
+       email,
+       password_hash,
+       google_sub
+     )
+     VALUES ($1, $2, NULL, $3)
+     ON CONFLICT (google_sub)
+       WHERE google_sub IS NOT NULL
+     DO UPDATE SET
+       google_sub = EXCLUDED.google_sub
+     RETURNING
+       id::text AS id,
+       name,
+       email,
+       password_hash,
+       google_sub,
+       created_at::text AS created_at`,
+    [input.name, input.email, input.googleSub],
+  );
+
+  return result.rows[0];
 }
 
 // create user in db
@@ -51,9 +103,10 @@ export async function createUser(input: {
        name,
        email,
        password_hash,
+       google_sub,
        created_at::text AS created_at`,
     [input.name, input.email, input.passwordHash],
-  );
+  );//add google_sub because my IserRow defined this shape to include it
 
   return result.rows[0];
 }

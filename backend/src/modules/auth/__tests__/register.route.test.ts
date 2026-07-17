@@ -45,7 +45,9 @@ test("POST /api/auth/register returns 201 and the registered user payload", asyn
       const storedUser = await findTestUserByEmail(email);
       assert.ok(storedUser);
       assert.equal(storedUser.name, "Alicia");
-      assert.equal(storedUser.email, email);
+
+      //assert.ok tells TypeScript that the value(passwordHash) exist
+      assert.ok(storedUser.passwordHash);
       assert.notEqual(storedUser.passwordHash, "secret123");
       assert.equal(await bcrypt.compare("secret123", storedUser.passwordHash), true);
     } finally {

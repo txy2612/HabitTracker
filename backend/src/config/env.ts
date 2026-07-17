@@ -4,6 +4,8 @@ dotenv.config();
 
 export const env = {
   port: Number(process.env.PORT ?? 4000), 
+  googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",// other files can 'env.googleClientId'
+  // instead of repeatedly accessing 'process.evn.GOOGLE_CLIENT_ID'
   logging:{
     // use log level from env, if missing -> use "info"
       level: process.env.LOG_LEVEL ?? "info",

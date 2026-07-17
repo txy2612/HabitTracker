@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
-import { app } from "../../app.js";
-import { pool } from "../../db/pool.js";
+import { app } from "../../../app.js";
+import { pool } from "../../../db/pool.js";
 
 let schemaReady: Promise<void> | null = null;
 
@@ -39,12 +39,12 @@ export async function deleteUserByEmail(email: string): Promise<void> {
 export async function findTestUserByEmail(email: string): Promise<{
   name: string;
   email: string;
-  passwordHash: string;
+  passwordHash: string | null;// allow null if user uses Google to sign-in
 } | null> {
   const result = await pool.query<{
     name: string;
     email: string;
-    password_hash: string;
+    password_hash: string | null;
   }>(
     `SELECT name, email, password_hash
      FROM users
@@ -77,9 +77,18 @@ async function ensureSchema(): Promise<void> {
        id BIGSERIAL PRIMARY KEY,
        name TEXT NOT NULL,
        email TEXT NOT NULL UNIQUE,
-       password_hash TEXT NOT NULL,
+       password_hash TEXT,
+       google_sub TEXT,
        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-     )`,
+     );
+
+     ALTER TABLE users
+       ALTER COLUMN password_hash DROP NOT NULL,
+       ADD COLUMN IF NOT EXISTS google_sub TEXT;
+
+     CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub
+       ON users (google_sub)
+       WHERE google_sub IS NOT NULL;`,
   ).then(() => undefined);
 
   await schemaReady;

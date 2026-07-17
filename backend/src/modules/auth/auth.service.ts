@@ -1,7 +1,8 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { HttpError } from "../../shared/httpErrors.js";
-import { createUser, findUserByEmail, type UserRow } from "./auth.repository.js";
+import { createUser, createGoogleUser, findUserByEmail, findUserByGoogleSub, type UserRow } from "./auth.repository.js";
+import { verifyGoogleCredential } from "./googleIdentity.js";
 
 /*frontend authService runs in browser
   backend authService runs in Node/Express server
@@ -14,6 +15,9 @@ const JWT_SECRET = process.env.JWT_SECRET ?? "dev_secret_change_me";
 
 export type RegisterInput = { name: string; email: string; password: string };
 export type LoginInput = { email: string; password: string };
+export type GoogleLoginInput = {
+  credential: string;// credential = Google token = "eyJhbGciOiJSUzI1NiIs..."
+}
 
 function toAuthResult(user: UserRow) {
   return {
@@ -45,10 +49,51 @@ export async function loginUser(input: LoginInput) {
   // find user from DB
   const user = await findUserByEmail(input.email);
   // compare password with hashed password from db
-  const passwordMatches = user ? await bcrypt.compare(input.password, user.password_hash) : false;
+  // IF user exist && HAS password_hash -> compare
+  // Otherwise -> bycrypt.compare(password, null) -> error
+  const passwordMatches = user?.password_hash ? await bcrypt.compare(input.password, user.password_hash) : false;
 
   if (!user || !passwordMatches) {
     throw new HttpError(401, "Invalid email or password");
   }
   return toAuthResult(user);
+}
+
+export async function loginWithGoogle(
+  input: GoogleLoginInput,
+  verifyCredential = verifyGoogleCredential,
+){
+  //1. Verify the credential and extract trusted Google details
+  const identity = await verifyCredential(input.credential);
+
+  //2. Check whether this Google account has signed in before
+  const existingGoogleUser = await findUserByGoogleSub(identity.sub);
+
+  if(existingGoogleUser){
+    return toAuthResult(existingGoogleUser);
+  }
+
+  //3. Do not automatically connect it to an existing password account
+  const existingEmailUser = await findUserByEmail(identity.email);
+
+  if(existingEmailUser){
+    throw new HttpError(
+      409,
+      "An account with this email already exists. Sign in using your password.",
+    );
+  }
+
+  // 4. It is a new Google user on Habit Tracker, so create the Habit Tracker account 
+  const newGoogleUser = await createGoogleUser({
+    name: identity.name,
+    email: identity.email,
+    googleSub: identity.sub,
+  });
+
+  // 5. Return HabitTracker's normal JWT and use
+  // Google ID token X replace JWT
+  // Google ID token: Google confirm this is Xin.
+  // JWT token: Habit Tracker has logged Xin into user ID 15.
+  // Bycrypt = password hasing, JWT token = authentication token
+  return toAuthResult(newGoogleUser);
 }

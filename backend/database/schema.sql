@@ -198,9 +198,21 @@ CREATE TABLE IF NOT EXISTS users (
   id BIGSERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL,
+  password_hash TEXT,-- remove NOT NULL, bcz Google-sign nonid password & JWT
+  google_sub TEXT, -- sub(ject) = identifier from google
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE users
+  ALTER COLUMN password_hash DROP NOT NULL,
+  ADD COLUMN IF NOT EXISTS google_sub TEXT;
+
+-- This block means:
+-- One Google account can belong to only one HabitTracker user.
+-- W/o this: simultaneuos requests might create 2 users with same Google identity
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub
+  ON users (google_sub)
+  WHERE google_sub IS NOT NULL;
 
 -- add user_id column to habits, and connect it to the id column in users
 -- ON DELETE CASCADE: If a user is deleted, all their habits are automatically deleted too

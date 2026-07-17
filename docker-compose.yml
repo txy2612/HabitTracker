@@ -34,6 +34,7 @@ services:
       PORT: 4000
       LOG_LEVEL: info
       LOG_PRETTY: "false"
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/habit_tracker
       CORS_ORIGIN: http://localhost:5173
       SMTP_HOST: smtp.example.com
@@ -54,6 +55,7 @@ services:
     environment:
       VITE_API_PROXY_TARGET: http://backend:4000
       VITE_DEV_HOST: 0.0.0.0
+      VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     ports:
       - "5173:5173"
 
