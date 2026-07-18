@@ -3,9 +3,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
    useContext: read shared storage
 */
 import type {
-  AuthProvider as AuthProviderType,
-  AuthResult,
   AuthUser,
+  GoogleLoginInput,
   LoginInput,
   RegisterInput,
   StoredAuthSession,
@@ -26,8 +25,8 @@ export type AuthContextValue = {
   token: string | null;
   isAuthenticated: boolean;
   login: (input: LoginInput) => Promise<StoredAuthSession>; 
+  googleLogin: (input: GoogleLoginInput ) => Promise<StoredAuthSession>;
   register: (input: RegisterInput) => Promise<StoredAuthSession>;
-  completeSignIn: (auth: AuthResult, provider?: AuthProviderType) => StoredAuthSession;
   logout: () => void;
 };
 
@@ -44,11 +43,25 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: AuthProviderProps) {
   // () => authService.getSession()
   // only runs on ini session, X run getsession on ev re-render
+
+  // Why must context call setSession()?
+  // authService saves session into localStorage, but localStorage is NOT React state
+  // Result w/o setSession : token stored but React only render login page until refresh
   const [session, setSession] = useState<StoredAuthSession | null>(() => authService.getSession());
 
   async function login(input: LoginInput) {
     // nextSession = { token, user :{id, name, email}, provider}
+    // call authService.login() & pass LoginInput
+    // store the return content in nextSession
     const nextSession = await authService.login(input);
+    setSession(nextSession);
+
+    return nextSession;
+  }
+
+  async function googleLogin(input: GoogleLoginInput){
+    const nextSession = await authService.googleLogin(input);
+
     setSession(nextSession);
 
     return nextSession;
@@ -62,13 +75,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   async function register(input: RegisterInput) {
     const nextSession = await authService.register(input);
     setSession(nextSession);//make the app becomes logged in
-
-    return nextSession;
-  }
-
-  function completeSignIn(auth: AuthResult, provider: AuthProviderType = "password") {
-    const nextSession = authService.completeSignIn(auth, provider);
-    setSession(nextSession);
 
     return nextSession;
   }
@@ -102,8 +108,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         token: session?.token ?? null,
         isAuthenticated: session !== null,
         login,
+        googleLogin,
         register,
-        completeSignIn,
         logout,
       }}
     >

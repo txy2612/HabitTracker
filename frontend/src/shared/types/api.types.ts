@@ -15,6 +15,11 @@ export type Habit = {
   createdAt: string;
 };
 
+//describe what the frontend sends 
+export type GoogleLoginInput = {
+  credential: string;
+};
+
 export type ReminderScheduleType = "daily" | "weekly" | "specific_date";
 
 export type ReminderWeekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;

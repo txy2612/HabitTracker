@@ -2,6 +2,7 @@ import type {
   AuthProvider,
   AuthResult,
   AuthUser,
+  GoogleLoginInput,
   LoginInput,
   RegisterInput,
   StoredAuthSession,
@@ -137,7 +138,7 @@ function persistSession(auth: AuthResult, provider: AuthProvider): StoredAuthSes
   return {
     token: auth.token,
     user: auth.user,
-    provider,// password
+    provider,// "password" or "google"
   };
 }
 
@@ -179,13 +180,19 @@ export const authService = {
     return persistSession(response.data, "password");
   },
 
-  // Keep this generic so a future "Sign in with Google" flow can reuse
-  // the same storage and context path by passing provider: "google".
-  completeSignIn(auth: AuthResult, provider: AuthProvider = "password"): StoredAuthSession {
-    return persistSession(auth, provider);
-  },
+  async googleLogin(
+    input: GoogleLoginInput,
+  ): Promise<StoredAuthSession>{
+    //authApi.google() = endpoint wrapper in authApi (the request sender AKA opposite of controller)
+    const response = await authApi.google(input);
 
-  logout(): void {
+    // frontend save the session, using returned result
+    // provider: "password" [password login]
+    // provider: "google" [Google login]
+    return persistSession(response.data, "google");
+  },//the comma separates googleLogin & logout inside the object
+
+  logout(): void{
     clearAuthSession();
   },
 };

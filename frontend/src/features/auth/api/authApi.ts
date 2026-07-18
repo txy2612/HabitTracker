@@ -1,4 +1,4 @@
-import type { AuthResult, LoginInput, RegisterInput } from "../../../shared/types/api.types";
+import type { AuthResult, GoogleLoginInput, LoginInput, RegisterInput } from "../../../shared/types/api.types";
 
 // this file SENDS req to backend
 // Why not use apiClient?
@@ -45,7 +45,7 @@ function getFriendlyAuthMessage(response: Response, fallbackMessage?: string) {
 //1) POST /auth/register
 //2) POST /auth/login
 // w/o depend on stored auth state
-async function requestAuth(path: string, body: LoginInput | RegisterInput): Promise<AuthEnvelope> {
+async function requestAuth(path: string, body: LoginInput | RegisterInput | GoogleLoginInput ): Promise<AuthEnvelope> {
   // centralize fetch request
   // send request to backend + wait
   // backend register endpoint:
@@ -89,5 +89,9 @@ export const authApi = {
   login(input: LoginInput): Promise<AuthEnvelope> {
     return requestAuth("/auth/login", input);
   },
+
+  google(input: GoogleLoginInput): Promise<AuthEnvelope>{
+    return requestAuth("/auth/google", input);
+  }
 };
 
