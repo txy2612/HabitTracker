@@ -190,13 +190,13 @@ export async function updateHabitReminders(
     await client.query("BEGIN");
 
     await client.query(
-      `INSERT INTO user_settings (id, reminder_email, timezone)
-       VALUES (1, $1, $2)
-       ON CONFLICT (id)
+      `INSERT INTO user_settings (user_id, reminder_email, timezone)
+       VALUES ($1::bigint, $2, $3)
+       ON CONFLICT (user_id)
        DO UPDATE SET
          reminder_email = EXCLUDED.reminder_email,
          timezone = EXCLUDED.timezone`,
-      [input.reminderEmail ?? null, input.timezone],
+      [userId, input.reminderEmail ?? null, input.timezone],
     );
 
     for (const reminder of input.reminders) {

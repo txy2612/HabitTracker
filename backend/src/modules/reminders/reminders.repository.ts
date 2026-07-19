@@ -24,11 +24,12 @@ export type ReminderDeliveryCandidate = EmailReminderCandidate & {
   max_attempts: number;
 };
 
-export async function findUserSettings(): Promise<UserSettings> {
+export async function findUserSettings(userId: string): Promise<UserSettings> {
   const result = await pool.query<UserSettings>(
     `SELECT *
      FROM user_settings
-     WHERE id = 1`,
+     WHERE user_id = $1::bigint`,
+    [userId],
   );
 
   if (result.rows[0]) {
@@ -36,9 +37,12 @@ export async function findUserSettings(): Promise<UserSettings> {
   }
 
   const insertResult = await pool.query<UserSettings>(
-    `INSERT INTO user_settings (id)
-     VALUES (1)
+    `INSERT INTO user_settings (user_id)
+     VALUES ($1::bigint)
+     ON CONFLICT (user_id) DO UPDATE
+       SET user_id = EXCLUDED.user_id
      RETURNING *`,
+    [userId],
   );
 
   return insertResult.rows[0];
@@ -58,11 +62,11 @@ export async function findEmailReminderCandidates(): Promise<EmailReminderCandid
      FROM habit_reminder_schedules AS schedules
      INNER JOIN habits
        ON habits.id = schedules.habit_id
-     CROSS JOIN user_settings
+     INNER JOIN user_settings
+       ON user_settings.user_id = habits.user_id
      WHERE schedules.is_active = true
        AND habits.archived_at IS NULL
        AND schedules.reminder_time IS NOT NULL
-       AND user_settings.id = 1
        AND user_settings.reminder_email IS NOT NULL
        AND BTRIM(user_settings.reminder_email) <> ''
      ORDER BY habits.created_at DESC`,
@@ -136,7 +140,8 @@ export async function claimReadyReminderDeliveries(input: {
          ON schedules.habit_id = jobs.habit_id
        INNER JOIN habits
          ON habits.id = jobs.habit_id
-       CROSS JOIN user_settings
+       INNER JOIN user_settings
+         ON user_settings.user_id = habits.user_id
        WHERE jobs.channel = 'email'
          AND (
            jobs.status = 'pending'
@@ -149,7 +154,6 @@ export async function claimReadyReminderDeliveries(input: {
          AND jobs.attempt_count < jobs.max_attempts
          AND schedules.is_active = true
          AND habits.archived_at IS NULL
-         AND user_settings.id = 1
          AND user_settings.reminder_email IS NOT NULL
          AND BTRIM(user_settings.reminder_email) <> ''
        ORDER BY jobs.next_retry_at ASC
@@ -167,7 +171,7 @@ export async function claimReadyReminderDeliveries(input: {
      WHERE jobs.id = claimable.id
        AND schedules.habit_id = jobs.habit_id
        AND habits.id = jobs.habit_id
-       AND user_settings.id = 1
+       AND user_settings.user_id = habits.user_id
      RETURNING
        jobs.id::text AS delivery_job_id,
        habits.id::text AS habit_id,

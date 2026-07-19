@@ -45,7 +45,7 @@ export type HabitLog = {
 };
 
 export type UserSettings = {
-  id: number;
+  user_id: string;
   reminder_email: string | null;
   timezone: string;
   updated_at: string;

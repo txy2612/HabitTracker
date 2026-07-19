@@ -1,3 +1,21 @@
+-- Users must exist before user-owned tables can reference them.
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT,
+  google_sub TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE users
+  ALTER COLUMN password_hash DROP NOT NULL,
+  ADD COLUMN IF NOT EXISTS google_sub TEXT;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub
+  ON users (google_sub)
+  WHERE google_sub IS NOT NULL;
+
 -- Create habits table
 CREATE TABLE IF NOT EXISTS habits (
   id BIGSERIAL PRIMARY KEY,
@@ -35,31 +53,76 @@ CREATE INDEX IF NOT EXISTS idx_habit_logs_habit_date
   ON habit_logs (habit_id, log_date DESC); -- desc = latest first
 
 CREATE TABLE IF NOT EXISTS user_settings (
-  /* only one user settings (one user)
-    small int -> smaler range , big int -> wasteful
-    CHECK (id = 1) -> id = 2 is not acceptable
-  */
-  id SMALLINT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
 
-  -- where reminder shud be sent
+  -- Where this user's reminders should be sent.
   reminder_email TEXT,
 
-  -- local time zone
+  -- The user's local timezone.
   timezone TEXT NOT NULL DEFAULT 'UTC',
 
-  --timestamp -> NOW()
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-/* seed for ini settings
-    first run: insert row id =1
-    second run: do ntg
-    w/o seed, query checks if (settings == null) eeverywhere
-    else row[0] would crash if it's called but undefined
-*/
-INSERT INTO user_settings (id)
-VALUES (1)
-ON CONFLICT (id) DO NOTHING;
+-- Upgrade databases that still have the old singleton settings row.
+ALTER TABLE user_settings
+  ADD COLUMN IF NOT EXISTS user_id BIGINT REFERENCES users(id) ON DELETE CASCADE;
+
+DO $$
+DECLARE
+  has_legacy_id BOOLEAN;
+  user_count BIGINT;
+  only_user_id BIGINT;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'user_settings'
+      AND column_name = 'id'
+  ) INTO has_legacy_id;
+
+  IF has_legacy_id THEN
+    SELECT COUNT(*), MIN(id)
+    INTO user_count, only_user_id
+    FROM users;
+
+    UPDATE user_settings AS settings
+    SET user_id = COALESCE(
+      (
+        SELECT users.id
+        FROM users
+        WHERE LOWER(users.email) = LOWER(settings.reminder_email)
+        LIMIT 1
+      ),
+      CASE WHEN user_count = 1 THEN only_user_id END
+    )
+    WHERE settings.user_id IS NULL;
+
+    DELETE FROM user_settings
+    WHERE user_id IS NULL;
+
+    ALTER TABLE user_settings DROP COLUMN id CASCADE;
+  END IF;
+END
+$$;
+
+ALTER TABLE user_settings
+  ALTER COLUMN user_id SET NOT NULL;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'user_settings'::regclass
+      AND contype = 'p'
+  ) THEN
+    ALTER TABLE user_settings
+      ADD CONSTRAINT user_settings_pkey PRIMARY KEY (user_id);
+  END IF;
+END
+$$;
 
 CREATE TABLE IF NOT EXISTS habit_reminder_schedules (
   id BIGSERIAL PRIMARY KEY,
@@ -191,28 +254,6 @@ CREATE TRIGGER reminder_delivery_jobs_set_updated_at
 BEFORE UPDATE ON reminder_delivery_jobs
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
-
--- USERS table allow multi-users, by adding id to each record
--- IF NOT EXISTS -> X run if alr exists -> X 500 server error
-CREATE TABLE IF NOT EXISTS users (
-  id BIGSERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
-  password_hash TEXT,-- remove NOT NULL, bcz Google-sign nonid password & JWT
-  google_sub TEXT, -- sub(ject) = identifier from google
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-ALTER TABLE users
-  ALTER COLUMN password_hash DROP NOT NULL,
-  ADD COLUMN IF NOT EXISTS google_sub TEXT;
-
--- This block means:
--- One Google account can belong to only one HabitTracker user.
--- W/o this: simultaneuos requests might create 2 users with same Google identity
-CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub
-  ON users (google_sub)
-  WHERE google_sub IS NOT NULL;
 
 -- add user_id column to habits, and connect it to the id column in users
 -- ON DELETE CASCADE: If a user is deleted, all their habits are automatically deleted too
