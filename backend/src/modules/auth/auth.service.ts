@@ -140,10 +140,12 @@ export async function loginWithGoogle(
       );
     }
 
-    const convertedSuer = await dependencies.convertToGoogleOnlyUser({
+    const convertedUser = await dependencies.convertToGoogleOnlyUser({
       userId: existingEmailUser.id,
       googleSub: identity.sub,
     });
+
+    return toAuthResult(convertedUser);
   }
 
   // 4. It is a new Google user on Habit Tracker, so create the Habit Tracker account 
