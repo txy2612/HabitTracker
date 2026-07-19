@@ -57,7 +57,7 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
             </div>
 
             <div className="grid gap-4 text-sm">
-              <div className="rounded-[24px] border border-white/20 bg-[linear-gradient(135deg,#fe8b70_0%,#e9798c_100%)] p-5 text-white shadow-[0_18px_42px_rgba(38,52,79,0.2)] sm:p-6">
+              <div className="rounded-[24px] border border-white/20 bg-[linear-gradient(135deg,#e99388_0%,#d98296_100%)] p-5 text-white shadow-[0_16px_36px_rgba(38,52,79,0.35)] sm:p-6">
                 <div className="flex items-start gap-4">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-white/18 text-white">
                     <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
@@ -137,6 +137,7 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
                   autoComplete="name"
                   className="!bg-white !text-[#26344f] placeholder:!text-[#667386]"
                   label="Full name"
+                  labelClassName="!text-black"
                   name="name"
                   onChange={(event) => onChange("name", event.target.value)}
                   placeholder="Alicia Tan"
@@ -148,6 +149,7 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
                 autoComplete="email"
                 className="!bg-white !text-[#26344f] placeholder:!text-[#667386]"
                 label="Email"
+                labelClassName="!text-black"
                 name="email"
                 onChange={(event) => onChange("email", event.target.value)}
                 placeholder="you@example.com"
@@ -159,6 +161,7 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
                 autoComplete={isRegisterMode ? "new-password" : "current-password"}
                 className="!bg-white !text-[#26344f] placeholder:!text-[#667386]"
                 label="Password"
+                labelClassName="!text-black"
                 name="password"
                 onChange={(event) => onChange("password", event.target.value)}
                 placeholder={isRegisterMode ? "At least 6 characters" : "Your password"}
