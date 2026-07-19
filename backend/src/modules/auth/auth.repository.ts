@@ -84,14 +84,22 @@ export async function createGoogleUser(input: {
 // links HabitTracker w a Google identity
 // by linking an userId with a googleSub (google token)
 // without this: a google sub finds no userId
-export async function linkGoogleUser(input: {
+export async function convertToGoogleOnlyUser(input: {
   userId: string;
   googleSub: string;
 }): Promise<UserRow> {
   const result = await pool.query<UserRow>(
     `UPDATE users
-     SET google_sub = $2
+     SET
+       google_sub = $2,
+       password_hash = NULL
      WHERE id = $1
+     -- no Google identity linked yet
+     -- same Google identity is already linked
+       AND (
+         google_sub IS NULL
+         OR google_sub = $2
+       )
      RETURNING
        id::text AS id,
        name,
@@ -102,7 +110,15 @@ export async function linkGoogleUser(input: {
     [input.userId, input.googleSub],
   );
 
-  return result.rows[0];
+  const user = result.rows[0];
+
+  if (!user) {
+    throw new Error(
+      "User could not be converted to Google-only authentication",
+    );
+  }
+
+  return user;
 }
 
 // create user in db

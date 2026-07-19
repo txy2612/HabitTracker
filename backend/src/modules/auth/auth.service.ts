@@ -6,7 +6,7 @@ import {
   createGoogleUser,
   findUserByEmail,
   findUserByGoogleSub,
-  linkGoogleUser,
+  convertToGoogleOnlyUser,
   type UserRow,
 } from "./auth.repository.js";
 import { verifyGoogleCredential } from "./googleIdentity.js";
@@ -34,7 +34,7 @@ type GoogleLoginDependencies = {
   findByGoogleSub: typeof findUserByGoogleSub;
   findByEmail: typeof findUserByEmail;
   createGoogleUser: typeof createGoogleUser;
-  linkGoogleUser: typeof linkGoogleUser;
+  convertToGoogleOnlyUser: typeof convertToGoogleOnlyUser;
 };
 
 // actual dependency object
@@ -46,7 +46,7 @@ const googleLoginDependencies: GoogleLoginDependencies = {
   findByGoogleSub: findUserByGoogleSub,
   findByEmail: findUserByEmail,
   createGoogleUser,// short for: createGoogleUser : createGoogleUser
-  linkGoogleUser,// short form
+  convertToGoogleOnlyUser,// short form
 };
 
 
@@ -60,7 +60,14 @@ function toAuthResult(user: UserRow) {
 
 export async function registerUser(input: RegisterInput) {
   //1. check if email already exists
-  if (await findUserByEmail(input.email)) {
+  const existingUser = await findUserByEmail(input.email);
+
+  // if its an existing user, and google_sub is not null = user already has google account
+  if (existingUser?.google_sub) {
+    throw new HttpError(409, "Use your existing Google login method.");
+  }
+
+  if (existingUser) {
     throw new HttpError(409, "Email already registered");
   }
 
@@ -79,6 +86,11 @@ export async function registerUser(input: RegisterInput) {
 export async function loginUser(input: LoginInput) {
   // find user from DB
   const user = await findUserByEmail(input.email);
+
+  if (user?.google_sub && !user.password_hash) {
+    throw new HttpError(409, "Use your existing Google login method.");
+  }
+
   // compare password with hashed password from db
   // IF user exist && HAS password_hash -> compare
   // Otherwise -> bycrypt.compare(password, null) -> error
@@ -102,19 +114,36 @@ export async function loginWithGoogle(
   const existingGoogleUser = await dependencies.findByGoogleSub(identity.sub);
 
   if(existingGoogleUser){
-    return toAuthResult(existingGoogleUser);
+    if (!existingGoogleUser.password_hash){
+      return toAuthResult(existingGoogleUser);
+    }
+
+    const convertedUser = await dependencies.convertToGoogleOnlyUser({
+      userId: existingGoogleUser.id,
+      googleSub: identity.sub,
+    });
+
+    return toAuthResult(convertedUser);
   }
 
   //3. A verified Google email can safely connect to the matching account.
   const existingEmailUser = await dependencies.findByEmail(identity.email);
 
   if(existingEmailUser){
-    const linkedUser = await dependencies.linkGoogleUser({
+    // Does the user  currently have Google identity
+    // Is the stored Google identity (Google token) different from the Google account currently signing in?
+    if (
+      existingEmailUser.google_sub && existingEmailUser.google_sub !== identity.sub
+    ){
+      throw new HttpError(409,
+        "This email is connected to another Google identity.",
+      );
+    }
+
+    const convertedSuer = await dependencies.convertToGoogleOnlyUser({
       userId: existingEmailUser.id,
       googleSub: identity.sub,
     });
-
-    return toAuthResult(linkedUser);
   }
 
   // 4. It is a new Google user on Habit Tracker, so create the Habit Tracker account 

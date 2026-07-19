@@ -31,7 +31,7 @@ function getFriendlyAuthMessage(response: Response, fallbackMessage?: string) {
   }
 
   if (response.status === 409) {
-    return "An account with this email already exists. Try signing in instead.";
+    return fallbackMessage ?? "An account with this email already exists. Use your existing login method.";
   }
 
   if (fallbackMessage && response.status < 500) {
