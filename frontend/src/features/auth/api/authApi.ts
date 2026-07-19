@@ -26,6 +26,14 @@ type AuthEnvelope = {
 };
 
 function getFriendlyAuthMessage(response: Response, fallbackMessage?: string) {
+  if (response.status === 401) {
+    return "The email or password is incorrect. Please try again.";
+  }
+
+  if (response.status === 409) {
+    return "An account with this email already exists. Try signing in instead.";
+  }
+
   if (fallbackMessage && response.status < 500) {
     return fallbackMessage;
   }
@@ -51,14 +59,20 @@ async function requestAuth(path: string, body: LoginInput | RegisterInput | Goog
   // backend register endpoint:
   // router.post("/auth/login", loginHandler)
   // to listen for the request sent by authApi
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    // PROVIDES request body (route file READS request body)⭐
-    body: JSON.stringify(body),
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // PROVIDES request body (route file READS request body)⭐
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new Error("We could not connect to the app. Check your connection and try again.");
+  }
 
   // check if res succeed
   // backend check: business rules related error

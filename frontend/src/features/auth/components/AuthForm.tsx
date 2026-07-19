@@ -135,6 +135,7 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
               {isRegisterMode ? (
                 <Input
                   autoComplete="name"
+                  className="!bg-white !text-[#26344f] placeholder:!text-[#667386]"
                   label="Full name"
                   name="name"
                   onChange={(event) => onChange("name", event.target.value)}
@@ -145,6 +146,7 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
 
               <Input
                 autoComplete="email"
+                className="!bg-white !text-[#26344f] placeholder:!text-[#667386]"
                 label="Email"
                 name="email"
                 onChange={(event) => onChange("email", event.target.value)}
@@ -155,6 +157,7 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
 
               <Input
                 autoComplete={isRegisterMode ? "new-password" : "current-password"}
+                className="!bg-white !text-[#26344f] placeholder:!text-[#667386]"
                 label="Password"
                 name="password"
                 onChange={(event) => onChange("password", event.target.value)}

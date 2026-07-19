@@ -144,10 +144,16 @@ async function request<T>(path: string, options: RequestInit = {}) {
   }
 
     //sends HTTP request to backend
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers,
-    ...options,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      headers,
+      ...options,
+    });
+  } catch {
+    throw new Error("We could not connect to the app. Check your connection and try again.");
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: "Request failed." }));
