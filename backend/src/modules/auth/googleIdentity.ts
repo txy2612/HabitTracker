@@ -11,12 +11,31 @@ export type GoogleIdentity = {
     name: string;
 };
 
+type GoogleTokenPayload = {
+    sub?: string;
+    email?: string;
+    email_verified?: boolean;
+    name?: string;
+};
+
+export type GoogleCredentialVerifier = (options: {
+    idToken: string;
+    audience: string;
+}) => Promise<{ getPayload(): GoogleTokenPayload | undefined }>;
+
+
 export async function verifyGoogleCredential(
     credential: string,
+    options: {
+        clientId?: string;
+        verifyIdToken?: GoogleCredentialVerifier;
+    } = {},
 ) : Promise<GoogleIdentity>{
+    const clientId = options.clientId ?? env.googleClientId;
+    const verifyIdToken = options.verifyIdToken ?? googleClient.verifyIdToken.bind(googleClient);
 
     // check if google client id is configured in env
-    if (!env.googleClientId) {
+    if (!clientId) {
         throw new HttpError(
         503,
         "Google Sign-In is not configured",
@@ -26,9 +45,9 @@ export async function verifyGoogleCredential(
     try{
         // verifyIdToken = Google help verify
         // it returns 'ticket'
-        const ticket = await googleClient.verifyIdToken({
+        const ticket = await verifyIdToken({
             idToken: credential,// the complete credential sent by frontend
-            audience: env.googleClientId,// the clientId the credential should belong to
+            audience: clientId,// the clientId the credential should belong to
         });
 
         // ticket has a payload

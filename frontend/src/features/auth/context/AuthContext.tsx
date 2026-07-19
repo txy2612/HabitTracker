@@ -62,6 +62,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   async function googleLogin(input: GoogleLoginInput){
     const nextSession = await authService.googleLogin(input);
 
+    /* After backend returns token & user
+        AuthContext runs: setSession(nextSession)
+        → isAuthenticated = true
+        → app displays dashboard
+      */
     setSession(nextSession);
 
     return nextSession;

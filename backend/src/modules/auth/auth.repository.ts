@@ -6,7 +6,7 @@ export type UserRow = {
   id: string;
   name: string;
   email: string;
-  password_hash: string;
+  password_hash: string | null;
   google_sub: string | null;
   created_at: string;
 };
@@ -76,6 +76,30 @@ export async function createGoogleUser(input: {
        google_sub,
        created_at::text AS created_at`,
     [input.name, input.email, input.googleSub],
+  );
+
+  return result.rows[0];
+}
+
+// links HabitTracker w a Google identity
+// by linking an userId with a googleSub (google token)
+// without this: a google sub finds no userId
+export async function linkGoogleUser(input: {
+  userId: string;
+  googleSub: string;
+}): Promise<UserRow> {
+  const result = await pool.query<UserRow>(
+    `UPDATE users
+     SET google_sub = $2
+     WHERE id = $1
+     RETURNING
+       id::text AS id,
+       name,
+       email,
+       password_hash,
+       google_sub,
+       created_at::text AS created_at`,
+    [input.userId, input.googleSub],
   );
 
   return result.rows[0];

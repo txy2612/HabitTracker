@@ -1,6 +1,7 @@
 import type { FormEvent } from "react";
 import { Button } from "../../../shared/components/Button";
 import { Input } from "../../../shared/components/Input";
+import { GoogleLogin } from "@react-oauth/google";
 
 export type AuthFormValues = {
   name: string;
@@ -8,6 +9,7 @@ export type AuthFormValues = {
   password: string;
 };
 
+//update props
 export type AuthFormProps = {
   mode: "login" | "register";
   values: AuthFormValues;
@@ -15,10 +17,13 @@ export type AuthFormProps = {
   isSubmitting: boolean;
   onChange: (field: keyof AuthFormValues, value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onGoogleCredential: (credential: string) => Promise<void>;
+  onGoogleError: () => void;
   onToggleMode?: () => void;
 };
 
-export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit, onToggleMode }: AuthFormProps) {
+// update function parameters
+export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit, onGoogleCredential, onGoogleError, onToggleMode }: AuthFormProps) {
   const isRegisterMode = mode === "register";
   const title = isRegisterMode ? "Create your habit studio" : "Welcome back";
   const subtitle = isRegisterMode
@@ -26,6 +31,9 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
     : "Sign in to continue with your saved habits, logs, and reminders.";
   const submitLabel = isRegisterMode ? "Create account" : "Sign in";
   const togglePrompt = isRegisterMode ? "Already have an account?" : "Need an account?";
+  const googleSignInConfigured = Boolean(
+    import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim(),
+  );
   const toggleLabel = isRegisterMode ? "Sign in instead" : "Create one";
 
   return (
@@ -74,7 +82,7 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
                   <div>
                     <p className="text-base font-semibold text-[#26344f]">Secure access</p>
                     <p className="mt-2 leading-6 text-[#52617a]">
-                      Your account stays protected while your habit data remains private.
+                     Sign in securely using Google or your email and password.
                     </p>
                   </div>
                 </div>
@@ -90,7 +98,40 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
               <p className="text-sm leading-6 text-slate-500">{subtitle}</p>
             </div>
 
-            <form className="mt-8 grid gap-5" onSubmit={onSubmit}>
+            {googleSignInConfigured ? (
+              <>
+                <div className="mt-8 flex justify-center">
+                  <GoogleLogin
+                    onSuccess={(credentialResponse) => {
+                      // if credential missing
+                      if (!credentialResponse.credential) {
+                        onGoogleError();
+                        return;
+                      }
+
+                      // if crediantial exists passes it to the page using function onGoogleCredential
+                      void onGoogleCredential(credentialResponse.credential);
+                    }}
+                    onError={onGoogleError}
+                    text="continue_with"
+                    shape="rectangular"
+                    theme="outline"
+                    size="large"
+                    width="360"
+                  />
+                </div>
+
+                <div className="my-6 flex items-center gap-4">
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                    Or use email
+                  </span>
+                  <div className="h-px flex-1 bg-slate-200" />
+                </div>
+              </>
+            ) : null}
+
+            <form className={googleSignInConfigured ? "grid gap-5" : "mt-8 grid gap-5"} onSubmit={onSubmit}>
               {isRegisterMode ? (
                 <Input
                   autoComplete="name"

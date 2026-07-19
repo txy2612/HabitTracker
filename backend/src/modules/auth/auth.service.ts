@@ -1,7 +1,14 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { HttpError } from "../../shared/httpErrors.js";
-import { createUser, createGoogleUser, findUserByEmail, findUserByGoogleSub, type UserRow } from "./auth.repository.js";
+import {
+  createUser,
+  createGoogleUser,
+  findUserByEmail,
+  findUserByGoogleSub,
+  linkGoogleUser,
+  type UserRow,
+} from "./auth.repository.js";
 import { verifyGoogleCredential } from "./googleIdentity.js";
 
 /*frontend authService runs in browser
@@ -18,6 +25,30 @@ export type LoginInput = { email: string; password: string };
 export type GoogleLoginInput = {
   credential: string;// credential = Google token = "eyJhbGciOiJSUzI1NiIs..."
 }
+
+// Dependency shape
+// loginWithGoogle() = receptionist that help check in in hotel
+// dependencies = the guest-record system 
+// to search guest by identity, fund existing email, registration for new guest
+type GoogleLoginDependencies = {
+  findByGoogleSub: typeof findUserByGoogleSub;
+  findByEmail: typeof findUserByEmail;
+  createGoogleUser: typeof createGoogleUser;
+  linkGoogleUser: typeof linkGoogleUser;
+};
+
+// actual dependency object
+// containing repo functions
+/* : GoogleLoginDependencies  -> make sure it follows this type
+
+ */
+const googleLoginDependencies: GoogleLoginDependencies = {
+  findByGoogleSub: findUserByGoogleSub,
+  findByEmail: findUserByEmail,
+  createGoogleUser,// short for: createGoogleUser : createGoogleUser
+  linkGoogleUser,// short form
+};
+
 
 function toAuthResult(user: UserRow) {
   return {
@@ -62,29 +93,32 @@ export async function loginUser(input: LoginInput) {
 export async function loginWithGoogle(
   input: GoogleLoginInput,
   verifyCredential = verifyGoogleCredential,
+  dependencies: GoogleLoginDependencies = googleLoginDependencies,
 ){
   //1. Verify the credential and extract trusted Google details
   const identity = await verifyCredential(input.credential);
 
   //2. Check whether this Google account has signed in before
-  const existingGoogleUser = await findUserByGoogleSub(identity.sub);
+  const existingGoogleUser = await dependencies.findByGoogleSub(identity.sub);
 
   if(existingGoogleUser){
     return toAuthResult(existingGoogleUser);
   }
 
-  //3. Do not automatically connect it to an existing password account
-  const existingEmailUser = await findUserByEmail(identity.email);
+  //3. A verified Google email can safely connect to the matching account.
+  const existingEmailUser = await dependencies.findByEmail(identity.email);
 
   if(existingEmailUser){
-    throw new HttpError(
-      409,
-      "An account with this email already exists. Sign in using your password.",
-    );
+    const linkedUser = await dependencies.linkGoogleUser({
+      userId: existingEmailUser.id,
+      googleSub: identity.sub,
+    });
+
+    return toAuthResult(linkedUser);
   }
 
   // 4. It is a new Google user on Habit Tracker, so create the Habit Tracker account 
-  const newGoogleUser = await createGoogleUser({
+  const newGoogleUser = await dependencies.createGoogleUser({
     name: identity.name,
     email: identity.email,
     googleSub: identity.sub,
