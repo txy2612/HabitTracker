@@ -15,9 +15,29 @@ function requireEnvironmentVariable(name: string): string{
 }
 
 const jwtSecret = requireEnvironmentVariable("JWT_SECRET");
+const databaseUrl = requireEnvironmentVariable("DATABASE_URL");
 
 if (jwtSecret.length < 32){
   throw new Error("JWT_SECRET must contain at least 32 characters.");
+}
+
+let parsedDatabaseUrl: URL;
+
+try {
+  parsedDatabaseUrl = new URL(databaseUrl);
+} catch {
+  throw new Error("DATABASE_URL must be a valid PostgreSQL connection URL.");
+}
+
+if (
+  parsedDatabaseUrl.protocol !== "postgres:" &&
+  parsedDatabaseUrl.protocol !== "postgresql:"
+) {
+  throw new Error("DATABASE_URL must use the postgres:// or postgresql:// protocol.");
+}
+
+if (parsedDatabaseUrl.password.includes("URL_ENCODED_PASSWORD")) {
+  throw new Error("DATABASE_URL still contains the password placeholder.");
 }
 
 export const env = {
@@ -31,9 +51,7 @@ export const env = {
       // Pretty logging is enabled unles LOG_PRETTY = the string "false"
       pretty: process.env.LOG_PRETTY !== "false",
   },
-  databaseUrl:
-    process.env.DATABASE_URL ??
-    "postgres://postgres:postgres@localhost:5432/habit_tracker",
+  databaseUrl,
   corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
   email: {
     smtpHost: process.env.SMTP_HOST ?? "",

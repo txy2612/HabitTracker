@@ -9,4 +9,7 @@ types.setTypeParser(1082, (value: string) => value);
 
 export const pool = new Pool({
   connectionString: env.databaseUrl,
+  max: 5,
+  connectionTimeoutMillis: 10_000,
+  idleTimeoutMillis: 30_000,
 });
