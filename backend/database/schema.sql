@@ -1,3 +1,6 @@
+
+BEGIN;
+
 -- Users must exist before user-owned tables can reference them.
 CREATE TABLE IF NOT EXISTS users (
   id BIGSERIAL PRIMARY KEY,
@@ -265,3 +268,5 @@ ADD COLUMN IF NOT EXISTS user_id BIGINT REFERENCES users(id) ON DELETE CASCADE;
 -- Habit - Jogging (id=1)
 -- Logs - Date1 done
 --      - Date2 missed
+
+COMMIT;
