@@ -6,7 +6,6 @@ import type { HabitReminderInput } from "./habits.schema.js";
 // NONID to import SCHEMA bcz NONID to VALIDATE anything (clinic computer nonid dental tools)
 
 export type UpdateHabitRemindersInput = {
-  reminderEmail?: string | null;
   timezone: string;
   reminders: HabitReminderInput[];
 };
@@ -191,12 +190,14 @@ export async function updateHabitReminders(
 
     await client.query(
       `INSERT INTO user_settings (user_id, reminder_email, timezone)
-       VALUES ($1::bigint, $2, $3)
+       SELECT users.id, users.email, $2
+       FROM users
+       WHERE users.id = $1::bigint
        ON CONFLICT (user_id)
        DO UPDATE SET
          reminder_email = EXCLUDED.reminder_email,
          timezone = EXCLUDED.timezone`,
-      [userId, input.reminderEmail ?? null, input.timezone],
+      [userId, input.timezone],
     );
 
     for (const reminder of input.reminders) {

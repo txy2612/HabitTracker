@@ -19,7 +19,6 @@ useReminders.ts = brain / controller
   5.saves reminders to backend through apiClient
 */
 const DEFAULT_REMINDER_TIME = "09:00";
-const REMINDER_EMAIL_STORAGE_KEY = "habitTracker.reminderEmail";
 
 export type ReminderDraft = HabitReminderInput & {
   name: string;
@@ -27,12 +26,10 @@ export type ReminderDraft = HabitReminderInput & {
 
 export type UseRemindersResult = {
   drafts: ReminderDraft[];
-  email: string;
   error: string | null;
   isSaving: boolean;
   savedMessage: string | null;
   timezone: string;
-  setEmail: (email: string) => void;
   setReminderEnabled: (habitId: string, isEnabled: boolean) => void;
   setReminderTime: (habitId: string, reminderTime: string) => void;
   setScheduleType: (habitId: string, scheduleType: ReminderScheduleType) => void;
@@ -43,10 +40,6 @@ export type UseRemindersResult = {
 
 function getLocalTimezone() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-}
-
-function getStoredEmail() {
-  return window.localStorage.getItem(REMINDER_EMAIL_STORAGE_KEY) ?? "";
 }
 
 function createDrafts(habits: Habit[]): ReminderDraft[] {
@@ -91,7 +84,6 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
       drafts = editable temporary UI data (bcz user may toggle b4    saving, dw to instantly change backend)
   */
   const [drafts, setDrafts] = useState<ReminderDraft[]>(() => createDrafts(habits));
-  const [email, setEmail] = useState(getStoredEmail);
   const [timezone, setTimezone] = useState(getLocalTimezone);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -126,10 +118,7 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
         const settings = await apiClient.getHabitReminderSettings();
 
         if (isActive) {
-          const savedEmail = settings.reminderEmail ?? "";
-          setEmail(savedEmail);
           setTimezone(settings.timezone || getLocalTimezone());
-          window.localStorage.setItem(REMINDER_EMAIL_STORAGE_KEY, savedEmail);
         }
       } catch {
         // Keep local defaults if backend settings cannot load.
@@ -244,13 +233,11 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
       setError(null);
       setSavedMessage(null);
 
-      const trimmedEmail = email.trim();
       // BUG FIX:
       // filter b4 saving
       // keeps only when isReminderDraftChanged return true
       const changedReminders = drafts.filter((draft) => isReminderDraftChanged(draft, initialDraftsById.get(draft.id)));
       const habits = await apiClient.saveHabitReminders({
-        reminderEmail: trimmedEmail === "" ? null : trimmedEmail,
         timezone,
         // send ONLY CHANGED reminders (dont include overdue reminders -> prevent backend error)
         reminders: changedReminders.map(({ id, reminderEnabled, reminderTime, scheduleType, weekdays, specificDate }) => ({
@@ -263,7 +250,6 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
         })),
       });
 
-      window.localStorage.setItem(REMINDER_EMAIL_STORAGE_KEY, trimmedEmail);
       setSavedMessage("Reminder settings saved. Paused reminders kept their saved schedule.");
 
       return habits;
@@ -279,12 +265,10 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
   // = expose things UI needs
   return {
     drafts,
-    email,
     error,
     isSaving,
     savedMessage,
     timezone,
-    setEmail,
     setReminderEnabled,
     setReminderTime,
     setScheduleType,

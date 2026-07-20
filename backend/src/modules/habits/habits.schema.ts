@@ -22,11 +22,6 @@ const specificDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Specific date must use YYYY-MM-DD format.");
 
-const reminderEmailSchema = z.preprocess(
-  (value) => (typeof value === "string" && value.trim() === "" ? null : value),
-  z.string().trim().email("Reminder email must be a valid email address.").nullable().optional(),
-);
-
 const timezoneSchema = z.preprocess(
   (value) => (typeof value === "string" ? value.trim() : value),
   z.string().min(1, "Timezone is required."),
@@ -138,7 +133,6 @@ const habitReminderSchema = z
 export const updateHabitRemindersRequestSchema = z.object({
   body: z
     .object({
-      reminderEmail: reminderEmailSchema,
       timezone: timezoneSchema,
       reminders: z.array(habitReminderSchema),
     })

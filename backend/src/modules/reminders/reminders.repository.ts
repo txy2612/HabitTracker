@@ -26,26 +26,17 @@ export type ReminderDeliveryCandidate = EmailReminderCandidate & {
 
 export async function findUserSettings(userId: string): Promise<UserSettings> {
   const result = await pool.query<UserSettings>(
-    `SELECT *
-     FROM user_settings
-     WHERE user_id = $1::bigint`,
+    `INSERT INTO user_settings (user_id, reminder_email)
+     SELECT users.id, users.email
+     FROM users
+     WHERE users.id = $1::bigint
+     ON CONFLICT (user_id)
+     DO UPDATE SET reminder_email = EXCLUDED.reminder_email
+     RETURNING user_settings.*`,
     [userId],
   );
 
-  if (result.rows[0]) {
-    return result.rows[0];
-  }
-
-  const insertResult = await pool.query<UserSettings>(
-    `INSERT INTO user_settings (user_id)
-     VALUES ($1::bigint)
-     ON CONFLICT (user_id) DO UPDATE
-       SET user_id = EXCLUDED.user_id
-     RETURNING *`,
-    [userId],
-  );
-
-  return insertResult.rows[0];
+  return result.rows[0];
 }
 
 export async function findEmailReminderCandidates(): Promise<EmailReminderCandidate[]> {

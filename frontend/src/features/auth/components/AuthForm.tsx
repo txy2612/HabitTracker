@@ -1,4 +1,4 @@
-import type { FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "../../../shared/components/Button";
 import { Input } from "../../../shared/components/Input";
 import { GoogleLogin } from "@react-oauth/google";
@@ -24,6 +24,7 @@ export type AuthFormProps = {
 
 // update function parameters
 export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit, onGoogleCredential, onGoogleError, onToggleMode }: AuthFormProps) {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const isRegisterMode = mode === "register";
   const title = isRegisterMode ? "Create your habit studio" : "Welcome back";
   const subtitle = isRegisterMode
@@ -35,6 +36,18 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
     import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim(),
   );
   const toggleLabel = isRegisterMode ? "Sign in instead" : "Create one";
+
+  useEffect(() => {
+    if (!isPasswordVisible) {
+      return;
+    }
+
+    const hidePasswordTimer = window.setTimeout(() => {
+      setIsPasswordVisible(false);
+    }, 1500);
+
+    return () => window.clearTimeout(hidePasswordTimer);
+  }, [isPasswordVisible]);
 
   return (
     <section className="w-full max-w-[1080px] overflow-hidden rounded-[32px] border border-[#e8e4d8] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
@@ -157,17 +170,40 @@ export function AuthForm({ mode, values, error, isSubmitting, onChange, onSubmit
                 value={values.email}
               />
 
-              <Input
-                autoComplete={isRegisterMode ? "new-password" : "current-password"}
-                className="!bg-white !text-[#26344f] placeholder:!text-[#667386]"
-                label="Password"
-                labelClassName="!text-black"
-                name="password"
-                onChange={(event) => onChange("password", event.target.value)}
-                placeholder={isRegisterMode ? "At least 6 characters" : "Your password"}
-                type="password"
-                value={values.password}
-              />
+              <label className="grid gap-2 text-sm font-semibold text-black" htmlFor="password">
+                <span>Password</span>
+                <span className="relative">
+                  <input
+                    autoComplete={isRegisterMode ? "new-password" : "current-password"}
+                    className="h-10 w-full rounded-md border border-[var(--app-border)] bg-white px-3 pr-11 text-sm text-[#26344f] caret-[var(--app-accent)] outline-none transition placeholder:text-[#667386] focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)]"
+                    id="password"
+                    name="password"
+                    onChange={(event) => onChange("password", event.target.value)}
+                    placeholder={isRegisterMode ? "At least 6 characters" : "Your password"}
+                    type={isPasswordVisible ? "text" : "password"}
+                    value={values.password}
+                  />
+                  <button
+                    aria-label={isPasswordVisible ? "Hide password" : "Show password"}
+                    aria-pressed={isPasswordVisible}
+                    className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-md text-slate-500 transition hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[var(--app-accent)]"
+                    onClick={() => setIsPasswordVisible((visible) => !visible)}
+                    title={isPasswordVisible ? "Hide password" : "Show password"}
+                    type="button"
+                  >
+                    {isPasswordVisible ? (
+                      <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <path d="M3 9.5S6.5 4 12 4s9 5.5 9 5.5S17.5 15 12 15 3 9.5 3 9.5Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                        <circle cx="12" cy="9.5" r="2.5" stroke="currentColor" strokeWidth="1.8" />
+                      </svg>
+                    ) : (
+                      <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <path d="m3 3 18 18M10.6 10.7a2 2 0 0 0 2.7 2.7M9.9 4.2A10.8 10.8 0 0 1 12 4c5.5 0 9 5.5 9 5.5a16 16 0 0 1-3.1 3.7M6.6 6.6A16.8 16.8 0 0 0 3 9.5S6.5 15 12 15c.8 0 1.6-.1 2.3-.3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                      </svg>
+                    )}
+                  </button>
+                </span>
+              </label>
 
               {error ? <p className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p> : null}
 

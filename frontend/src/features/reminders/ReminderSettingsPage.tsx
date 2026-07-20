@@ -5,6 +5,7 @@ import { EmptyState } from "../../shared/components/EmptyState";
 import { useReminders, type ReminderDraft } from "./hooks/useReminders";
 import { formatReminderSchedule } from "./utils/reminderSummary";
 import { ReminderToggle } from "./components/ReminderControls";
+import { useAuth } from "../auth/context/AuthContext";
 
 /*ReminderSettingsPage.tsx = UI / screen
 
@@ -159,6 +160,7 @@ export function ReminderSettingsPage({
   onClose,
   onSaved,
 }: ReminderSettingsPageProps) {
+  const { user } = useAuth();
   const reminders = useReminders(habits);// custom hook (starts with 'use')
 
   useEffect(() => {
@@ -387,15 +389,17 @@ export function ReminderSettingsPage({
               </div>
 
               <label className="mt-5 grid gap-2 text-sm font-semibold text-[#26344f]">
-                Reminder email
+                Account email
                 <input
-                  className="h-12 rounded-xl border border-[var(--app-soft-border)] bg-white px-3 text-base text-[var(--app-soft-text)] outline-none transition placeholder:text-[var(--app-soft-muted)] focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent-soft)]"
-                  onChange={(event) => reminders.setEmail(event.target.value)}
-                  placeholder="you@example.com"
+                  className="h-12 cursor-not-allowed rounded-xl border border-slate-300 bg-slate-200 px-3 text-base text-slate-500 opacity-80"
+                  readOnly
                   type="email"
-                  value={reminders.email}
+                  value={user?.email ?? ""}
                 />
               </label>
+              <p className="mt-2 text-xs leading-5 text-[var(--app-soft-muted)]">
+                Reminders are sent to the email associated with your logged-in account.
+              </p>
 
               <div className="mt-5 rounded-2xl bg-[var(--app-soft-surface-muted)] px-4 py-4">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#c46d8c]">Timezone</p>

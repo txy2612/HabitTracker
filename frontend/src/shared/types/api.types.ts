@@ -40,7 +40,6 @@ export type HabitReminderInput = {
 };
 
 export type SaveHabitRemindersInput = {
-  reminderEmail?: string | null;
   timezone: string;
   reminders: HabitReminderInput[];
 };
