@@ -1,19 +1,22 @@
-FROM node:22-alpine 
-# start from node.js 22 
+# Node build stage → static dist files → Nginx production server
+FROM node:22-alpine AS build
 
-WORKDIR /app 
-# cd /app
+WORKDIR /app
 
 COPY package*.json ./
 RUN npm ci
-# copies package.json & package-lock.json into the container
 
 COPY . .
-# copies the rest of the project
 
-EXPOSE 5173
-# DOES NOT opne port
-# "this application listens on port 5173"
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-# starts the app
+RUN npm run build
+
+
+FROM nginx:1.27-alpine AS runtime
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80

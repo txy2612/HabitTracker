@@ -2,8 +2,27 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// Remove fallback JWT secret
+// Step1 : JWT validation
+function requireEnvironmentVariable(name: string): string{
+  const value = process.env[name]?.trim();
+
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+
+  return value;
+}
+
+const jwtSecret = requireEnvironmentVariable("JWT_SECRET");
+
+if (jwtSecret.length < 32){
+  throw new Error("JWT_SECRET must contain at least 32 characters.");
+}
+
 export const env = {
   port: Number(process.env.PORT ?? 4000), 
+  jwtSecret,
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",// other files can 'env.googleClientId'
   // instead of repeatedly accessing 'process.evn.GOOGLE_CLIENT_ID'
   logging:{

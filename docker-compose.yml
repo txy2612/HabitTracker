@@ -34,6 +34,7 @@ services:
       PORT: 4000
       LOG_LEVEL: info
       LOG_PRETTY: "false"
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the project root .env file}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/habit_tracker
       CORS_ORIGIN: http://localhost:5173
@@ -49,15 +50,13 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     depends_on:
       backend:
         condition: service_started
-    environment:
-      VITE_API_PROXY_TARGET: http://backend:4000
-      VITE_DEV_HOST: 0.0.0.0
-      VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     ports:
-      - "5173:5173"
+      - "5173:80"
 
 # deleting a container -> deltes the db
 # with this line, deleting container -> keeps db ,bcz db lives inside container. Just like deleting a folder 

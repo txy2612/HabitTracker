@@ -1,8 +1,10 @@
 import type { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
+import { env } from "../config/env.js";
 import { HttpError } from "../shared/httpErrors.js";
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "dev_secret_change_me";
+// import { env } & remove fallback JWT secret
+// const JWT_SECRET = process.env.JWT_SECRET ?? "dev_secret_change_me";
 type AuthPayload = { userId: string };
 
 export const requireAuth: RequestHandler = (request, _response, next) => {
@@ -17,7 +19,7 @@ export const requireAuth: RequestHandler = (request, _response, next) => {
       throw new HttpError(401, "Authentication required.", { title: "Unauthorized", type: "https://habit-tracker.local/problems/unauthorized" });
     }
 
-    const payload = jwt.verify(token, JWT_SECRET) as AuthPayload;
+    const payload = jwt.verify(token, env.jwtSecret) as AuthPayload;
     request.user = { id: payload.userId };
     next();
   } catch (error) {

@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "tsc",
-    "db:migrate": "tsx src/jobs/applySchema.ts",
+    "db:migrate": "node-pg-migrate up --migrations-dir migrations",
+    "db:migrate:down": "node-pg-migrate down --migrations-dir migrations",
+    "db:migrate:create": "node-pg-migrate create --migrations-dir migrations",
     "db:check": "tsx src/jobs/runDbHealthCheck.ts",
     "start": "node dist/server.js",
     "reminders:run": "tsx src/jobs/runReminderCheckOnce.ts",
@@ -19,6 +21,7 @@
     "express": "^5.2.1",
     "google-auth-library": "^10.9.0",
     "jsonwebtoken": "^9.0.3",
+    "node-pg-migrate": "^9.0.0",
     "nodemailer": "^9.0.3",
     "pg": "^8.16.3",
     "pino": "^10.3.1",

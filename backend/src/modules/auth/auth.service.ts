@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { env } from "../../config/env.js"; 
 import { HttpError } from "../../shared/httpErrors.js";
 import {
   createUser,
@@ -18,8 +19,8 @@ import { verifyGoogleCredential } from "./googleIdentity.js";
   backend authService = server-side auth rules/security
  */
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "dev_secret_change_me";
-
+  // Remove the fallback JWT secret
+  // const JWT_SECRET = process.env.JWT_SECRET ?? "dev_secret_change_me";
 export type RegisterInput = { name: string; email: string; password: string };
 export type LoginInput = { email: string; password: string };
 export type GoogleLoginInput = {
@@ -53,7 +54,9 @@ const googleLoginDependencies: GoogleLoginDependencies = {
 function toAuthResult(user: UserRow) {
   return {
     // create a JWT token
-    token: jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" }),
+    token: jwt.sign({ userId: user.id }, 
+      env.jwtSecret,
+      { expiresIn: "7d" }),
     user: { id: user.id, name: user.name, email: user.email },
   };
 }
