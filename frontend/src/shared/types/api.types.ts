@@ -109,3 +109,7 @@ export type AuthProvider = "password" | "google";
 export type StoredAuthSession = AuthResult & {
   provider: AuthProvider;
 };
+
+export type UpdateTimezoneInput = {
+  timezone: string;
+};

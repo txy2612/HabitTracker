@@ -164,7 +164,7 @@ export function ArchivedHabitsPage({
                     <p className="text-sm text-[var(--app-soft-muted)]">Archived on {formatArchivedDate(habit.archivedAt)}</p>
                   </div>
                   <Button
-                    className="rounded-full px-4"
+                    className="archive-restore-button rounded-full px-5"
                     disabled={restoringHabitId === habit.id}
                     onClick={() => setHabitPendingRestore(habit)}
                     type="button"

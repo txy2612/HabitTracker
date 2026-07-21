@@ -14,6 +14,7 @@ import type {
   StreakSummary,
   UpdateHabitInput,
   UpdateHabitLogInput,
+  UpdateTimezoneInput,
 } from "../shared/types/api.types";// import types used, ONLY type info is imported, no JS code
 
 // If .env has VITE_API_BASE_URL , use it
@@ -229,6 +230,26 @@ export const apiClient = {
 
   getHabitReminderSettings: async (): Promise<HabitReminderSettings> => {
     return request<HabitReminderSettingsRow>("/habits/reminders");
+  },
+
+  updateUserTimezone: async (
+    input: UpdateTimezoneInput,
+  ): Promise<HabitReminderSettings> => {
+    // Use the established reminders endpoint with no habit changes so this
+    // remains compatible with backend deployments from before the dedicated
+    // timezone route was introduced.
+    await request<HabitRow[]>("/habits/reminders", {
+      method: "PATCH",
+      body: JSON.stringify({
+        timezone: input.timezone,
+        reminders: [],
+      }),
+    });
+
+    return {
+      reminderEmail: null,
+      timezone: input.timezone,
+    };
   },
 
   // function deleteHabit

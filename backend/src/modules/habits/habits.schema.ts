@@ -22,10 +22,18 @@ const specificDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Specific date must use YYYY-MM-DD format.");
 
-const timezoneSchema = z.preprocess(
-  (value) => (typeof value === "string" ? value.trim() : value),
-  z.string().min(1, "Timezone is required."),
-);
+const timezoneSchema = z
+  .string()
+  .trim()
+  .min(1, "Timezone is required.")
+  .refine((timezone) => {
+    try {
+      new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format();
+      return true;
+    } catch {
+      return false;
+    }
+  }, "Timezone must be a valid IANA timezone.");
 
 export const habitBodySchema = z.object({
   name: habitNameSchema,
@@ -153,6 +161,12 @@ export const updateHabitRemindersRequestSchema = z.object({
     }),
 });
 
+export const updateTimezoneRequestSchema = z.object({
+  body: z.object({
+    timezone: timezoneSchema,
+  }),
+});
+
 // BlaBlaRequest = type
 // BlaBlaSchema = schema 
 export type HabitBody = z.infer<typeof habitBodySchema>;
@@ -162,4 +176,5 @@ export type DeleteHabitRequest = z.infer<typeof deleteHabitRequestSchema>;
 export type ArchiveHabitRequest = z.infer<typeof archiveHabitRequestSchema>;
 export type RestoreHabitRequest = z.infer<typeof restoreHabitRequestSchema>;
 export type UpdateHabitRemindersRequest = z.infer<typeof updateHabitRemindersRequestSchema>;
+export type UpdateTimezoneRequest = z.infer<typeof updateTimezoneRequestSchema>;
 export type HabitReminderInput = z.infer<typeof habitReminderSchema>;

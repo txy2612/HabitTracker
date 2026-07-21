@@ -1,4 +1,4 @@
-import type { Habit } from "../../shared/types.js";
+import type { Habit, UserSettings } from "../../shared/types.js";
 import type { HabitBody, UpdateHabitRemindersRequest } from "./habits.schema.js";
 import { HttpError } from "../../shared/httpErrors.js";
 import {
@@ -10,6 +10,7 @@ import {
   restoreHabitById,
   updateHabitName,
   updateHabitReminders as updateHabitRemindersRepository,
+  updateUserTimezone,
 } from "./habits.repository.js";
 
 // Why service return Promise?
@@ -112,4 +113,11 @@ export async function saveHabitReminders(
   }
 
   return result.habits;
+}
+
+export async function saveUserTimezone(
+  userId: string,
+  timezone: string,
+): Promise<UserSettings> {
+  return updateUserTimezone(userId, timezone);
 }

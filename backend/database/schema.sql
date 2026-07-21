@@ -62,10 +62,15 @@ CREATE TABLE IF NOT EXISTS user_settings (
   reminder_email TEXT,
 
   -- The user's local timezone.
-  timezone TEXT NOT NULL DEFAULT 'UTC',
+  timezone TEXT NOT NULL DEFAULT 'Asia/Kuala_Lumpur',
 
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- CREATE TABLE IF NOT EXISTS does not alter an existing table, so keep the
+-- default aligned when this schema is applied to an older database.
+ALTER TABLE user_settings
+  ALTER COLUMN timezone SET DEFAULT 'Asia/Kuala_Lumpur';
 
 -- Upgrade databases that still have the old singleton settings row.
 ALTER TABLE user_settings

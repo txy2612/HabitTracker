@@ -26,8 +26,8 @@ export type ReminderDeliveryCandidate = EmailReminderCandidate & {
 
 export async function findUserSettings(userId: string): Promise<UserSettings> {
   const result = await pool.query<UserSettings>(
-    `INSERT INTO user_settings (user_id, reminder_email)
-     SELECT users.id, users.email
+    `INSERT INTO user_settings (user_id, reminder_email, timezone)
+     SELECT users.id, users.email, 'Asia/Kuala_Lumpur'
      FROM users
      WHERE users.id = $1::bigint
      ON CONFLICT (user_id)

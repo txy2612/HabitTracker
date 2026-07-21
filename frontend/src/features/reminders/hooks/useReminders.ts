@@ -8,6 +8,10 @@ import type {
   ReminderScheduleType,
   ReminderWeekday,
 } from "../../../shared/types/api.types";
+import {
+  DEFAULT_TIMEZONE,
+  getCurrentTimeInTimezone,
+} from "../../../shared/utils/timezones";
 
 /*
 useReminders.ts = brain / controller
@@ -18,8 +22,6 @@ useReminders.ts = brain / controller
   4.provides functions to update draft state
   5.saves reminders to backend through apiClient
 */
-const DEFAULT_REMINDER_TIME = "09:00";
-
 export type ReminderDraft = HabitReminderInput & {
   name: string;
 };
@@ -38,16 +40,14 @@ export type UseRemindersResult = {
   saveReminders: () => Promise<Habit[]>;
 };
 
-function getLocalTimezone() {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-}
+function createDrafts(habits: Habit[], timezone: string): ReminderDraft[] {
+  const defaultReminderTime = getCurrentTimeInTimezone(timezone);
 
-function createDrafts(habits: Habit[]): ReminderDraft[] {
   return habits.map((habit) => ({
     id: habit.id,
     name: habit.name,
     reminderEnabled: habit.reminderEnabled,
-    reminderTime: habit.reminderTime ?? DEFAULT_REMINDER_TIME,
+    reminderTime: habit.reminderTime ?? defaultReminderTime,
     scheduleType: habit.reminderScheduleType,
     weekdays: habit.reminderWeekdays,
     specificDate: habit.reminderSpecificDate,
@@ -77,20 +77,22 @@ function isReminderDraftChanged(currentDraft: ReminderDraft, initialDraft: Remin
 }
 
 // state : when they change, React re-renders the page
-export function useReminders(habits: Habit[]): UseRemindersResult {
+export function useReminders(
+  habits: Habit[],
+  timezone = DEFAULT_TIMEZONE,
+): UseRemindersResult {
 
   /*draft state:
       habits = real backend data
       drafts = editable temporary UI data (bcz user may toggle b4    saving, dw to instantly change backend)
   */
-  const [drafts, setDrafts] = useState<ReminderDraft[]>(() => createDrafts(habits));
-  const [timezone, setTimezone] = useState(getLocalTimezone);
+  const [drafts, setDrafts] = useState<ReminderDraft[]>(() => createDrafts(habits, timezone));
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   // iniDrafts = backend ori val; draft = current edited value
   //  Why useMemo()? only update when habits is changed, not on every render
-  const initialDrafts = useMemo(() => createDrafts(habits), [habits]);
+  const initialDrafts = useMemo(() => createDrafts(habits, timezone), [habits, timezone]);
 
   // lookup map ( like hashmap, faster instead of looping thru habits)
   const initialDraftsById = useMemo(
@@ -110,30 +112,9 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
     setDrafts(initialDrafts);
   }, [initialDrafts]);
 
-  useEffect(() => {
-    let isActive = true;
-
-    async function fetchReminderSettings() {
-      try {
-        const settings = await apiClient.getHabitReminderSettings();
-
-        if (isActive) {
-          setTimezone(settings.timezone || getLocalTimezone());
-        }
-      } catch {
-        // Keep local defaults if backend settings cannot load.
-      }
-    }
-
-    void fetchReminderSettings();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
-
   function setReminderEnabled(habitId: string, isEnabled: boolean) {
     setSavedMessage(null);
+    const defaultReminderTime = getCurrentTimeInTimezone(timezone);
     // React detects changes by comparing OLD w NEW
     // if directly modify OLD, React may not realized changes
     // -> create new object
@@ -145,7 +126,7 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
           ? {
               ...draft,
               reminderEnabled: isEnabled,
-              reminderTime: draft.reminderTime ?? DEFAULT_REMINDER_TIME,
+              reminderTime: draft.reminderTime ?? defaultReminderTime,
             }
           : draft,
       ),
@@ -243,7 +224,7 @@ export function useReminders(habits: Habit[]): UseRemindersResult {
         reminders: changedReminders.map(({ id, reminderEnabled, reminderTime, scheduleType, weekdays, specificDate }) => ({
           id,
           reminderEnabled,
-          reminderTime: reminderTime ?? DEFAULT_REMINDER_TIME,
+          reminderTime: reminderTime ?? getCurrentTimeInTimezone(timezone),
           scheduleType,
           weekdays,
           specificDate,

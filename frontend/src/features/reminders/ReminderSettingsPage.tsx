@@ -26,6 +26,7 @@ export type ReminderSettingsPageProps = {
   focusedHabitId?: string | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
+  timezone: string;
 };
 
 const scheduleOptions: { value: ReminderScheduleType; label: string; icon: "daily" | "weekly" | "date" }[] = [
@@ -159,9 +160,10 @@ export function ReminderSettingsPage({
   focusedHabitId = null,
   onClose,
   onSaved,
+  timezone,
 }: ReminderSettingsPageProps) {
   const { user } = useAuth();
-  const reminders = useReminders(habits);// custom hook (starts with 'use')
+  const reminders = useReminders(habits, timezone);// custom hook (starts with 'use')
 
   useEffect(() => {
     if (!focusedHabitId) {
@@ -286,7 +288,7 @@ export function ReminderSettingsPage({
                         id={`time-${habit.id}`}
                         onChange={(event) => reminders.setReminderTime(habit.id, event.target.value)}
                         type="time"
-                        value={habit.reminderTime ?? "09:00"}
+                        value={habit.reminderTime ?? ""}
                       />
                     </div>
 
@@ -410,15 +412,40 @@ export function ReminderSettingsPage({
               </div>
 
               <Button
-                className="mt-6 h-14 w-full rounded-xl text-lg"
-                disabled={isLoading || reminders.isSaving}
+                className={`mt-6 h-14 w-full rounded-xl text-lg transition-all duration-300 ${
+                  reminders.savedMessage
+                    ? "bg-emerald-600 shadow-[0_12px_28px_rgba(5,150,105,0.24)] hover:bg-emerald-600"
+                    : ""
+                }`}
+                disabled={isLoading || reminders.isSaving || Boolean(reminders.savedMessage)}
                 onClick={() => void handleSave()}
                 type="button"
               >
-                {reminders.isSaving ? "Saving..." : "Save reminder settings"}
+                <span className="inline-flex items-center justify-center gap-2">
+                  {reminders.savedMessage ? (
+                    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <path
+                        d="m5 12.5 4.2 4.2L19 7"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2.2"
+                      />
+                    </svg>
+                  ) : null}
+                  {reminders.isSaving
+                    ? "Saving reminder settings..."
+                    : reminders.savedMessage
+                      ? "Reminder settings saved"
+                      : "Save reminder settings"}
+                </span>
               </Button>
               {reminders.savedMessage ? (
-                <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                <div
+                  aria-live="polite"
+                  className="mt-4 animate-[pulse_500ms_ease-out_1] rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+                  role="status"
+                >
                   <p className="font-semibold">Saved</p>
                   <p className="mt-1">{reminders.savedMessage}</p>
                 </div>

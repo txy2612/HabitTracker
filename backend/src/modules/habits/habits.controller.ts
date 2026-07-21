@@ -7,6 +7,7 @@ import type {
   RestoreHabitRequest,
   UpdateHabitRemindersRequest,
   UpdateHabitRequest,
+  UpdateTimezoneRequest,
 } from "./habits.schema.js";
 // type = exist only for typescipt to check code
 // REMOVED after compilation
@@ -18,6 +19,7 @@ import {
   restoreHabitRequestSchema,
   updateHabitRemindersRequestSchema,
   updateHabitRequestSchema,
+  updateTimezoneRequestSchema,
 } from "./habits.schema.js";// real values
 // import for runtime validation
 import {
@@ -29,6 +31,7 @@ import {
   renameHabit,
   restoreHabit as restoreHabitService,
   saveHabitReminders,
+  saveUserTimezone,
 } from "./habits.service.js";
 import { getReminderSettings } from "../reminders/reminders.service.js";
 
@@ -117,6 +120,20 @@ const updateHabitReminders: RequestHandler = async (request, response, next) => 
   }
 };
 
+const updateTimezone: RequestHandler = async (request, response, next) => {
+  try {
+    const { body } = request.validated as UpdateTimezoneRequest;
+    const settings = await saveUserTimezone(request.user!.id, body.timezone);
+
+    response.json({
+      reminderEmail: settings.reminder_email,
+      timezone: settings.timezone,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const deleteHabit: RequestHandler = async (request, response, next) => {
   try {
     const { params } = request.validated as DeleteHabitRequest;
@@ -158,6 +175,7 @@ router.post("/", validate(createHabitRequestSchema), createHabit);
 router.get("/", getHabits);
 router.get("/archived", getArchivedHabits);
 router.get("/reminders", getHabitReminderSettings);
+router.patch("/reminders/timezone", validate(updateTimezoneRequestSchema), updateTimezone);
 router.patch("/reminders", validate(updateHabitRemindersRequestSchema), updateHabitReminders); 
 // patch = update part of existing data (Change reminder time only)
 router.patch("/:id/archive", validate(archiveHabitRequestSchema), archiveHabit);

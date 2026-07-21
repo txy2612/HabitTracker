@@ -10,9 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@date-fns/tz": "^1.5.0",
     "@react-oauth/google": "^0.13.5",
+    "date-fns": "^4.4.0",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "react-select": "^5.10.2",
+    "react-timezone-select": "^3.3.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

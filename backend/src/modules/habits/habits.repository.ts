@@ -1,6 +1,6 @@
 //database query
 import { pool } from "../../db/pool.js";
-import type { Habit } from "../../shared/types.js";
+import type { Habit, UserSettings } from "../../shared/types.js";
 import type { HabitReminderInput } from "./habits.schema.js";
 // so Repo knows what fields should reminder & habits contain = clinic computer gets X-ray image, to check DB SHAPE
 // NONID to import SCHEMA bcz NONID to VALIDATE anything (clinic computer nonid dental tools)
@@ -14,6 +14,26 @@ export type UpdateHabitRemindersResult = {
   habits: Habit[];
   missingHabitIds: string[];
 };
+
+export async function updateUserTimezone(
+  userId: string,
+  timezone: string,
+): Promise<UserSettings> {
+  const result = await pool.query<UserSettings>(
+    `INSERT INTO user_settings (user_id, reminder_email, timezone)
+     SELECT users.id, users.email, $2
+     FROM users
+     WHERE users.id = $1::bigint
+     ON CONFLICT (user_id)
+     DO UPDATE SET
+       timezone = EXCLUDED.timezone,
+       updated_at = NOW()
+     RETURNING user_settings.*`,
+    [userId, timezone],
+  );
+
+  return result.rows[0];
+}
 
 // habitsSelectQuery now left joins habit_reminder_schedules
 // so ev habit can return complete habit data shape

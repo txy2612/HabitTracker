@@ -10,6 +10,9 @@ import { ArchivedHabitsPage } from "./ArchivedHabitsPage";
 import { HabitDetailPage } from "./HabitDetailPage";
 import { ReminderSettingsPage } from "../../reminders/ReminderSettingsPage";
 import { ThemeSettingsModal } from "../../theme/ThemeSettingsModal";
+import { ProfileTimezoneSettings } from "../../profile/ProfileTimezoneSettings";
+import { DEFAULT_TIMEZONE } from "../../../shared/utils/timezones";
+import { apiClient } from "../../../api/apiClient";
 
 function DashboardLoadingState() {
   return (
@@ -99,6 +102,7 @@ export function DashboardPage() {
   const [isArchivedHabitsOpen, setIsArchivedHabitsOpen] = useState(false);
   const [focusedReminderHabitId, setFocusedReminderHabitId] = useState<string | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [userTimezone, setUserTimezone] = useState(DEFAULT_TIMEZONE);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -234,6 +238,28 @@ export function DashboardPage() {
   }
 
   useEffect(() => {
+    let isActive = true;
+
+    async function loadUserTimezone() {
+      try {
+        const settings = await apiClient.getHabitReminderSettings();
+
+        if (isActive) {
+          setUserTimezone(settings.timezone || DEFAULT_TIMEZONE);
+        }
+      } catch {
+        // Keep the Kuala Lumpur default if settings are temporarily unavailable.
+      }
+    }
+
+    void loadUserTimezone();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
     if (!isProfileMenuOpen) {
       return;
     }
@@ -356,6 +382,7 @@ export function DashboardPage() {
         isLoading={isLoading}
         onClose={handleCloseReminderCenter}
         onSaved={fetchHabits}
+        timezone={userTimezone}
       />
     );
   }
@@ -404,29 +431,26 @@ export function DashboardPage() {
 
                 {isProfileMenuOpen ? (
                   <div
-                    className="app-solid-surface absolute right-0 top-[calc(100%+0.75rem)] z-20 w-64 overflow-hidden rounded-[24px] border p-2 shadow-[0_24px_60px_var(--app-shadow)]"
-                    role="menu"
+                    className="app-solid-surface absolute right-0 top-[calc(100%+0.75rem)] z-20 w-96 max-w-[calc(100vw-2rem)] overflow-visible rounded-[24px] border p-2 shadow-[0_24px_60px_var(--app-shadow)]"
                   >
                     <div className="border-b border-[var(--app-border)] px-4 py-3">
                       <p className="text-sm font-semibold text-[var(--app-text)]">{user?.name ?? "User"}</p>
                       <p className="mt-1 text-sm text-[var(--app-muted)]">{user?.email ?? "Unknown user"}</p>
                     </div>
                     <div className="grid gap-1 px-2 py-2">
-                      <button
-                        className="rounded-xl px-3 py-2 text-left text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-soft-surface)] hover:text-[var(--app-soft-text)]"
-                        onClick={handleOpenArchivedHabits}
-                        type="button"
-                      >
-                        View archived habits
-                      </button>
-                      <button
-                        className="flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-slate-400"
-                        disabled
-                        type="button"
-                      >
-                        <span>Profile</span>
-                        <span className="text-xs font-medium uppercase tracking-[0.12em]">Later</span>
-                      </button>
+                      <div className="border-b border-[var(--app-border)] pb-2">
+                        <button
+                          className="w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-soft-surface)] hover:text-[var(--app-soft-text)]"
+                          onClick={handleOpenArchivedHabits}
+                          type="button"
+                        >
+                          View archived habits
+                        </button>
+                      </div>
+                      <ProfileTimezoneSettings
+                        onTimezoneSaved={setUserTimezone}
+                        timezone={userTimezone}
+                      />
                       <button
                         className="flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-medium text-[var(--app-text)] transition hover:bg-[var(--app-soft-surface)] hover:text-[var(--app-soft-text)]"
                         onClick={handleOpenSettings}

@@ -211,6 +211,17 @@ textarea {
   background: var(--app-accent);
 }
 
+:root[data-theme="dark"] .archive-restore-button {
+  background: var(--app-accent);
+  border-color: color-mix(in srgb, var(--app-accent) 72%, white);
+  color: #10213a;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--app-accent) 28%, transparent);
+}
+
+:root[data-theme="dark"] .archive-restore-button:hover {
+  filter: brightness(1.08);
+}
+
 @keyframes habit-complete-pulse {
   0% {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--app-accent) 38%, transparent);
