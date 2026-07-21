@@ -103,9 +103,12 @@ export async function saveHabitReminders(
   input: UpdateHabitRemindersRequest["body"],
 ): Promise<Habit[]> {// Promise to return an array of habits
   // Dentist -> Clinic computer : updateReminderSettings``
+  console.log("[saveHabitReminders] before updateHabitRemindersRepository")
   const result = await updateHabitRemindersRepository(userId, input);
+  console.log("[saveHabitReminders] after updateHabitRemindersRepository")
 
   if (result.missingHabitIds.length > 0) {
+    console.log("result.missingHabitIds.length > 0")
     throw new HttpError(404, "One or more habits were not found.", {
       title: "Habit not found",
       type: "https://habit-tracker.local/problems/habit-not-found",

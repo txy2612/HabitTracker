@@ -16,6 +16,8 @@ declare global {
 
 export function validate(schema: z.ZodType): RequestHandler {
   return (request, _response, next) => {
+    console.log("Validating")
+    console.log(request)
     try {
       request.validated = schema.parse({
         body: request.body,
